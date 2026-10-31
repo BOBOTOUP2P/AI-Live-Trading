@@ -6,9 +6,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. Proxy API សម្រាប់ Klines (ទាញយកទៀនពី Bybit ឆ្លងកាត់ Server ដើម្បីកុំឱ្យ Browser រារាំង)
+// បម្រើឯកសារ static ពីទីតាំងបច្ចុប្បន្នផ្ទាល់ (Root Directory)
+app.use(express.static(__dirname));
+
+// 1. Proxy API សម្រាប់ Klines ពី Bybit
 app.get('/api/klines', async (req, res) => {
   const { symbol = 'XAUTUSDT', interval = '15', limit = '180' } = req.query;
   try {
@@ -34,9 +36,9 @@ app.get('/api/ticker', async (req, res) => {
   }
 });
 
-// 3. Fallback Route បង្ហាញ index.html
+// 3. បង្ហាញ index.html ដែលនៅជួរជាមួយគ្នាផ្ទាល់ (លែង Error ENOENT ទៀតហើយ)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
