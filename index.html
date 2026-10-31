@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bybit Live - XAUTUSDT Perpetual</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- TradingView Engine -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-variant-numeric: normal !important;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .font-num {
+      font-family: 'Roboto', 'Inter', -apple-system, sans-serif;
+      font-feature-settings: "zero" 0;
+    }
+
+    .c-up { color: #00f0ff; }
+    .c-down { color: #ff2e56; }
+
+    /* Bybit Watermark */
+    .watermark-bybit {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 64px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.04);
+      letter-spacing: 6px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Live Countdown Badge ខាងស្តាំ */
+    .live-price-badge {
+      position: absolute;
+      right: 0;
+      transform: translateY(-50%);
+      background: #000000;
+      border: 1px solid #5a6472;
+      border-right: none;
+      border-radius: 3px 0 0 3px;
+      padding: 2px 6px;
+      font-family: 'Roboto', -apple-system, sans-serif;
+      font-size: 11px;
+      line-height: 1.15;
+      text-align: right;
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    #crosshair-center-dot {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 40;
+      display: none;
+      box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    }
+
+    .blinking-dot {
+      width: 3px;
+      height: 3px;
+      background-color: #00db84;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 3px #00db84;
+      animation: slowBlink 2.2s infinite ease-in-out;
+    }
+
+    @keyframes slowBlink {
+      0%, 100% { opacity: 0.25; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 2px #00db84); }
+    }
+
+    .ai-orbit-spinner {
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1.2px solid transparent;
+      border-top-color: #00f0ff;
+      border-right-color: rgba(0, 240, 255, 0.4);
+      animation: spinOrbit 2.4s linear infinite;
+    }
+
+    @keyframes spinOrbit {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    #candle-tooltip {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 50;
+      background: rgba(18, 20, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(6px);
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 9px;
+      line-height: 1.25;
+      pointer-events: none;
+      display: none;
+      width: 128px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    body.is-fullscreen {
+      max-width: 100vw !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    body.is-fullscreen #top-header,
+    body.is-fullscreen #top-notification {
+      display: none !important;
+    }
+
+    body.is-fullscreen #chart-wrapper {
+      height: calc(100% - 64px) !important;
+    }
+
+    .timeframe-bar-locked {
+      width: 100%;
+      overflow: hidden !important;
+      touch-action: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  </style>
+</head>
+<body id="app-root" class="bg-black text-white h-screen flex flex-col justify-start max-w-md mx-auto relative select-none">
+
+  <!-- 1. HEADER -->
+  <header id="top-header" class="px-3 pt-3 pb-2 border-b border-neutral-900 bg-black">
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="flex items-center space-x-1.5">
+          <span class="text-[13px] font-bold text-neutral-200 tracking-wide">XAUTUSDT</span>
+          <span class="text-[9px] px-1 py-0.2 bg-neutral-800 text-neutral-400 rounded">Perp</span>
+        </div>
+        <div class="flex items-baseline space-x-2 mt-0.5">
+          <span id="header-price" class="text-3xl font-bold c-up font-num tracking-tight">--.--</span>
+          <span id="header-change" class="text-xs font-semibold c-up font-num">+0.00%</span>
+        </div>
+        <div class="text-[11px] text-neutral-500 mt-0.5">
+          Mark Price <span id="header-mark" class="text-neutral-400 font-num">--.--</span>
+        </div>
+      </div>
+
+      <div class="text-[11px] space-y-0.5 pt-0.5 text-right font-num">
+        <div class="flex justify-between space-x-3">
+          <span class="text-neutral-500">24h High</span>
+          <span id="stat-high" class="text-neutral-200">--.--</span>
+        </div>
+        <div class="flex justify-between space-x-3">
+          <span class="text-neutral-500">24h Low</span>
+          <span id="stat-low" class="text-neutral-200">--.--</span>
+        </div>
+        <div class="flex justify-between space-x-3">
+          <span class="text-neutral-500">24h Turnover</span>
+          <span id="stat-turnover" class="text-neutral-200">--M</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. NOTIFICATION -->
+  <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
+    <div class="flex items-center space-x-2 truncate">
+      <i class="fa-solid fa-volume-high text-neutral-400 text-[10px]"></i>
+      <span class="truncate">Live from Bybit Perpetual Linear via Backend Proxy...</span>
+    </div>
+    <button class="text-neutral-500 hover:text-white pl-2">
+      <i class="fa-solid fa-xmark text-xs"></i>
+    </button>
+  </div>
+
+  <!-- 3. TIMEFRAME BAR -->
+  <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30">
+    <div class="flex items-center space-x-2.5">
+      <span data-tf="5" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">5m</span>
+      <span data-tf="15" class="tf-tab text-white font-bold cursor-pointer">15m</span>
+      <span data-tf="30" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">30m</span>
+      <span data-tf="60" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1h</span>
+      <span data-tf="120" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">2h</span>
+      <span data-tf="240" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">4h</span>
+      <span data-tf="D" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1D</span>
+      <span class="text-neutral-800 text-[10px]">|</span>
+      
+      <!-- Live Section -->
+      <div class="flex items-center space-x-1 cursor-pointer">
+        <span class="blinking-dot"></span>
+        <span class="text-white font-semibold text-[11px]">Live</span>
+      </div>
+
+      <!-- AI Multi-Stars -->
+      <div class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-1" title="AI Analytics">
+        <div class="ai-orbit-spinner"></div>
+        <svg class="w-3 h-3 text-[#00f0ff] fill-current" viewBox="0 0 24 24">
+          <path d="M11 2L12.8 7.2L18 9L12.8 10.8L11 16L9.2 10.8L4 9L9.2 7.2L11 2Z" />
+          <path d="M18.5 2.5L19.4 4.6L21.5 5.5L19.4 6.4L18.5 8.5L17.6 6.4L15.5 5.5L17.6 4.6L18.5 2.5Z" />
+          <path d="M18 15L18.8 16.8L20.5 17.5L18.8 18.2L18 20L17.2 18.2L15.5 17.5L17.2 16.8L18 15Z" opacity="0.9" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Right Tool Icons -->
+    <div class="flex items-center space-x-2.5 text-neutral-400">
+      <i class="fa-solid fa-pen text-[10px] hover:text-white cursor-pointer"></i>
+      
+      <div class="relative cursor-pointer">
+        <i class="fa-solid fa-sliders text-[11px] hover:text-white"></i>
+        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+      </div>
+
+      <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none" title="Toggle Fullscreen">
+        <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16">
+          <path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" />
+          <path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" />
+          <path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" />
+          <path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" />
+        </svg>
+
+        <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16">
+          <path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" />
+          <path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" />
+          <path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" />
+          <path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. CHART AREA -->
+  <div class="relative w-full flex-1 bg-black overflow-hidden" id="chart-wrapper">
+    <div class="watermark-bybit">BYBIT</div>
+
+    <div id="crosshair-center-dot"></div>
+
+    <!-- Tooltip -->
+    <div id="candle-tooltip" class="font-num">
+      <div class="text-neutral-400 border-b border-neutral-800 pb-0.5 mb-1 text-[8.5px]" id="tip-time">--/--/-- --:--</div>
+      <div class="space-y-0.5">
+        <div class="flex justify-between"><span class="text-neutral-400">Open</span><span id="tip-open" class="text-white">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">High</span><span id="tip-high" class="text-white">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">Low</span><span id="tip-low" class="text-white">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">Close</span><span id="tip-close" class="text-white">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">Change</span><span id="tip-change" class="c-up">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">Range</span><span id="tip-range" class="text-white">--</span></div>
+        <div class="flex justify-between pt-0.5 border-t border-neutral-800/80"><span class="text-neutral-400">Vol(XAUT)</span><span id="tip-vol-xaut" class="text-neutral-200">--</span></div>
+        <div class="flex justify-between"><span class="text-neutral-400">Vol(USDT)</span><span id="tip-vol-usdt" class="text-neutral-200">--</span></div>
+      </div>
+    </div>
+
+    <!-- Overlay SVG -->
+    <svg id="chart-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20">
+      <line id="running-price-line" stroke="rgba(255, 255, 255, 0.85)" stroke-width="1" stroke-dasharray="3 3" />
+
+      <g id="high-marker-group" style="display: none;">
+        <line id="high-line" stroke="#ffffff" stroke-width="1" />
+        <text id="high-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
+      </g>
+
+      <g id="low-marker-group" style="display: none;">
+        <line id="low-line" stroke="#ffffff" stroke-width="1" />
+        <text id="low-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
+      </g>
+    </svg>
+
+    <div id="live-badge" class="live-price-badge">
+      <div class="text-white font-bold" id="badge-price">--.--</div>
+      <div class="text-neutral-400 text-[9px]" id="countdown">--:--:--</div>
+    </div>
+
+    <div id="chart-container" class="w-full h-full"></div>
+  </div>
+
+  <!-- 5. BOTTOM INDICATOR BAR -->
+  <div class="border-t border-neutral-900 bg-black px-4 py-2 flex items-center justify-between text-xs text-neutral-400 z-30 select-none font-medium">
+    <div class="flex items-center space-x-6">
+      <button data-ind="MA" class="indicator-tab hover:text-white transition-colors">MA</button>
+      <button data-ind="EMA" class="indicator-tab hover:text-white transition-colors">EMA</button>
+      <button data-ind="BOLL" class="indicator-tab hover:text-white transition-colors">BOLL</button>
+      <button data-ind="Mark" class="indicator-tab hover:text-white transition-colors">Mark</button>
+      <button data-ind="SAR" class="indicator-tab hover:text-white transition-colors">SAR</button>
+    </div>
+    <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer">
+      <i class="fa-solid fa-gear text-xs"></i>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: ហៅតាម Backend Proxy -->
+  <script>
+    const rootBody = document.getElementById('app-root');
+    const wrapper = document.getElementById('chart-wrapper');
+    const container = document.getElementById('chart-container');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const iconMax = document.getElementById('icon-maximize');
+    const iconMin = document.getElementById('icon-minimize');
+    const centerDot = document.getElementById('crosshair-center-dot');
+    const tooltip = document.getElementById('candle-tooltip');
+
+    let currentSymbol = 'XAUTUSDT';
+    let currentInterval = '15';
+    let candleData = [];
+    let ws = null;
+
+    const chart = LightweightCharts.createChart(container, {
+      width: wrapper.clientWidth,
+      height: wrapper.clientHeight,
+      layout: {
+        background: { color: '#000000' },
+        textColor: '#666e7a',
+        fontSize: 10,
+        fontFamily: "'Roboto', -apple-system, BlinkMacSystemFont, sans-serif",
+      },
+      grid: {
+        vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
+        horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
+        horzLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
+      },
+      rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.08)', scaleMargins: { top: 0.12, bottom: 0.12 } },
+      timeScale: { visible: false, rightOffset: 6, barSpacing: 9 },
+      handleScroll: true,
+      handleScale: true,
+    });
+
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: '#00f0ff',
+      downColor: '#ff2e56',
+      borderVisible: false,
+      wickUpColor: '#00f0ff',
+      wickDownColor: '#ff2e56',
+      priceLineVisible: false,
+    });
+
+    // Indicators
+    const indSeries = {
+      ma7: chart.addLineSeries({ color: '#f0b90b', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      ma25: chart.addLineSeries({ color: '#e040fb', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      ema7: chart.addLineSeries({ color: '#ff9800', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      bollMid: chart.addLineSeries({ color: '#ffffff', lineWidth: 1, visible: false, priceLineVisible: false }),
+      bollUpper: chart.addLineSeries({ color: '#00b0ff', lineWidth: 1, visible: false, priceLineVisible: false }),
+      bollLower: chart.addLineSeries({ color: '#ab47bc', lineWidth: 1, visible: false, priceLineVisible: false }),
+      markLine: chart.addLineSeries({ color: '#90a4ae', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, visible: false, priceLineVisible: false }),
+      sarDots: chart.addLineSeries({ color: '#00e676', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dotted, visible: false, priceLineVisible: false }),
+    };
+
+    function updateIndicators() {
+      if (candleData.length < 25) return;
+      const getSMA = (count) => {
+        const res = [];
+        for (let i = count - 1; i < candleData.length; i++) {
+          let sum = 0;
+          for (let j = 0; j < count; j++) sum += candleData[i - j].close;
+          res.push({ time: candleData[i].time, value: sum / count });
+        }
+        return res;
+      };
+      indSeries.ma7.setData(getSMA(7));
+      indSeries.ma25.setData(getSMA(25));
+
+      const k = 2 / 8;
+      const emaRes = [];
+      let prevEma = candleData[0].close;
+      candleData.forEach((d, idx) => {
+        const val = idx === 0 ? prevEma : (d.close * k) + (prevEma * (1 - k));
+        prevEma = val;
+        emaRes.push({ time: d.time, value: val });
+      });
+      indSeries.ema7.setData(emaRes);
+
+      const bollMid = getSMA(10);
+      const bollUpper = [];
+      const bollLower = [];
+      bollMid.forEach(m => {
+        const idx = candleData.findIndex(d => d.time === m.time);
+        let sumSquares = 0;
+        for (let j = 0; j < 10; j++) sumSquares += Math.pow(candleData[idx - j].close - m.value, 2);
+        const stdDev = Math.sqrt(sumSquares / 10);
+        bollUpper.push({ time: m.time, value: m.value + (2 * stdDev) });
+        bollLower.push({ time: m.time, value: m.value - (2 * stdDev) });
+      });
+      indSeries.bollMid.setData(bollMid);
+      indSeries.bollUpper.setData(bollUpper);
+      indSeries.bollLower.setData(bollLower);
+
+      indSeries.sarDots.setData(candleData.map((d, idx) => ({
+        time: d.time,
+        value: idx % 2 === 0 ? d.low * 0.998 : d.high * 1.002
+      })));
+    }
+
+    // ហៅតាម Backend Proxy ដើម្បីកុំឱ្យជាប់ CORS
+    async function loadRealData(symbol, interval) {
+      try {
+        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
+        const json = await res.json();
+        if (json.retCode === 0 && json.result.list) {
+          const raw = json.result.list.reverse();
+          candleData = raw.map(item => ({
+            time: Math.floor(parseInt(item[0]) / 1000),
+            open: parseFloat(item[1]),
+            high: parseFloat(item[2]),
+            low: parseFloat(item[3]),
+            close: parseFloat(item[4]),
+            volume: parseFloat(item[5]),
+          }));
+
+          candleSeries.setData(candleData);
+          updateIndicators();
+          chart.timeScale().fitContent();
+
+          const last = candleData[candleData.length - 1];
+          if (last) updateHeaderPrices(last.close);
+        }
+      } catch (e) {
+        console.error("Proxy Error:", e);
+      }
+    }
+
+    async function loadTickerStats(symbol) {
+      try {
+        const res = await fetch(`/api/ticker?symbol=${symbol}`);
+        const json = await res.json();
+        if (json.retCode === 0 && json.result.list[0]) {
+          const t = json.result.list[0];
+          document.getElementById('stat-high').innerText = parseFloat(t.highPrice24h).toFixed(2);
+          document.getElementById('stat-low').innerText = parseFloat(t.lowPrice24h).toFixed(2);
+          document.getElementById('stat-turnover').innerText = (parseFloat(t.turnover24h) / 1e6).toFixed(2) + 'M';
+          document.getElementById('header-mark').innerText = parseFloat(t.markPrice).toFixed(2);
+
+          const changePct = (parseFloat(t.price24hPcnt) * 100).toFixed(2);
+          const chEl = document.getElementById('header-change');
+          chEl.innerText = (changePct >= 0 ? '+' : '') + changePct + '%';
+          chEl.className = `text-xs font-semibold font-num ${changePct >= 0 ? 'c-up' : 'c-down'}`;
+
+          indSeries.markLine.setData(candleData.map(d => ({ time: d.time, value: parseFloat(t.markPrice) })));
+        }
+      } catch (e) {}
+    }
+
+    function updateHeaderPrices(price) {
+      document.getElementById('header-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    // WebSocket ភ្ជាប់ផ្ទាល់ (WebSocket មិនជាប់ CORS ទេ)
+    function connectBybitWebSocket(symbol, interval) {
+      if (ws) ws.close();
+      ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.${interval}.${symbol}`] }));
+      };
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.topic && msg.topic.startsWith('kline') && msg.data) {
+          const k = msg.data[0];
+          const updatedCandle = {
+            time: Math.floor(parseInt(k.start) / 1000),
+            open: parseFloat(k.open),
+            high: parseFloat(k.high),
+            low: parseFloat(k.low),
+            close: parseFloat(k.close),
+            volume: parseFloat(k.volume),
+          };
+
+          candleSeries.update(updatedCandle);
+          updateHeaderPrices(updatedCandle.close);
+
+          const lastIdx = candleData.length - 1;
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
+            candleData[lastIdx] = updatedCandle;
+          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
+            candleData.push(updatedCandle);
+          }
+        }
+      };
+      ws.onclose = () => setTimeout(() => connectBybitWebSocket(currentSymbol, currentInterval), 3000);
+    }
+
+    // Run First
+    loadRealData(currentSymbol, currentInterval);
+    loadTickerStats(currentSymbol);
+    connectBybitWebSocket(currentSymbol, currentInterval);
+    setInterval(() => loadTickerStats(currentSymbol), 5000);
+
+    // Timeframe switch
+    const tfTabs = document.querySelectorAll('.tf-tab');
+    tfTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tfTabs.forEach(t => { t.classList.remove('text-white', 'font-bold'); t.classList.add('text-neutral-400'); });
+        tab.classList.remove('text-neutral-400'); tab.classList.add('text-white', 'font-bold');
+        currentInterval = tab.getAttribute('data-tf');
+        loadRealData(currentSymbol, currentInterval);
+        connectBybitWebSocket(currentSymbol, currentInterval);
+      });
+    });
+
+    // Indicators toggle
+    const indTabs = document.querySelectorAll('.indicator-tab');
+    indTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const indName = tab.getAttribute('data-ind');
+        const isActive = tab.classList.toggle('text-white');
+        tab.classList.toggle('font-bold');
+        if (isActive) tab.classList.remove('text-neutral-400'); else tab.classList.add('text-neutral-400');
+
+        if (indName === 'MA') { indSeries.ma7.applyOptions({ visible: isActive }); indSeries.ma25.applyOptions({ visible: isActive }); }
+        else if (indName === 'EMA') { indSeries.ema7.applyOptions({ visible: isActive }); }
+        else if (indName === 'BOLL') { indSeries.bollMid.applyOptions({ visible: isActive }); indSeries.bollUpper.applyOptions({ visible: isActive }); indSeries.bollLower.applyOptions({ visible: isActive }); }
+        else if (indName === 'Mark') { indSeries.markLine.applyOptions({ visible: isActive }); }
+        else if (indName === 'SAR') { indSeries.sarDots.applyOptions({ visible: isActive }); }
+      });
+    });
+
+    // Dynamic Peaks
+    function getVisiblePeaks() {
+      const logicalRange = chart.timeScale().getVisibleLogicalRange();
+      if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
+      const from = Math.max(0, Math.floor(logicalRange.from));
+      const to = Math.min(candleData.length - 1, Math.ceil(logicalRange.to));
+      let currentHighCandle = null, currentLowCandle = null;
+      for (let i = from; i <= to; i++) {
+        const c = candleData[i];
+        if (!c) continue;
+        if (!currentHighCandle || c.high > currentHighCandle.high) currentHighCandle = c;
+        if (!currentLowCandle || c.low < currentLowCandle.low) currentLowCandle = c;
+      }
+      return { highCandle: currentHighCandle, lowCandle: currentLowCandle };
+    }
+
+    function renderCustomLines() {
+      if (candleData.length === 0) return;
+      const lastCandle = candleData[candleData.length - 1];
+      const lastX = chart.timeScale().timeToCoordinate(lastCandle.time);
+      const currentY = candleSeries.priceToCoordinate(lastCandle.close);
+      const runningLine = document.getElementById('running-price-line');
+
+      if (lastX !== null && currentY !== null) {
+        runningLine.style.display = 'block';
+        runningLine.setAttribute('x1', lastX);
+        runningLine.setAttribute('y1', currentY);
+        runningLine.setAttribute('x2', wrapper.clientWidth - 50);
+        runningLine.setAttribute('y2', currentY);
+        document.getElementById('live-badge').style.top = currentY + 'px';
+      } else {
+        runningLine.style.display = 'none';
+      }
+
+      const { highCandle, lowCandle } = getVisiblePeaks();
+      const highGroup = document.getElementById('high-marker-group');
+      if (highCandle) {
+        const highX = chart.timeScale().timeToCoordinate(highCandle.time);
+        const highY = candleSeries.priceToCoordinate(highCandle.high);
+        if (highX !== null && highY !== null && highX >= -10 && highX <= wrapper.clientWidth + 10 && highY >= 0 && highY <= wrapper.clientHeight) {
+          highGroup.style.display = 'block';
+          const lineLen = 42;
+          document.getElementById('high-line').setAttribute('x1', highX);
+          document.getElementById('high-line').setAttribute('y1', highY);
+          document.getElementById('high-line').setAttribute('x2', highX + lineLen);
+          document.getElementById('high-line').setAttribute('y2', highY);
+          const t = document.getElementById('high-text');
+          t.setAttribute('x', highX + lineLen + 4);
+          t.setAttribute('y', highY + 4);
+          t.textContent = highCandle.high.toFixed(2);
+        } else { highGroup.style.display = 'none'; }
+      }
+
+      const lowGroup = document.getElementById('low-marker-group');
+      if (lowCandle) {
+        const lowX = chart.timeScale().timeToCoordinate(lowCandle.time);
+        const lowY = candleSeries.priceToCoordinate(lowCandle.low);
+        if (lowX !== null && lowY !== null && lowX >= -10 && lowX <= wrapper.clientWidth + 10 && lowY >= 0 && lowY <= wrapper.clientHeight) {
+          lowGroup.style.display = 'block';
+          const lineLen = 25;
+          document.getElementById('low-line').setAttribute('x1', lowX);
+          document.getElementById('low-line').setAttribute('y1', lowY);
+          document.getElementById('low-line').setAttribute('x2', lowX + lineLen);
+          document.getElementById('low-line').setAttribute('y2', lowY);
+          const t = document.getElementById('low-text');
+          t.setAttribute('x', lowX + lineLen + 4);
+          t.setAttribute('y', lowY + 4);
+          t.textContent = lowCandle.low.toFixed(2);
+        } else { lowGroup.style.display = 'none'; }
+      }
+    }
+
+    function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
+    requestAnimationFrame(syncLoop);
+
+    // Crosshair & Tooltip
+    chart.subscribeCrosshairMove(param => {
+      if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
+        centerDot.style.display = 'block';
+        centerDot.style.left = param.point.x + 'px';
+        centerDot.style.top = param.point.y + 'px';
+
+        const data = param.seriesData.get(candleSeries);
+        if (data) {
+          tooltip.style.display = 'block';
+          const date = new Date(param.time * 1000);
+          const timeStr = `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+          const changeVal = (data.close - data.open);
+          const changePct = ((changeVal / data.open) * 100);
+          const rangeVal = (data.high - data.low);
+          const rangePct = ((rangeVal / data.low) * 100);
+
+          document.getElementById('tip-time').innerText = timeStr;
+          document.getElementById('tip-open').innerText = data.open.toFixed(2);
+          document.getElementById('tip-high').innerText = data.high.toFixed(2);
+          document.getElementById('tip-low').innerText = data.low.toFixed(2);
+          document.getElementById('tip-close').innerText = data.close.toFixed(2);
+
+          const tipChange = document.getElementById('tip-change');
+          const sign = changeVal >= 0 ? '+' : '';
+          tipChange.innerText = `${sign}${changeVal.toFixed(2)} (${sign}${changePct.toFixed(2)}%)`;
+          tipChange.className = changeVal >= 0 ? 'c-up' : 'c-down';
+
+          document.getElementById('tip-range').innerText = `${rangeVal.toFixed(2)} (${rangePct.toFixed(2)}%)`;
+          document.getElementById('tip-vol-xaut').innerText = (data.volume ? data.volume.toFixed(2) : '--');
+          document.getElementById('tip-vol-usdt').innerText = (data.volume ? ((data.volume * data.close)/1e6).toFixed(2) + 'M' : '--');
+
+          if (param.point.x < 145) { tooltip.style.left = 'auto'; tooltip.style.right = '8px'; }
+          else { tooltip.style.left = '8px'; tooltip.style.right = 'auto'; }
+        }
+      } else {
+        centerDot.style.display = 'none';
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // Fullscreen
+    let isFull = false;
+    btnFullscreen.addEventListener('click', () => {
+      isFull = !isFull;
+      if (isFull) {
+        rootBody.classList.add('is-fullscreen');
+        iconMax.classList.add('hidden');
+        iconMin.classList.remove('hidden');
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        rootBody.classList.remove('is-fullscreen');
+        iconMax.classList.remove('hidden');
+        iconMin.classList.add('hidden');
+        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      }
+      setTimeout(() => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); chart.timeScale().fitContent(); }, 100);
+    });
+
+    window.addEventListener('resize', () => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); });
+
+    setInterval(() => {
+      const now = new Date();
+      let sec = 60 - now.getSeconds();
+      let min = (parseInt(currentInterval) || 1) - (now.getMinutes() % (parseInt(currentInterval) || 1)) - 1;
+      if (min < 0) min = 0;
+      document.getElementById('countdown').innerText = `00:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    }, 1000);
+  </script>
+</body>
+</html>
