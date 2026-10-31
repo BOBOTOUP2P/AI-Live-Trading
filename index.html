@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - Fast Cached XAUTUSDT</title>
+  <title>Bybit Live - Instant 1D Fix</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -36,7 +36,6 @@
     .c-up { color: #00f0ff; }
     .c-down { color: #ff2e56; }
 
-    /* Bybit Watermark */
     .watermark-bybit {
       position: absolute;
       top: 55%;
@@ -50,7 +49,6 @@
       z-index: 1;
     }
 
-    /* Live Countdown Badge ខាងស្តាំ */
     .live-price-badge {
       position: absolute;
       right: 0;
@@ -199,14 +197,14 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
-      <span class="truncate">Instant-Switch Engine Enabled (Zero Delay)...</span>
+      <span class="truncate">Live from Bybit Perpetual Linear (Pre-cached 1D Engine)...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
     </button>
   </div>
 
-  <!-- 3. TIMEFRAME BAR -->
+  <!-- 3. TIMEFRAME BAR (ប្តូរ D មក data-tf="d" Bybit Standard) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30">
     <div class="flex items-center space-x-2.5">
       <span data-tf="5" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">5m</span>
@@ -215,7 +213,8 @@
       <span data-tf="60" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1h</span>
       <span data-tf="120" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">2h</span>
       <span data-tf="240" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">4h</span>
-      <span data-tf="D" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1D</span>
+      <!-- ប្រើអក្សរតូច d ជាស្តង់ដារ Bybit ផ្លូវការ -->
+      <span data-tf="d" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1D</span>
       <span class="text-neutral-800 text-[10px]">|</span>
       
       <!-- Live Section -->
@@ -320,7 +319,7 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT: FAST CACHE SYSTEM ================= -->
+  <!-- JAVASCRIPT: 1D INSTANT FIX & PRE-CACHING -->
   <script>
     const rootBody = document.getElementById('app-root');
     const wrapper = document.getElementById('chart-wrapper');
@@ -335,10 +334,6 @@
     let currentInterval = '15';
     let candleData = [];
     let ws = null;
-
-    // =========================================================================
-    // ប្រព័ន្ធ CACHE ចងចាំទិន្នន័យទៀន (ចុចភ្លាម បង្ហាញភ្លាម គ្មានដាច់ទៀនឡើយ)
-    // =========================================================================
     const candleCache = {};
 
     const chart = LightweightCharts.createChart(container, {
@@ -432,12 +427,14 @@
     }
 
     // =========================================================================
-    // មុខងារ LOAD DATA ឆ្លាតវៃ (CACHE FIRST -> 0.001s Instant Load)
+    // មុខងារ SWITCH TIMEFRAME កែសម្រួលពិសេសសម្រាប់ 1D (គ្មានដាច់)
     // =========================================================================
     async function switchTimeframeWithCache(symbol, interval) {
-      // ១. ប្រសិនបើមានក្នុង Cache បង្ហាញភ្លាម មិនឱ្យដាច់ក្រាប
-      if (candleCache[interval]) {
-        candleData = [...candleCache[interval]];
+      const apiInterval = (interval === 'd' || interval === 'D') ? 'd' : interval;
+
+      // ១. ប្រសិនបើមានក្នុង Cache បង្ហាញភ្លាម ០.០០១ វិនាទី
+      if (candleCache[apiInterval]) {
+        candleData = [...candleCache[apiInterval]];
         candleSeries.setData(candleData);
         updateIndicators();
         chart.timeScale().fitContent();
@@ -446,9 +443,9 @@
         if (last) updateHeaderPrices(last.close);
       }
 
-      // ២. ទាញយកទិន្នន័យបន្ថែមនៅ Background ស្ងាត់ៗដើម្បីធ្វើបច្ចុប្បន្នភាព
+      // ២. ទាញយកនៅ Background ដោយមិនឱ្យរំខានក្រាហ្វិក
       try {
-        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
+        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${apiInterval}`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
           const raw = json.result.list.reverse();
@@ -461,10 +458,8 @@
             volume: parseFloat(item[5]),
           }));
 
-          // រក្សាទុកក្នុង Cache
-          candleCache[interval] = freshData;
+          candleCache[apiInterval] = freshData;
 
-          // ប្រសិនបើយើងនៅតែស្ថិតក្នុងម៉ោងនោះដដែល ធ្វើការ refresh យ៉ាងរលូន
           if (currentInterval === interval) {
             candleData = freshData;
             candleSeries.setData(candleData);
@@ -507,9 +502,11 @@
     // WebSocket Live
     function connectBybitWebSocket(symbol, interval) {
       if (ws) ws.close();
+      const apiInterval = (interval === 'd' || interval === 'D') ? 'd' : interval;
+
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
       ws.onopen = () => {
-        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.${interval}.${symbol}`] }));
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.${apiInterval}.${symbol}`] }));
       };
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
@@ -527,9 +524,8 @@
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
 
-          // Update Cache ឱ្យ Live ជានិច្ច
-          if (candleCache[interval]) {
-            const cList = candleCache[interval];
+          if (candleCache[apiInterval]) {
+            const cList = candleCache[apiInterval];
             const lastIdx = cList.length - 1;
             if (lastIdx >= 0 && cList[lastIdx].time === updatedCandle.time) {
               cList[lastIdx] = updatedCandle;
@@ -542,15 +538,33 @@
       ws.onclose = () => setTimeout(() => connectBybitWebSocket(currentSymbol, currentInterval), 3000);
     }
 
-    // Run First
+    // ដំណើរការដំបូង
     switchTimeframeWithCache(currentSymbol, currentInterval);
     loadTickerStats(currentSymbol);
     connectBybitWebSocket(currentSymbol, currentInterval);
     setInterval(() => loadTickerStats(currentSymbol), 5000);
 
     // =========================================================================
-    // ចុចប្តូរម៉ោងលឿនដូចផ្លេកបន្ទោរ (Instant Switching)
+    // PRE-FETCH ស្ងាត់ៗសម្រាប់ 1D (ចុចភ្លាមចេញភ្លាម គ្មានយឺតឡើយ)
     // =========================================================================
+    setTimeout(() => {
+      fetch(`/api/klines?symbol=${currentSymbol}&interval=d`)
+        .then(r => r.json())
+        .then(j => {
+          if (j.retCode === 0 && j.result.list) {
+            candleCache['d'] = j.result.list.reverse().map(item => ({
+              time: Math.floor(parseInt(item[0]) / 1000),
+              open: parseFloat(item[1]),
+              high: parseFloat(item[2]),
+              low: parseFloat(item[3]),
+              close: parseFloat(item[4]),
+              volume: parseFloat(item[5]),
+            }));
+          }
+        }).catch(() => {});
+    }, 1500);
+
+    // Timeframe Click
     const tfTabs = document.querySelectorAll('.tf-tab');
     tfTabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -558,8 +572,6 @@
         tab.classList.remove('text-neutral-400'); tab.classList.add('text-white', 'font-bold');
         
         currentInterval = tab.getAttribute('data-tf');
-        
-        // ហៅតាមប្រព័ន្ធ Cache ភ្លាមៗ (គ្មានដាច់ ឬភ្លឹបភ្លែតទៀនទេ)
         switchTimeframeWithCache(currentSymbol, currentInterval);
         connectBybitWebSocket(currentSymbol, currentInterval);
       });
@@ -721,8 +733,7 @@
     setInterval(() => {
       const now = new Date();
       let sec = 60 - now.getSeconds();
-      let min = (parseInt(currentInterval) || 1) - (now.getMinutes() % (parseInt(currentInterval) || 1)) - 1;
-      if (min < 0) min = 0;
+      let min = 59 - now.getMinutes();
       document.getElementById('countdown').innerText = `00:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
     }, 1000);
   </script>
