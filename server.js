@@ -6,20 +6,49 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-
-// បម្រើឯកសារ static ពីទីតាំងបច្ចុប្បន្នផ្ទាល់ (Root Directory)
 app.use(express.static(__dirname));
 
-// 1. Proxy API សម្រាប់ Klines ពី Bybit
+// មុខងារទាញយក 5,000 ទៀន ដោយរត់ Loop 5 ដង (1000 candles/chunk)
+async function fetch5000Klines(symbol, interval) {
+  let allKlines = [];
+  let endTime = Date.now(); // ចាប់ផ្តើមពីពេលបច្ចុប្បន្ន
+
+  for (let i = 0; i < 5; i++) {
+    try {
+      const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=1000&end=${endTime}`;
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (json.retCode === 0 && json.result.list && json.result.list.length > 0) {
+        const chunk = json.result.list;
+        allKlines = allKlines.concat(chunk);
+        
+        // កំណត់ endTime ឱ្យថយក្រោយផុតក្បាលទៀនចុងក្រោយគេនៃ Chunk នេះ
+        const oldestCandleTime = parseInt(chunk[chunk.length - 1][0]);
+        endTime = oldestCandleTime - 1;
+
+        // ប្រសិនបើទិន្នន័យអស់មុន ៥០០០ ដើម ឈប់ត្រឹមហ្នឹង
+        if (chunk.length < 1000) break;
+      } else {
+        break;
+      }
+    } catch (e) {
+      console.error(`Chunk ${i} error:`, e);
+      break;
+    }
+  }
+
+  return allKlines;
+}
+
+// 1. API សម្រាប់ 5,000 Klines
 app.get('/api/klines', async (req, res) => {
-  const { symbol = 'XAUTUSDT', interval = '15', limit = '180' } = req.query;
+  const { symbol = 'XAUTUSDT', interval = '15' } = req.query;
   try {
-    const bybitUrl = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=${limit}`;
-    const response = await fetch(bybitUrl);
-    const data = await response.json();
-    res.json(data);
+    const rawList = await fetch5000Klines(symbol, interval);
+    res.json({ retCode: 0, result: { list: rawList } });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch from Bybit' });
+    res.status(500).json({ error: 'Failed to fetch 5000 candles from Bybit' });
   }
 });
 
@@ -36,11 +65,10 @@ app.get('/api/ticker', async (req, res) => {
   }
 });
 
-// 3. បង្ហាញ index.html ដែលនៅជួរជាមួយគ្នាផ្ទាល់ (លែង Error ENOENT ទៀតហើយ)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT} with 5000 Candles Engine`);
 });
