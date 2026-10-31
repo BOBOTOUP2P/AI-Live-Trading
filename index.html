@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - Precise Countdown & 1000 Candles</title>
+  <title>Bybit Live - 5,000 Historical Candles</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -199,7 +199,7 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
-      <span class="truncate">Bybit Engine Loaded: 1,000 Historical Candles Active...</span>
+      <span class="truncate">Deep History: Up to 5,000 Live Candles Synced...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
@@ -296,7 +296,7 @@
       </g>
     </svg>
 
-    <!-- Badge Countdown ត្រឹមត្រូវ ១០០% -->
+    <!-- Badge Countdown -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
       <div class="text-neutral-400 text-[9px]" id="countdown">00:00:00</div>
@@ -331,7 +331,7 @@
     const tooltip = document.getElementById('candle-tooltip');
 
     let currentSymbol = 'XAUTUSDT';
-    let currentInterval = '15'; // 15m default
+    let currentInterval = '15';
     let candleData = [];
     let ws = null;
     const candleCache = {};
@@ -356,7 +356,7 @@
         horzLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
       },
       rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.08)', scaleMargins: { top: 0.12, bottom: 0.12 } },
-      timeScale: { visible: false, rightOffset: 6, barSpacing: 8 },
+      timeScale: { visible: false, rightOffset: 6, barSpacing: 6 },
       handleScroll: true,
       handleScale: true,
     });
@@ -428,7 +428,7 @@
     }
 
     // =========================================================================
-    // ទាញយកទៀនច្រើនបំផុត 1000 ដើម (Max Candles)
+    // មុខងារ LOAD 5,000 CANDLES (INSTANT CACHED)
     // =========================================================================
     async function switchTimeframeWithCache(symbol, interval) {
       if (candleCache[interval]) {
@@ -445,8 +445,7 @@
       }
 
       try {
-        // Limit=1000 ទាញទិន្នន័យបានវែងបំផុត
-        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}&limit=1000`);
+        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
           const raw = json.result.list.reverse();
@@ -582,7 +581,7 @@
       });
     });
 
-    // Dynamic High / Low Lines
+    // Dynamic High / Low Lines (គាំទ្រ 5,000 Candles យ៉ាងរលូន)
     function getVisiblePeaks() {
       const logicalRange = chart.timeScale().getVisibleLogicalRange();
       if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
@@ -729,23 +728,18 @@
 
     window.addEventListener('resize', () => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); });
 
-    // =========================================================================
-    // ក្បួនគណនានាឡិការាប់ថយក្រោយតាម TIMEFRAME ត្រឹមត្រូវ ១០០%
-    // =========================================================================
+    // Countdown Timer ត្រឹមត្រូវតាម Timeframe
     function updateCountdown() {
       const now = new Date();
       const currentSeconds = Math.floor(now.getTime() / 1000);
       
-      // រកប្រវែងវិនាទីនៃ Timeframe នីមួយៗ
-      let tfSeconds = 60; // 1m
+      let tfSeconds = 60;
       if (currentInterval === '5') tfSeconds = 5 * 60;
       else if (currentInterval === '15') tfSeconds = 15 * 60;
       else if (currentInterval === '30') tfSeconds = 30 * 60;
       else if (currentInterval === '60') tfSeconds = 60 * 60;
 
-      // គណនាវិនាទីដែលនៅសល់រហូតដល់ទៀនថ្មីកើតឡើង
       const remainingTotalSeconds = tfSeconds - (currentSeconds % tfSeconds);
-
       const hours = Math.floor(remainingTotalSeconds / 3600);
       const minutes = Math.floor((remainingTotalSeconds % 3600) / 60);
       const seconds = remainingTotalSeconds % 60;
