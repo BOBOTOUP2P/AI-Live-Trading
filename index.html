@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - 1m Added & Real Volumes Fixed</title>
+  <title>Bybit Live - Precise Countdown & 1000 Candles</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -199,17 +199,16 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
-      <span class="truncate">Live from Bybit Perpetual Linear (Real Volume Engine Active)...</span>
+      <span class="truncate">Bybit Engine Loaded: 1,000 Historical Candles Active...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
     </button>
   </div>
 
-  <!-- 3. TIMEFRAME BAR (មាន 1m, 5m, 15m, 30m, 1h) -->
+  <!-- 3. TIMEFRAME BAR (1m, 5m, 15m, 30m, 1h) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30">
     <div class="flex items-center space-x-3">
-      <!-- បន្ថែម 1m ថ្មី -->
       <span data-tf="1" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1m</span>
       <span data-tf="5" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">5m</span>
       <span data-tf="15" class="tf-tab text-white font-bold cursor-pointer">15m</span>
@@ -267,7 +266,7 @@
 
     <div id="crosshair-center-dot"></div>
 
-    <!-- Tooltip (Volume ពិតប្រាកដ) -->
+    <!-- Tooltip -->
     <div id="candle-tooltip" class="font-num">
       <div class="text-neutral-400 border-b border-neutral-800 pb-0.5 mb-1 text-[8.5px]" id="tip-time">--/--/-- --:--</div>
       <div class="space-y-0.5">
@@ -297,9 +296,10 @@
       </g>
     </svg>
 
+    <!-- Badge Countdown ត្រឹមត្រូវ ១០០% -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
-      <div class="text-neutral-400 text-[9px]" id="countdown">--:--:--</div>
+      <div class="text-neutral-400 text-[9px]" id="countdown">00:00:00</div>
     </div>
 
     <div id="chart-container" class="w-full h-full"></div>
@@ -331,12 +331,10 @@
     const tooltip = document.getElementById('candle-tooltip');
 
     let currentSymbol = 'XAUTUSDT';
-    let currentInterval = '15';
+    let currentInterval = '15'; // 15m default
     let candleData = [];
     let ws = null;
     const candleCache = {};
-    
-    // បង្កើត Map សម្រាប់ផ្ទុក Volume ពិតប្រាកដតាម Timestamp
     let candleVolumeMap = new Map();
 
     const chart = LightweightCharts.createChart(container, {
@@ -358,7 +356,7 @@
         horzLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
       },
       rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.08)', scaleMargins: { top: 0.12, bottom: 0.12 } },
-      timeScale: { visible: false, rightOffset: 6, barSpacing: 9 },
+      timeScale: { visible: false, rightOffset: 6, barSpacing: 8 },
       handleScroll: true,
       handleScale: true,
     });
@@ -430,7 +428,7 @@
     }
 
     // =========================================================================
-    // មុខងារ LOAD DATA ជាមួយ REAL VOLUMES
+    // ទាញយកទៀនច្រើនបំផុត 1000 ដើម (Max Candles)
     // =========================================================================
     async function switchTimeframeWithCache(symbol, interval) {
       if (candleCache[interval]) {
@@ -439,7 +437,6 @@
         updateIndicators();
         chart.timeScale().fitContent();
         
-        // Refresh volume map ពី cache
         candleVolumeMap.clear();
         candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
 
@@ -448,7 +445,8 @@
       }
 
       try {
-        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
+        // Limit=1000 ទាញទិន្នន័យបានវែងបំផុត
+        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}&limit=1000`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
           const raw = json.result.list.reverse();
@@ -469,7 +467,6 @@
             candleSeries.setData(candleData);
             updateIndicators();
 
-            // បញ្ចូល volume ចូល Map
             candleVolumeMap.clear();
             candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
 
@@ -508,7 +505,7 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // WebSocket Live ជាមួយ Real-time Volume Update
+    // WebSocket Live
     function connectBybitWebSocket(symbol, interval) {
       if (ws) ws.close();
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
@@ -533,7 +530,6 @@
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
 
-          // Update Volume Map ភ្លាមៗ
           candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
 
           if (candleCache[interval]) {
@@ -556,9 +552,7 @@
     connectBybitWebSocket(currentSymbol, currentInterval);
     setInterval(() => loadTickerStats(currentSymbol), 5000);
 
-    // =========================================================================
-    // ចុចប្តូរម៉ោង (1m, 5m, 15m, 30m, 1h)
-    // =========================================================================
+    // Timeframe Click (1m, 5m, 15m, 30m, 1h)
     const tfTabs = document.querySelectorAll('.tf-tab');
     tfTabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -663,9 +657,7 @@
     function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
     requestAnimationFrame(syncLoop);
 
-    // =========================================================================
-    // TOOLTIP & REAL VOLUMES DISPLAYER (ដំណើរការ Volume ពិត ១០០%)
-    // =========================================================================
+    // Tooltip & Crosshair
     chart.subscribeCrosshairMove(param => {
       if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
         centerDot.style.display = 'block';
@@ -696,20 +688,13 @@
 
           document.getElementById('tip-range').innerText = `${rangeVal.toFixed(2)} (${rangePct.toFixed(2)}%)`;
 
-          // ចាប់ Volume និង Turnover ពិតចេញពី Map
           const volData = candleVolumeMap.get(param.time);
           if (volData && volData.volume !== undefined) {
             document.getElementById('tip-vol-xaut').innerText = volData.volume.toFixed(3);
-            
-            // គណនា Volume ជា USDT
             const usdtVal = volData.turnover ? volData.turnover : (volData.volume * data.close);
-            if (usdtVal >= 1000000) {
-              document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e6).toFixed(2) + 'M';
-            } else if (usdtVal >= 1000) {
-              document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e3).toFixed(2) + 'K';
-            } else {
-              document.getElementById('tip-vol-usdt').innerText = usdtVal.toFixed(2);
-            }
+            if (usdtVal >= 1e6) document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e6).toFixed(2) + 'M';
+            else if (usdtVal >= 1e3) document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e3).toFixed(2) + 'K';
+            else document.getElementById('tip-vol-usdt').innerText = usdtVal.toFixed(2);
           } else {
             document.getElementById('tip-vol-xaut').innerText = '0.000';
             document.getElementById('tip-vol-usdt').innerText = '0.00';
@@ -744,12 +729,33 @@
 
     window.addEventListener('resize', () => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); });
 
-    setInterval(() => {
+    // =========================================================================
+    // ក្បួនគណនានាឡិការាប់ថយក្រោយតាម TIMEFRAME ត្រឹមត្រូវ ១០០%
+    // =========================================================================
+    function updateCountdown() {
       const now = new Date();
-      let sec = 60 - now.getSeconds();
-      let min = 59 - now.getMinutes();
-      document.getElementById('countdown').innerText = `00:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-    }, 1000);
+      const currentSeconds = Math.floor(now.getTime() / 1000);
+      
+      // រកប្រវែងវិនាទីនៃ Timeframe នីមួយៗ
+      let tfSeconds = 60; // 1m
+      if (currentInterval === '5') tfSeconds = 5 * 60;
+      else if (currentInterval === '15') tfSeconds = 15 * 60;
+      else if (currentInterval === '30') tfSeconds = 30 * 60;
+      else if (currentInterval === '60') tfSeconds = 60 * 60;
+
+      // គណនាវិនាទីដែលនៅសល់រហូតដល់ទៀនថ្មីកើតឡើង
+      const remainingTotalSeconds = tfSeconds - (currentSeconds % tfSeconds);
+
+      const hours = Math.floor(remainingTotalSeconds / 3600);
+      const minutes = Math.floor((remainingTotalSeconds % 3600) / 60);
+      const seconds = remainingTotalSeconds % 60;
+
+      const fmt = (num) => String(num).padStart(2, '0');
+      document.getElementById('countdown').innerText = `${fmt(hours)}:${fmt(minutes)}:${fmt(seconds)}`;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
   </script>
 </body>
 </html>
