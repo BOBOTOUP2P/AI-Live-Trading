@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - XAUTUSDT Perpetual</title>
+  <title>Bybit Live - Fast Cached XAUTUSDT</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -198,8 +198,8 @@
   <!-- 2. NOTIFICATION -->
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
-      <i class="fa-solid fa-volume-high text-neutral-400 text-[10px]"></i>
-      <span class="truncate">Live from Bybit Perpetual Linear via Backend Proxy...</span>
+      <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
+      <span class="truncate">Instant-Switch Engine Enabled (Zero Delay)...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
@@ -320,7 +320,7 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT: ហៅតាម Backend Proxy -->
+  <!-- ================= JAVASCRIPT: FAST CACHE SYSTEM ================= -->
   <script>
     const rootBody = document.getElementById('app-root');
     const wrapper = document.getElementById('chart-wrapper');
@@ -335,6 +335,11 @@
     let currentInterval = '15';
     let candleData = [];
     let ws = null;
+
+    // =========================================================================
+    // ប្រព័ន្ធ CACHE ចងចាំទិន្នន័យទៀន (ចុចភ្លាម បង្ហាញភ្លាម គ្មានដាច់ទៀនឡើយ)
+    // =========================================================================
+    const candleCache = {};
 
     const chart = LightweightCharts.createChart(container, {
       width: wrapper.clientWidth,
@@ -426,14 +431,28 @@
       })));
     }
 
-    // ហៅតាម Backend Proxy ដើម្បីកុំឱ្យជាប់ CORS
-    async function loadRealData(symbol, interval) {
+    // =========================================================================
+    // មុខងារ LOAD DATA ឆ្លាតវៃ (CACHE FIRST -> 0.001s Instant Load)
+    // =========================================================================
+    async function switchTimeframeWithCache(symbol, interval) {
+      // ១. ប្រសិនបើមានក្នុង Cache បង្ហាញភ្លាម មិនឱ្យដាច់ក្រាប
+      if (candleCache[interval]) {
+        candleData = [...candleCache[interval]];
+        candleSeries.setData(candleData);
+        updateIndicators();
+        chart.timeScale().fitContent();
+        
+        const last = candleData[candleData.length - 1];
+        if (last) updateHeaderPrices(last.close);
+      }
+
+      // ២. ទាញយកទិន្នន័យបន្ថែមនៅ Background ស្ងាត់ៗដើម្បីធ្វើបច្ចុប្បន្នភាព
       try {
         const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
           const raw = json.result.list.reverse();
-          candleData = raw.map(item => ({
+          const freshData = raw.map(item => ({
             time: Math.floor(parseInt(item[0]) / 1000),
             open: parseFloat(item[1]),
             high: parseFloat(item[2]),
@@ -442,15 +461,20 @@
             volume: parseFloat(item[5]),
           }));
 
-          candleSeries.setData(candleData);
-          updateIndicators();
-          chart.timeScale().fitContent();
+          // រក្សាទុកក្នុង Cache
+          candleCache[interval] = freshData;
 
-          const last = candleData[candleData.length - 1];
-          if (last) updateHeaderPrices(last.close);
+          // ប្រសិនបើយើងនៅតែស្ថិតក្នុងម៉ោងនោះដដែល ធ្វើការ refresh យ៉ាងរលូន
+          if (currentInterval === interval) {
+            candleData = freshData;
+            candleSeries.setData(candleData);
+            updateIndicators();
+            const last = candleData[candleData.length - 1];
+            if (last) updateHeaderPrices(last.close);
+          }
         }
       } catch (e) {
-        console.error("Proxy Error:", e);
+        console.error("Fetch Error:", e);
       }
     }
 
@@ -480,7 +504,7 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // WebSocket ភ្ជាប់ផ្ទាល់ (WebSocket មិនជាប់ CORS ទេ)
+    // WebSocket Live
     function connectBybitWebSocket(symbol, interval) {
       if (ws) ws.close();
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
@@ -503,11 +527,15 @@
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
 
-          const lastIdx = candleData.length - 1;
-          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
-            candleData[lastIdx] = updatedCandle;
-          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
-            candleData.push(updatedCandle);
+          // Update Cache ឱ្យ Live ជានិច្ច
+          if (candleCache[interval]) {
+            const cList = candleCache[interval];
+            const lastIdx = cList.length - 1;
+            if (lastIdx >= 0 && cList[lastIdx].time === updatedCandle.time) {
+              cList[lastIdx] = updatedCandle;
+            } else if (lastIdx >= 0 && updatedCandle.time > cList[lastIdx].time) {
+              cList.push(updatedCandle);
+            }
           }
         }
       };
@@ -515,24 +543,29 @@
     }
 
     // Run First
-    loadRealData(currentSymbol, currentInterval);
+    switchTimeframeWithCache(currentSymbol, currentInterval);
     loadTickerStats(currentSymbol);
     connectBybitWebSocket(currentSymbol, currentInterval);
     setInterval(() => loadTickerStats(currentSymbol), 5000);
 
-    // Timeframe switch
+    // =========================================================================
+    // ចុចប្តូរម៉ោងលឿនដូចផ្លេកបន្ទោរ (Instant Switching)
+    // =========================================================================
     const tfTabs = document.querySelectorAll('.tf-tab');
     tfTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tfTabs.forEach(t => { t.classList.remove('text-white', 'font-bold'); t.classList.add('text-neutral-400'); });
         tab.classList.remove('text-neutral-400'); tab.classList.add('text-white', 'font-bold');
+        
         currentInterval = tab.getAttribute('data-tf');
-        loadRealData(currentSymbol, currentInterval);
+        
+        // ហៅតាមប្រព័ន្ធ Cache ភ្លាមៗ (គ្មានដាច់ ឬភ្លឹបភ្លែតទៀនទេ)
+        switchTimeframeWithCache(currentSymbol, currentInterval);
         connectBybitWebSocket(currentSymbol, currentInterval);
       });
     });
 
-    // Indicators toggle
+    // Indicators Toggle
     const indTabs = document.querySelectorAll('.indicator-tab');
     indTabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -549,7 +582,7 @@
       });
     });
 
-    // Dynamic Peaks
+    // Dynamic High / Low Lines
     function getVisiblePeaks() {
       const logicalRange = chart.timeScale().getVisibleLogicalRange();
       if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
