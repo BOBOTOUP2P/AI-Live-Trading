@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - 5,000 Historical Candles</title>
+  <title>Bybit Live - 5m Single Timeframe</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -199,21 +199,18 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>
-      <span class="truncate">Deep History: Up to 5,000 Live Candles Synced...</span>
+      <span class="truncate">Bybit 5m Dedicated Engine Active (5,000 Candles Synced)...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
     </button>
   </div>
 
-  <!-- 3. TIMEFRAME BAR (1m, 5m, 15m, 30m, 1h) -->
+  <!-- 3. TIMEFRAME BAR (រក្សាទុកតែ 5m មួយគត់) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30">
     <div class="flex items-center space-x-3">
-      <span data-tf="1" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1m</span>
-      <span data-tf="5" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">5m</span>
-      <span data-tf="15" class="tf-tab text-white font-bold cursor-pointer">15m</span>
-      <span data-tf="30" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">30m</span>
-      <span data-tf="60" class="tf-tab text-neutral-400 hover:text-neutral-200 cursor-pointer">1h</span>
+      <!-- ប៊ូតុង 5m តែមួយគត់ -->
+      <span class="text-white font-bold cursor-pointer px-1.5 py-0.5 bg-neutral-900 rounded border border-neutral-800">5m</span>
       <span class="text-neutral-800 text-[10px]">|</span>
       
       <!-- Live Section -->
@@ -296,10 +293,10 @@
       </g>
     </svg>
 
-    <!-- Badge Countdown -->
+    <!-- Badge Countdown 5m -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
-      <div class="text-neutral-400 text-[9px]" id="countdown">00:00:00</div>
+      <div class="text-neutral-400 text-[9px]" id="countdown">00:05:00</div>
     </div>
 
     <div id="chart-container" class="w-full h-full"></div>
@@ -330,11 +327,10 @@
     const centerDot = document.getElementById('crosshair-center-dot');
     const tooltip = document.getElementById('candle-tooltip');
 
-    let currentSymbol = 'XAUTUSDT';
-    let currentInterval = '15';
+    const currentSymbol = 'XAUTUSDT';
+    const currentInterval = '5'; // ចាក់សោរលើ 5m តែមួយ
     let candleData = [];
     let ws = null;
-    const candleCache = {};
     let candleVolumeMap = new Map();
 
     const chart = LightweightCharts.createChart(container, {
@@ -427,29 +423,14 @@
       })));
     }
 
-    // =========================================================================
-    // មុខងារ LOAD 5,000 CANDLES (INSTANT CACHED)
-    // =========================================================================
-    async function switchTimeframeWithCache(symbol, interval) {
-      if (candleCache[interval]) {
-        candleData = [...candleCache[interval]];
-        candleSeries.setData(candleData);
-        updateIndicators();
-        chart.timeScale().fitContent();
-        
-        candleVolumeMap.clear();
-        candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
-
-        const last = candleData[candleData.length - 1];
-        if (last) updateHeaderPrices(last.close);
-      }
-
+    // ទាញយក 5,000 Candles សម្រាប់ 5m
+    async function load5mHistory() {
       try {
-        const res = await fetch(`/api/klines?symbol=${symbol}&interval=${interval}`);
+        const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=5`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
           const raw = json.result.list.reverse();
-          const freshData = raw.map(item => ({
+          candleData = raw.map(item => ({
             time: Math.floor(parseInt(item[0]) / 1000),
             open: parseFloat(item[1]),
             high: parseFloat(item[2]),
@@ -459,28 +440,24 @@
             turnover: parseFloat(item[6]),
           }));
 
-          candleCache[interval] = freshData;
+          candleSeries.setData(candleData);
+          updateIndicators();
+          chart.timeScale().fitContent();
 
-          if (currentInterval === interval) {
-            candleData = freshData;
-            candleSeries.setData(candleData);
-            updateIndicators();
+          candleVolumeMap.clear();
+          candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
 
-            candleVolumeMap.clear();
-            candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
-
-            const last = candleData[candleData.length - 1];
-            if (last) updateHeaderPrices(last.close);
-          }
+          const last = candleData[candleData.length - 1];
+          if (last) updateHeaderPrices(last.close);
         }
       } catch (e) {
         console.error("Fetch Error:", e);
       }
     }
 
-    async function loadTickerStats(symbol) {
+    async function loadTickerStats() {
       try {
-        const res = await fetch(`/api/ticker?symbol=${symbol}`);
+        const res = await fetch(`/api/ticker?symbol=${currentSymbol}`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list[0]) {
           const t = json.result.list[0];
@@ -504,12 +481,12 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // WebSocket Live
-    function connectBybitWebSocket(symbol, interval) {
+    // WebSocket Live 5m
+    function connectBybitWebSocket() {
       if (ws) ws.close();
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
       ws.onopen = () => {
-        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.${interval}.${symbol}`] }));
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
       };
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
@@ -528,41 +505,24 @@
 
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
-
           candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
 
-          if (candleCache[interval]) {
-            const cList = candleCache[interval];
-            const lastIdx = cList.length - 1;
-            if (lastIdx >= 0 && cList[lastIdx].time === updatedCandle.time) {
-              cList[lastIdx] = updatedCandle;
-            } else if (lastIdx >= 0 && updatedCandle.time > cList[lastIdx].time) {
-              cList.push(updatedCandle);
-            }
+          const lastIdx = candleData.length - 1;
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
+            candleData[lastIdx] = updatedCandle;
+          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
+            candleData.push(updatedCandle);
           }
         }
       };
-      ws.onclose = () => setTimeout(() => connectBybitWebSocket(currentSymbol, currentInterval), 3000);
+      ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
     }
 
-    // Run First
-    switchTimeframeWithCache(currentSymbol, currentInterval);
-    loadTickerStats(currentSymbol);
-    connectBybitWebSocket(currentSymbol, currentInterval);
-    setInterval(() => loadTickerStats(currentSymbol), 5000);
-
-    // Timeframe Click (1m, 5m, 15m, 30m, 1h)
-    const tfTabs = document.querySelectorAll('.tf-tab');
-    tfTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tfTabs.forEach(t => { t.classList.remove('text-white', 'font-bold'); t.classList.add('text-neutral-400'); });
-        tab.classList.remove('text-neutral-400'); tab.classList.add('text-white', 'font-bold');
-        
-        currentInterval = tab.getAttribute('data-tf');
-        switchTimeframeWithCache(currentSymbol, currentInterval);
-        connectBybitWebSocket(currentSymbol, currentInterval);
-      });
-    });
+    // ចាប់ផ្តើមដំណើរការ
+    load5mHistory();
+    loadTickerStats();
+    connectBybitWebSocket();
+    setInterval(loadTickerStats, 5000);
 
     // Indicators Toggle
     const indTabs = document.querySelectorAll('.indicator-tab');
@@ -581,7 +541,7 @@
       });
     });
 
-    // Dynamic High / Low Lines (គាំទ្រ 5,000 Candles យ៉ាងរលូន)
+    // Dynamic High / Low
     function getVisiblePeaks() {
       const logicalRange = chart.timeScale().getVisibleLogicalRange();
       if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
@@ -656,7 +616,7 @@
     function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
     requestAnimationFrame(syncLoop);
 
-    // Tooltip & Crosshair
+    // Tooltip
     chart.subscribeCrosshairMove(param => {
       if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
         centerDot.style.display = 'block';
@@ -728,24 +688,17 @@
 
     window.addEventListener('resize', () => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); });
 
-    // Countdown Timer ត្រឹមត្រូវតាម Timeframe
+    // Countdown Timer 5m (រាប់ពី 00:05:00 ចុះក្រោម)
     function updateCountdown() {
       const now = new Date();
       const currentSeconds = Math.floor(now.getTime() / 1000);
-      
-      let tfSeconds = 60;
-      if (currentInterval === '5') tfSeconds = 5 * 60;
-      else if (currentInterval === '15') tfSeconds = 15 * 60;
-      else if (currentInterval === '30') tfSeconds = 30 * 60;
-      else if (currentInterval === '60') tfSeconds = 60 * 60;
+      const tfSeconds = 5 * 60; // 300 វិនាទី
+      const remaining = tfSeconds - (currentSeconds % tfSeconds);
 
-      const remainingTotalSeconds = tfSeconds - (currentSeconds % tfSeconds);
-      const hours = Math.floor(remainingTotalSeconds / 3600);
-      const minutes = Math.floor((remainingTotalSeconds % 3600) / 60);
-      const seconds = remainingTotalSeconds % 60;
-
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
       const fmt = (num) => String(num).padStart(2, '0');
-      document.getElementById('countdown').innerText = `${fmt(hours)}:${fmt(minutes)}:${fmt(seconds)}`;
+      document.getElementById('countdown').innerText = `00:${fmt(minutes)}:${fmt(seconds)}`;
     }
 
     setInterval(updateCountdown, 1000);
