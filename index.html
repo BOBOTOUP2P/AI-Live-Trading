@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - XAUTUSDT 5m Engine</title>
+  <title>BOBOTOU (Bybit) - XAUTUSDT 5m Live</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,7 +46,8 @@
         <div class="flex items-center space-x-1.5">
           <span class="text-[13px] font-bold text-neutral-200 tracking-wide">XAUTUSDT</span>
           <span class="text-[9px] px-1 py-0.2 bg-neutral-800 text-neutral-400 rounded">Perp</span>
-          <span id="data-source-badge" class="text-[8px] px-1 rounded bg-cyan-500/20 text-cyan-300">Connecting...</span>
+          <!-- ស្លាកតូច BOBOTOU (Bybit) ថេរ -->
+          <span id="data-source-badge" class="text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300">BOBOTOU (Connecting...)</span>
         </div>
         <div class="flex items-baseline space-x-2 mt-0.5">
           <span id="header-price" class="text-3xl font-bold c-up font-num tracking-tight">--.--</span>
@@ -69,7 +70,7 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">កំពុងភ្ជាប់ទិន្នន័យផ្សាយផ្ទាល់ XAUTUSDT...</span>
+      <span id="mini-council-banner" class="truncate">BOBOTOU 5m Live Engine • ចុចលើ Live ឬ AI ដើម្បីមើលវិភាគ...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
@@ -130,7 +131,7 @@
 
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
-      <div class="text-neutral-400 text-[9px]" id="countdown">00:04:59</div>
+      <div class="text-neutral-400 text-[9px]" id="countdown">00:05:00</div>
     </div>
 
     <div id="chart-container" class="w-full h-full"></div>
@@ -276,6 +277,15 @@
     let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
+    // មុខងារបង្ហាញស្លាក BOBOTOU (ឈ្មោះក្នុងវង់ក្រចក)
+    function setSourceBadge(sourceName, isOk = true) {
+      const el = document.getElementById('data-source-badge');
+      el.innerText = `BOBOTOU (${sourceName})`;
+      el.className = isOk
+        ? "text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300"
+        : "text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300";
+    }
+
     const chart = LightweightCharts.createChart(container, {
       width: wrapper.clientWidth,
       height: wrapper.clientHeight,
@@ -342,10 +352,12 @@
         volume: parseFloat(item[5] || 0), turnover: parseFloat(item[6] || 0),
       }));
 
-      // លុបថ្ងៃម៉ោងជាន់គ្នានិងតម្រៀបតាមលំដាប់
       const uniqueMap = new Map();
       candleData.forEach(c => uniqueMap.set(c.time, c));
       candleData = Array.from(uniqueMap.values()).sort((a, b) => a.time - b.time);
+
+      // ធានាថាបង្គោលទៀនចុងក្រោយត្រូវនឹងពេលវេលា 5 នាទីបច្ចុប្បន្ន
+      ensureCurrent5mCandleExists();
 
       candleSeries.setData(candleData);
       updateIndicators();
@@ -356,19 +368,41 @@
       const last = candleData[candleData.length - 1];
       if (last) updateHeaderPrices(last.close);
 
-      document.getElementById('data-source-badge').innerText = sourceName;
-      document.getElementById('data-source-badge').className = "text-[8px] px-1 rounded bg-emerald-500/20 text-emerald-300";
+      setSourceBadge(sourceName, true);
     }
 
     // =========================================================================
-    // ១. ទាញទៀនផ្ទាល់ពី BYBIT តាមរយៈ Browser នៅកម្ពុជា (ជៀស Block IP អាមេរិក!)
+    // ប្រព័ន្ធបង្កើតបង្គោលទៀន 5 នាទីថ្មីដោយស្វ័យប្រវត្តិ (AUTO 5m ROLLOVER ENGINE)
     // =========================================================================
+    function ensureCurrent5mCandleExists() {
+      if (candleData.length === 0) return;
+      const now = Math.floor(Date.now() / 1000);
+      const currentBarTime = now - (now % 300); // ម៉ោងគត់នៃទៀន 5 នាទីបច្ចុប្បន្ន
+      const last = candleData[candleData.length - 1];
+
+      if (currentBarTime > last.time) {
+        const newBar = {
+          time: currentBarTime,
+          open: last.close,
+          high: last.close,
+          low: last.close,
+          close: last.close,
+          volume: 0,
+          turnover: 0
+        };
+        candleData.push(newBar);
+        candleSeries.update(newBar);
+        candleVolumeMap.set(currentBarTime, { volume: 0, turnover: 0 });
+        updateIndicators();
+      }
+    }
+
+    // ១. ទាញ 5,000 ទៀនផ្ទាល់ពី Bybit ឬ Fallback
     async function load5000Candles() {
       let allList = [];
       let endTime = Date.now();
       let bybitDirectSuccess = false;
 
-      // សាកល្បងទាញ 5,000 ទៀនផ្ទាល់ពី Bybit ដោយ Browser
       try {
         for (let i = 0; i < 5; i++) {
           const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${currentSymbol}&interval=5&limit=1000&end=${endTime}`;
@@ -383,30 +417,28 @@
             if (chunk.length < 1000) break;
           } else break;
         }
-      } catch (e) {
-        bybitDirectSuccess = false;
-      }
+      } catch (e) { bybitDirectSuccess = false; }
 
       if (bybitDirectSuccess && allList.length > 0) {
-        applyLoadedCandles(allList.reverse(), "Bybit Direct");
+        applyLoadedCandles(allList.reverse(), "Bybit");
         return;
       }
 
-      // បើ Browser ទាញផ្ទាល់មានបញ្ហា ទាញតាម Server Fallback (Gate.io / OKX)
       try {
         const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=5`);
         const json = await res.json();
         if (json.retCode === 0 && json.result?.list?.length > 0) {
-          applyLoadedCandles(json.result.list.reverse(), json.source || "Server Proxy");
+          let srcLabel = json.source || "Proxy";
+          if (srcLabel.includes("Gate")) srcLabel = "Gate.io";
+          if (srcLabel.includes("OKX")) srcLabel = "OKX";
+          applyLoadedCandles(json.result.list.reverse(), srcLabel);
         }
       } catch (e) {
-        document.getElementById('data-source-badge').innerText = "Retry...";
+        setSourceBadge("Retry...", false);
       }
     }
 
-    // =========================================================================
-    // ២. ទាញ TICKER STATS ផ្ទាល់ពី Bybit នៅកម្ពុជា (Fallback តាម Server)
-    // =========================================================================
+    // ២. ទាញ TICKER STATS & អាប់ដេតតម្លៃលើបង្គោលទៀនចុងក្រោយរៀងរាល់ ៣ វិនាទី
     async function loadTickerStats() {
       try {
         let t = null;
@@ -414,7 +446,10 @@
           const bRes = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${currentSymbol}`);
           if (bRes.ok) {
             const bJson = await bRes.json();
-            if (bJson.retCode === 0 && bJson.result?.list?.[0]) t = bJson.result.list[0];
+            if (bJson.retCode === 0 && bJson.result?.list?.[0]) {
+              t = bJson.result.list[0];
+              setSourceBadge("Bybit", true);
+            }
           }
         } catch (err) {}
 
@@ -427,7 +462,20 @@
         }
 
         if (t) {
-          if (t.lastPrice) updateHeaderPrices(parseFloat(t.lastPrice));
+          const livePrice = parseFloat(t.lastPrice);
+          if (livePrice) {
+            updateHeaderPrices(livePrice);
+            // អាប់ដេតបង្គោលទៀនបច្ចុប្បន្នជានិច្ច (ទោះជា WebSocket ស្ងាត់ក៏ដោយ)
+            ensureCurrent5mCandleExists();
+            if (candleData.length > 0) {
+              const last = candleData[candleData.length - 1];
+              last.close = livePrice;
+              if (livePrice > last.high) last.high = livePrice;
+              if (livePrice < last.low) last.low = livePrice;
+              candleSeries.update(last);
+            }
+          }
+
           document.getElementById('stat-high').innerText = parseFloat(t.highPrice24h).toFixed(2);
           document.getElementById('stat-low').innerText = parseFloat(t.lowPrice24h).toFixed(2);
           document.getElementById('stat-turnover').innerText = (parseFloat(t.turnover24h) / 1e6).toFixed(2) + 'M';
@@ -446,9 +494,7 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // =========================================================================
-    // ៣. WEBSOCKET LIVE + 20s PING HEARTBEAT (មិនឱ្យផ្តាច់ Connection)
-    // =========================================================================
+    // ៣. WEBSOCKET LIVE + 20s PING HEARTBEAT
     function connectBybitWebSocket() {
       if (ws) ws.close();
       if (wsPingTimer) clearInterval(wsPingTimer);
@@ -456,7 +502,6 @@
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
       ws.onopen = () => {
         ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
-        // បាញ់ Ping រៀងរាល់ 20 វិនាទីដើម្បីរក្សាខ្សែរ Live រហូត
         wsPingTimer = setInterval(() => {
           if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ op: 'ping' }));
         }, 20000);
@@ -464,6 +509,7 @@
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.topic && msg.topic.startsWith('kline') && msg.data) {
+          setSourceBadge("Bybit", true);
           const k = msg.data[0];
           const tSeconds = Math.floor(parseInt(k.start) / 1000);
           const updatedCandle = {
@@ -473,9 +519,14 @@
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
           candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
+
           const lastIdx = candleData.length - 1;
-          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) candleData[lastIdx] = updatedCandle;
-          else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) candleData.push(updatedCandle);
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
+            candleData[lastIdx] = updatedCandle;
+          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
+            candleData.push(updatedCandle);
+            updateIndicators();
+          }
         }
       };
       ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
@@ -484,7 +535,7 @@
     load5000Candles();
     loadTickerStats();
     connectBybitWebSocket();
-    setInterval(loadTickerStats, 3000); // ធ្វើបច្ចុប្បន្នភាពរាល់ 3 វិនាទីជាបន្ថែម
+    setInterval(loadTickerStats, 3000);
 
     // Indicators Toggle
     document.querySelectorAll('.indicator-tab').forEach(tab => {
@@ -592,12 +643,22 @@
     });
     window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
 
-    // Candle 5m Countdown
-    setInterval(() => {
+    // =========================================================================
+    // ៤. នាឡិកា 5 នាទីរាប់ថយក្រោយ + បង្កើតទៀនថ្មីភ្លាមៗពេលអស់ម៉ោង (00:00)
+    // =========================================================================
+    function update5mCountdownAndRollover() {
       const now = Math.floor(Date.now() / 1000);
       const rem = 300 - (now % 300);
-      document.getElementById('countdown').innerText = `00:${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`;
-    }, 1000);
+
+      // នៅពេលម៉ោងអស់ (ឈានចូលរង្វង់ 5 នាទីថ្មី) លោតបង្កើតទៀនថ្មីភ្លាម!
+      ensureCurrent5mCandleExists();
+
+      const m = Math.floor(rem / 60);
+      const s = rem % 60;
+      document.getElementById('countdown').innerText = `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+    setInterval(update5mCountdownAndRollover, 1000);
+    update5mCountdownAndRollover();
 
     // AI COUNCIL
     const aiModal = document.getElementById('ai-modal');
@@ -645,7 +706,6 @@
       document.getElementById('ai-scan-status').className = 'text-[9px] text-amber-400 font-num';
       document.getElementById('ai-round-badge').innerText = `ជុំទី ${roundCount}`;
 
-      // បញ្ជូនទៀន 60 ដើមចុងក្រោយពី Browser ទៅ Server ដើម្បីកុំឱ្យជាប់ US Block
       const recentCandles = candleData.slice(-60).map(c => ({ open: c.open, high: c.high, low: c.low, close: c.close, vol: c.volume }));
 
       try {
