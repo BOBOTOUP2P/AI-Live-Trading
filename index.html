@@ -35,6 +35,41 @@
     body.is-fullscreen #top-header, body.is-fullscreen #top-notification { display: none !important; }
     body.is-fullscreen #chart-wrapper { height: calc(100% - 64px) !important; }
     .timeframe-bar-locked { width: 100%; overflow: hidden !important; touch-action: none !important; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; }
+
+    /* =======================================================
+       កូនផ្ទាំងស្រមោល ចំណេញ/ខាត (POSITION TOOL HANDLES)
+       ======================================================= */
+    .pos-handle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #000000;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      touch-action: none;
+      cursor: ns-resize;
+      z-index: 35;
+      box-shadow: 0 0 6px rgba(0,0,0,0.8);
+    }
+    .pos-handle-entry {
+      cursor: move;
+      border-color: #00f0ff;
+      background: #00f0ff;
+    }
+    .pos-label-pill {
+      position: absolute;
+      transform: translateY(-50%);
+      font-family: 'Roboto', sans-serif;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 32;
+    }
   </style>
 </head>
 <body id="app-root" class="bg-black text-white h-screen flex flex-col justify-start max-w-md mx-auto relative select-none">
@@ -46,7 +81,6 @@
         <div class="flex items-center space-x-1.5">
           <span class="text-[13px] font-bold text-neutral-200 tracking-wide">XAUTUSDT</span>
           <span class="text-[9px] px-1 py-0.2 bg-neutral-800 text-neutral-400 rounded">Perp</span>
-          <!-- ស្លាកតូច BOBOTOU (Bybit) ថេរ -->
           <span id="data-source-badge" class="text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300">BOBOTOU (Connecting...)</span>
         </div>
         <div class="flex items-baseline space-x-2 mt-0.5">
@@ -70,7 +104,7 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">BOBOTOU 5m Live Engine • ចុចលើ Live ឬ AI ដើម្បីមើលវិភាគ...</span>
+      <span id="mini-council-banner" class="truncate">BOBOTOU 5m Live • ចុចរូបប៊ិច ✏️ ដើម្បីគូសផ្ទាំងចំណេញ/ខាត...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
@@ -95,7 +129,10 @@
     </div>
 
     <div class="flex items-center space-x-3 text-neutral-400">
-      <i class="fa-solid fa-pen text-[10px] hover:text-white cursor-pointer"></i>
+      <!-- ប៊ូតុងរូបប៊ិច: បើក/បិទឧបករណ៍គូសផ្ទាំង ចំណេញ/ខាត -->
+      <button id="btn-toggle-draw" class="p-1 rounded hover:text-white transition-colors" title="គូសផ្ទាំងចំណេញ/ខាត">
+        <i class="fa-solid fa-pen text-[11px]"></i>
+      </button>
       <div class="relative cursor-pointer"><i class="fa-solid fa-sliders text-[11px] hover:text-white"></i><span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full"></span></div>
       <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
         <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16"><path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" /></svg>
@@ -104,11 +141,27 @@
     </div>
   </div>
 
+  <!-- របារជ្រើសរើសប្រអប់ស្រមោល ចំណេញ/ខាត (បង្ហាញពេលចុចរូបប៊ិច ✏️) -->
+  <div id="position-toolbar" class="hidden bg-[#0e1218] border-b border-neutral-800 px-3 py-1.5 flex items-center justify-between text-[11px] z-30">
+    <div class="flex items-center space-x-2">
+      <button id="btn-add-long" class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold active:scale-95">
+        <i class="fa-solid fa-arrow-trend-up mr-1"></i>+ Long (ទិញ)
+      </button>
+      <button id="btn-add-short" class="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold active:scale-95">
+        <i class="fa-solid fa-arrow-trend-down mr-1"></i>+ Short (លក់)
+      </button>
+    </div>
+    <button id="btn-clear-pos" class="px-2 py-1 rounded-md bg-neutral-800 text-neutral-300 hover:text-white text-[10px]">
+      <i class="fa-solid fa-trash mr-1"></i>លុបចោល
+    </button>
+  </div>
+
   <!-- 4. CHART AREA -->
   <div class="relative w-full flex-1 bg-black overflow-hidden" id="chart-wrapper">
     <div class="watermark-bybit">BYBIT</div>
     <div id="crosshair-center-dot"></div>
 
+    <!-- Tooltip -->
     <div id="candle-tooltip" class="font-num">
       <div class="text-neutral-400 border-b border-neutral-800 pb-0.5 mb-1 text-[8.5px]" id="tip-time">--/--/-- --:--</div>
       <div class="space-y-0.5">
@@ -123,11 +176,38 @@
       </div>
     </div>
 
+    <!-- SVG Overlay Layer (High/Low + Running Line + ប្រអប់ស្រមោល ចំណេញ/ខាត) -->
     <svg id="chart-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20">
+      
+      <!-- ១. ប្រអប់ស្រមោល ចំណេញ (បៃតង) និង ខាត (ក្រហម) -->
+      <g id="trade-pos-svg" style="display: none;">
+        <!-- តំបន់ចំណេញ (Take Profit Shaded Green) -->
+        <rect id="pos-tp-rect" x="0" y="0" width="0" height="0" fill="rgba(0, 219, 132, 0.22)" stroke="#00db84" stroke-width="1" />
+        <!-- តំបន់ខាត (Stop Loss Shaded Red) -->
+        <rect id="pos-sl-rect" x="0" y="0" width="0" height="0" fill="rgba(255, 46, 86, 0.22)" stroke="#ff2e56" stroke-width="1" />
+        <!-- បន្ទាត់ Entry កណ្តាល -->
+        <line id="pos-entry-line" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="1.2" />
+      </g>
+
+      <!-- ២. ខ្សែរក្បាលដើរចុចៗ -->
       <line id="running-price-line" stroke="rgba(255, 255, 255, 0.85)" stroke-width="1" stroke-dasharray="3 3" />
       <g id="high-marker-group" style="display: none;"><line id="high-line" stroke="#ffffff" stroke-width="1" /><text id="high-text" fill="#ffffff" font-family="'Roboto', sans-serif" font-size="11" font-weight="500">--</text></g>
       <g id="low-marker-group" style="display: none;"><line id="low-line" stroke="#ffffff" stroke-width="1" /><text id="low-text" fill="#ffffff" font-family="'Roboto', sans-serif" font-size="11" font-weight="500">--</text></g>
     </svg>
+
+    <!-- HTML Labels & Interactive Drag Handles សម្រាប់ប្រអប់ស្រមោល ចំណេញ/ខាត -->
+    <div id="trade-pos-controls" class="absolute inset-0 pointer-events-none z-30" style="display: none;">
+      <!-- ស្លាកអក្សរ TP / Entry+PnL / SL -->
+      <div id="lbl-tp" class="pos-label-pill bg-[#00db84] text-black">TP: --</div>
+      <div id="lbl-entry" class="pos-label-pill bg-neutral-900/95 text-white border border-cyan-400/60">Entry: --</div>
+      <div id="lbl-sl" class="pos-label-pill bg-[#ff2e56] text-white">SL: --</div>
+
+      <!-- ចំណុចមូល ៤ សម្រាប់យកដៃចាប់អូសកែទីតាំងលើក្រាហ្វ -->
+      <div id="handle-tp" class="pos-handle" style="border-color: #00db84;" title="អូសកែ TP"></div>
+      <div id="handle-sl" class="pos-handle" style="border-color: #ff2e56;" title="អូសកែ SL"></div>
+      <div id="handle-entry" class="pos-handle pos-handle-entry" title="អូសរំកិលប្រអប់"></div>
+      <div id="handle-resize-right" class="pos-handle" style="background: #94a3b8; cursor: ew-resize;" title="អូសពង្រីកទទឹងប្រអប់"></div>
+    </div>
 
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
@@ -255,6 +335,12 @@
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
             រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារឡើងវិញដើម្បីធានាថាមិនខុសទិសដៅ។
           </div>
+
+          <!-- ប៊ូតុងបោះប្រអប់ស្រមោល ចំណេញ/ខាត របស់ AI ចូលក្នុងក្រាហ្វផ្ទាល់ -->
+          <button id="btn-plot-ai-pos" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform">
+            <i class="fa-solid fa-chart-area"></i>
+            <span>បោះប្រអប់ស្រមោល TP/SL ចូលក្រាហ្វ (Plot Box)</span>
+          </button>
         </div>
       </div>
     </div>
@@ -277,7 +363,17 @@
     let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
-    // មុខងារបង្ហាញស្លាក BOBOTOU (ឈ្មោះក្នុងវង់ក្រចក)
+    // ទិន្នន័យប្រអប់ស្រមោល ចំណេញ/ខាត (Long & Short Position Box)
+    let tradePos = {
+      active: false,
+      side: 'LONG',
+      startLogicalIdx: 0,
+      widthBars: 14,
+      entry: 0,
+      tp: 0,
+      sl: 0
+    };
+
     function setSourceBadge(sourceName, isOk = true) {
       const el = document.getElementById('data-source-badge');
       el.innerText = `BOBOTOU (${sourceName})`;
@@ -297,7 +393,7 @@
         horzLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
       },
       rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.08)', scaleMargins: { top: 0.12, bottom: 0.12 } },
-      timeScale: { visible: false, rightOffset: 6, barSpacing: 6 },
+      timeScale: { visible: false, rightOffset: 10, barSpacing: 6 },
       handleScroll: true,
       handleScale: true,
     });
@@ -356,7 +452,6 @@
       candleData.forEach(c => uniqueMap.set(c.time, c));
       candleData = Array.from(uniqueMap.values()).sort((a, b) => a.time - b.time);
 
-      // ធានាថាបង្គោលទៀនចុងក្រោយត្រូវនឹងពេលវេលា 5 នាទីបច្ចុប្បន្ន
       ensureCurrent5mCandleExists();
 
       candleSeries.setData(candleData);
@@ -371,24 +466,15 @@
       setSourceBadge(sourceName, true);
     }
 
-    // =========================================================================
-    // ប្រព័ន្ធបង្កើតបង្គោលទៀន 5 នាទីថ្មីដោយស្វ័យប្រវត្តិ (AUTO 5m ROLLOVER ENGINE)
-    // =========================================================================
     function ensureCurrent5mCandleExists() {
       if (candleData.length === 0) return;
       const now = Math.floor(Date.now() / 1000);
-      const currentBarTime = now - (now % 300); // ម៉ោងគត់នៃទៀន 5 នាទីបច្ចុប្បន្ន
+      const currentBarTime = now - (now % 300);
       const last = candleData[candleData.length - 1];
 
       if (currentBarTime > last.time) {
         const newBar = {
-          time: currentBarTime,
-          open: last.close,
-          high: last.close,
-          low: last.close,
-          close: last.close,
-          volume: 0,
-          turnover: 0
+          time: currentBarTime, open: last.close, high: last.close, low: last.close, close: last.close, volume: 0, turnover: 0
         };
         candleData.push(newBar);
         candleSeries.update(newBar);
@@ -397,7 +483,6 @@
       }
     }
 
-    // ១. ទាញ 5,000 ទៀនផ្ទាល់ពី Bybit ឬ Fallback
     async function load5000Candles() {
       let allList = [];
       let endTime = Date.now();
@@ -438,7 +523,6 @@
       }
     }
 
-    // ២. ទាញ TICKER STATS & អាប់ដេតតម្លៃលើបង្គោលទៀនចុងក្រោយរៀងរាល់ ៣ វិនាទី
     async function loadTickerStats() {
       try {
         let t = null;
@@ -465,7 +549,6 @@
           const livePrice = parseFloat(t.lastPrice);
           if (livePrice) {
             updateHeaderPrices(livePrice);
-            // អាប់ដេតបង្គោលទៀនបច្ចុប្បន្នជានិច្ច (ទោះជា WebSocket ស្ងាត់ក៏ដោយ)
             ensureCurrent5mCandleExists();
             if (candleData.length > 0) {
               const last = candleData[candleData.length - 1];
@@ -494,7 +577,6 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // ៣. WEBSOCKET LIVE + 20s PING HEARTBEAT
     function connectBybitWebSocket() {
       if (ws) ws.close();
       if (wsPingTimer) clearInterval(wsPingTimer);
@@ -521,12 +603,8 @@
           candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
 
           const lastIdx = candleData.length - 1;
-          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
-            candleData[lastIdx] = updatedCandle;
-          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
-            candleData.push(updatedCandle);
-            updateIndicators();
-          }
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) candleData[lastIdx] = updatedCandle;
+          else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) { candleData.push(updatedCandle); updateIndicators(); }
         }
       };
       ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
@@ -550,6 +628,191 @@
         else if (indName === 'SAR') { indSeries.sarDots.applyOptions({ visible: isActive }); }
       });
     });
+
+    // =========================================================================
+    // ប្រព័ន្ធ POSITION BOX (ស្រមោលបៃតង-ក្រហម ចំណេញ/ខាត លើបង្គោលទៀន)
+    // =========================================================================
+    const btnToggleDraw = document.getElementById('btn-toggle-draw');
+    const posToolbar = document.getElementById('position-toolbar');
+
+    btnToggleDraw.addEventListener('click', () => {
+      posToolbar.classList.toggle('hidden');
+      btnToggleDraw.classList.toggle('text-cyan-400');
+    });
+
+    function spawnPositionBox(side, customEntry, customTp, customSl) {
+      if (candleData.length === 0) return;
+      const lastPrice = candleData[candleData.length - 1].close;
+      const entry = customEntry ? parseFloat(customEntry) : lastPrice;
+      const spread = Math.max(5, lastPrice * 0.004); // គម្លាតល្មមស្អាត
+
+      tradePos.active = true;
+      tradePos.side = side;
+      tradePos.startLogicalIdx = Math.max(0, candleData.length - 8);
+      tradePos.widthBars = 14;
+      tradePos.entry = entry;
+
+      if (side === 'LONG') {
+        tradePos.tp = customTp ? parseFloat(customTp) : entry + spread * 2;
+        tradePos.sl = customSl ? parseFloat(customSl) : entry - spread;
+      } else {
+        tradePos.tp = customTp ? parseFloat(customTp) : entry - spread * 2;
+        tradePos.sl = customSl ? parseFloat(customSl) : entry + spread;
+      }
+    }
+
+    document.getElementById('btn-add-long').addEventListener('click', () => spawnPositionBox('LONG'));
+    document.getElementById('btn-add-short').addEventListener('click', () => spawnPositionBox('SHORT'));
+    document.getElementById('btn-clear-pos').addEventListener('click', () => { tradePos.active = false; });
+
+    // មុខងារអូសកែប្រអប់ TP / SL / Entry ដោយដៃលើអេក្រង់ (60FPS Touch/Mouse Drag)
+    let activeDragType = null;
+    function setupHandleDrag(el, type) {
+      const startDrag = (e) => {
+        e.stopPropagation();
+        if (e.cancelable) e.preventDefault();
+        activeDragType = type;
+        chart.applyOptions({ handleScroll: false, handleScale: false });
+      };
+      el.addEventListener('mousedown', startDrag);
+      el.addEventListener('touchstart', startDrag, { passive: false });
+    }
+
+    setupHandleDrag(document.getElementById('handle-tp'), 'tp');
+    setupHandleDrag(document.getElementById('handle-sl'), 'sl');
+    setupHandleDrag(document.getElementById('handle-entry'), 'entry');
+    setupHandleDrag(document.getElementById('handle-resize-right'), 'resize');
+
+    function handleGlobalMove(clientX, clientY) {
+      if (!activeDragType || !tradePos.active) return;
+      const rect = wrapper.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      const price = candleSeries.coordinateToPrice(y);
+      const logicalIdx = chart.timeScale().coordinateToLogical(x);
+
+      if (activeDragType === 'tp' && price !== null) {
+        if (tradePos.side === 'LONG') tradePos.tp = Math.max(tradePos.entry + 0.5, price);
+        else tradePos.tp = Math.min(tradePos.entry - 0.5, price);
+      } else if (activeDragType === 'sl' && price !== null) {
+        if (tradePos.side === 'LONG') tradePos.sl = Math.min(tradePos.entry - 0.5, price);
+        else tradePos.sl = Math.max(tradePos.entry + 0.5, price);
+      } else if (activeDragType === 'entry' && price !== null && logicalIdx !== null) {
+        const diff = price - tradePos.entry;
+        tradePos.entry = price;
+        tradePos.tp += diff;
+        tradePos.sl += diff;
+        tradePos.startLogicalIdx = logicalIdx;
+      } else if (activeDragType === 'resize' && logicalIdx !== null) {
+        tradePos.widthBars = Math.max(4, logicalIdx - tradePos.startLogicalIdx);
+      }
+    }
+
+    window.addEventListener('mousemove', (e) => handleGlobalMove(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+      if (activeDragType && e.touches[0]) handleGlobalMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    const endDrag = () => {
+      if (activeDragType) {
+        activeDragType = null;
+        chart.applyOptions({ handleScroll: true, handleScale: true });
+      }
+    };
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    // គូសប្រអប់ស្រមោល ចំណេញ/ខាត ក្នុង 60FPS Loop
+    function renderTradePositionBox() {
+      const svgGroup = document.getElementById('trade-pos-svg');
+      const ctrlGroup = document.getElementById('trade-pos-controls');
+
+      if (!tradePos.active || candleData.length === 0) {
+        svgGroup.style.display = 'none';
+        ctrlGroup.style.display = 'none';
+        return;
+      }
+
+      const x1 = chart.timeScale().logicalToCoordinate(tradePos.startLogicalIdx);
+      const x2 = chart.timeScale().logicalToCoordinate(tradePos.startLogicalIdx + tradePos.widthBars);
+      const yEntry = candleSeries.priceToCoordinate(tradePos.entry);
+      const yTp = candleSeries.priceToCoordinate(tradePos.tp);
+      const ySl = candleSeries.priceToCoordinate(tradePos.sl);
+
+      if (x1 === null || x2 === null || yEntry === null || yTp === null || ySl === null) {
+        svgGroup.style.display = 'none';
+        ctrlGroup.style.display = 'none';
+        return;
+      }
+
+      svgGroup.style.display = 'block';
+      ctrlGroup.style.display = 'block';
+
+      const boxX = Math.min(x1, x2);
+      const boxW = Math.max(36, Math.abs(x2 - x1));
+
+      // TP Rectangle (Green)
+      const tpRect = document.getElementById('pos-tp-rect');
+      tpRect.setAttribute('x', boxX);
+      tpRect.setAttribute('y', Math.min(yEntry, yTp));
+      tpRect.setAttribute('width', boxW);
+      tpRect.setAttribute('height', Math.max(1, Math.abs(yTp - yEntry)));
+
+      // SL Rectangle (Red)
+      const slRect = document.getElementById('pos-sl-rect');
+      slRect.setAttribute('x', boxX);
+      slRect.setAttribute('y', Math.min(yEntry, ySl));
+      slRect.setAttribute('width', boxW);
+      slRect.setAttribute('height', Math.max(1, Math.abs(ySl - yEntry)));
+
+      // Entry Line
+      const entryLine = document.getElementById('pos-entry-line');
+      entryLine.setAttribute('x1', boxX); entryLine.setAttribute('y1', yEntry);
+      entryLine.setAttribute('x2', boxX + boxW); entryLine.setAttribute('y2', yEntry);
+
+      // គណនា PnL ជាក់ស្តែង និង Risk/Reward
+      const currentPrice = candleData[candleData.length - 1].close;
+      const pnlDiff = tradePos.side === 'LONG' ? (currentPrice - tradePos.entry) : (tradePos.entry - currentPrice);
+      const pnlPct = (pnlDiff / tradePos.entry) * 100;
+      const reward = Math.abs(tradePos.tp - tradePos.entry);
+      const risk = Math.abs(tradePos.entry - tradePos.sl) || 1;
+      const rr = (reward / risk).toFixed(2);
+
+      const tpPct = ((Math.abs(tradePos.tp - tradePos.entry) / tradePos.entry) * 100).toFixed(2);
+      const slPct = ((Math.abs(tradePos.entry - tradePos.sl) / tradePos.entry) * 100).toFixed(2);
+
+      // Update Labels Position & Text
+      const lblTp = document.getElementById('lbl-tp');
+      lblTp.style.left = (boxX + 4) + 'px';
+      lblTp.style.top = yTp + 'px';
+      lblTp.innerText = `TP: ${tradePos.tp.toFixed(2)} (+${tpPct}%)`;
+
+      const lblSl = document.getElementById('lbl-sl');
+      lblSl.style.left = (boxX + 4) + 'px';
+      lblSl.style.top = ySl + 'px';
+      lblSl.innerText = `SL: ${tradePos.sl.toFixed(2)} (-${slPct}%)`;
+
+      const lblEntry = document.getElementById('lbl-entry');
+      lblEntry.style.left = (boxX + 4) + 'px';
+      lblEntry.style.top = yEntry + 'px';
+      const pnlSign = pnlDiff >= 0 ? '+' : '';
+      const pnlColorClass = pnlDiff >= 0 ? 'text-[#00db84]' : 'text-[#ff2e56]';
+      lblEntry.innerHTML = `${tradePos.side} <span class="${pnlColorClass}">${pnlSign}$${pnlDiff.toFixed(2)} (${pnlSign}${pnlPct.toFixed(2)}%)</span> | R:R ${rr}`;
+
+      // Update 4 Interactive Handles
+      const hTp = document.getElementById('handle-tp');
+      hTp.style.left = (boxX + boxW / 2) + 'px'; hTp.style.top = yTp + 'px';
+
+      const hSl = document.getElementById('handle-sl');
+      hSl.style.left = (boxX + boxW / 2) + 'px'; hSl.style.top = ySl + 'px';
+
+      const hEntry = document.getElementById('handle-entry');
+      hEntry.style.left = boxX + 'px'; hEntry.style.top = yEntry + 'px';
+
+      const hResize = document.getElementById('handle-resize-right');
+      hResize.style.left = (boxX + boxW) + 'px'; hResize.style.top = yEntry + 'px';
+    }
 
     // Dynamic High / Low Lines
     function getVisiblePeaks() {
@@ -599,6 +862,9 @@
           const t = document.getElementById('low-text'); t.setAttribute('x', lx + 29); t.setAttribute('y', ly + 4); t.textContent = lowCandle.low.toFixed(2);
         } else lowGroup.style.display = 'none';
       }
+
+      // Render ប្រអប់ស្រមោល ចំណេញ/ខាត
+      renderTradePositionBox();
     }
 
     function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
@@ -606,6 +872,7 @@
 
     // Crosshair & Tooltip
     chart.subscribeCrosshairMove(param => {
+      if (activeDragType) return;
       if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
         centerDot.style.display = 'block'; centerDot.style.left = param.point.x + 'px'; centerDot.style.top = param.point.y + 'px';
         const data = param.seriesData.get(candleSeries);
@@ -643,16 +910,11 @@
     });
     window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
 
-    // =========================================================================
-    // ៤. នាឡិកា 5 នាទីរាប់ថយក្រោយ + បង្កើតទៀនថ្មីភ្លាមៗពេលអស់ម៉ោង (00:00)
-    // =========================================================================
+    // 5m Countdown & Auto Rollover
     function update5mCountdownAndRollover() {
       const now = Math.floor(Date.now() / 1000);
       const rem = 300 - (now % 300);
-
-      // នៅពេលម៉ោងអស់ (ឈានចូលរង្វង់ 5 នាទីថ្មី) លោតបង្កើតទៀនថ្មីភ្លាម!
       ensureCurrent5mCandleExists();
-
       const m = Math.floor(rem / 60);
       const s = rem % 60;
       document.getElementById('countdown').innerText = `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -695,6 +957,14 @@
         btn.classList.add('ai-node-selected');
         displaySelectedAiDetail(btn.getAttribute('data-ai'));
       });
+    });
+
+    // បោះប្រអប់ TP/SL របស់ AI ចូលក្រាហ្វផ្ទាល់
+    document.getElementById('btn-plot-ai-pos').addEventListener('click', () => {
+      if (!prevConsensus) return;
+      const side = prevConsensus.signal === 'SELL' ? 'SHORT' : 'LONG';
+      spawnPositionBox(side, prevConsensus.entry, prevConsensus.tp, prevConsensus.sl);
+      aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
     });
 
     async function runAiCouncilCycle() {
@@ -762,7 +1032,7 @@
             compBox.innerHTML = `⚠️ <b>ការប្រែប្រួលទិសដៅ (Updated):</b> ជុំមុន AI ឱ្យ <b>${prevConsensus.signal}</b> តែជុំនេះទីផ្សារផ្លាស់ប្តូរមកជា <b>${c.signal}</b> វិញ។`;
           }
 
-          prevConsensus = { signal: c.signal, entry: c.entry };
+          prevConsensus = { signal: c.signal, entry: c.entry, tp: c.tp, sl: c.sl };
           document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): ${c.signal} | Entry $${c.entry} | TP $${c.tp}`;
           document.getElementById('ai-scan-status').innerText = `● រួចរាល់ (${new Date().toLocaleTimeString()})`;
           document.getElementById('ai-scan-status').className = 'text-[9px] text-emerald-400 font-num';
