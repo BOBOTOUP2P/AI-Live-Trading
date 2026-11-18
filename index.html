@@ -3,186 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - 4-AI Council Engine</title>
+  <title>Bybit Live - XAUTUSDT 5m Engine</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- TradingView Engine -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      font-variant-numeric: normal !important;
-    }
-    
-    body {
-      font-family: 'Inter', 'Kantumruy Pro', -apple-system, sans-serif;
-      background-color: #000000;
-      color: #ffffff;
-      overflow: hidden;
-      touch-action: pan-y;
-    }
-
-    .font-num {
-      font-family: 'Roboto', 'Inter', -apple-system, sans-serif;
-      font-feature-settings: "zero" 0;
-    }
-
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-variant-numeric: normal !important; }
+    body { font-family: 'Inter', 'Kantumruy Pro', -apple-system, sans-serif; background-color: #000000; color: #ffffff; overflow: hidden; touch-action: pan-y; }
+    .font-num { font-family: 'Roboto', 'Inter', -apple-system, sans-serif; font-feature-settings: "zero" 0; }
     .c-up { color: #00f0ff; }
     .c-down { color: #ff2e56; }
-
-    .watermark-bybit {
-      position: absolute;
-      top: 55%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 64px;
-      font-weight: 800;
-      color: rgba(255, 255, 255, 0.04);
-      letter-spacing: 6px;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .live-price-badge {
-      position: absolute;
-      right: 0;
-      transform: translateY(-50%);
-      background: #000000;
-      border: 1px solid #5a6472;
-      border-right: none;
-      border-radius: 3px 0 0 3px;
-      padding: 2px 6px;
-      font-family: 'Roboto', -apple-system, sans-serif;
-      font-size: 11px;
-      line-height: 1.15;
-      text-align: right;
-      z-index: 25;
-      pointer-events: none;
-    }
-
-    #crosshair-center-dot {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background-color: #ffffff;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 40;
-      display: none;
-      box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
-    }
-
-    .blinking-dot {
-      width: 3px;
-      height: 3px;
-      background-color: #00db84;
-      border-radius: 50%;
-      display: inline-block;
-      box-shadow: 0 0 3px #00db84;
-      animation: slowBlink 2.2s infinite ease-in-out;
-    }
-
-    @keyframes slowBlink {
-      0%, 100% { opacity: 0.25; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 2px #00db84); }
-    }
-
-    .ai-orbit-spinner {
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      border: 1.2px solid transparent;
-      border-top-color: #00f0ff;
-      border-right-color: rgba(0, 240, 255, 0.4);
-      animation: spinOrbit 2.4s linear infinite;
-    }
-
-    @keyframes spinOrbit {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    #candle-tooltip {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      z-index: 50;
-      background: rgba(18, 20, 24, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
-      border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 9px;
-      line-height: 1.25;
-      pointer-events: none;
-      display: none;
-      width: 130px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
-    /* AI MODAL & NEURAL TREE FLOW */
-    #ai-modal {
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .ai-node-selected {
-      border-color: #00f0ff !important;
-      background: rgba(0, 240, 255, 0.12) !important;
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
-    }
-
-    .neural-line-anim {
-      stroke-dasharray: 4, 4;
-      animation: dashFlow 1.4s linear infinite;
-    }
-
-    @keyframes dashFlow {
-      from { stroke-dashoffset: 16; }
-      to { stroke-dashoffset: 0; }
-    }
-
-    .glass-box {
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      backdrop-filter: blur(12px);
-    }
-
-    body.is-fullscreen {
-      max-width: 100vw !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      height: 100dvh !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    body.is-fullscreen #top-header,
-    body.is-fullscreen #top-notification {
-      display: none !important;
-    }
-
-    body.is-fullscreen #chart-wrapper {
-      height: calc(100% - 64px) !important;
-    }
-
-    .timeframe-bar-locked {
-      width: 100%;
-      overflow: hidden !important;
-      touch-action: none !important;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-left: 12px;
-      padding-right: 12px;
-    }
+    .watermark-bybit { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 800; color: rgba(255, 255, 255, 0.04); letter-spacing: 6px; pointer-events: none; z-index: 1; }
+    .live-price-badge { position: absolute; right: 0; transform: translateY(-50%); background: #000000; border: 1px solid #5a6472; border-right: none; border-radius: 3px 0 0 3px; padding: 2px 6px; font-family: 'Roboto', -apple-system, sans-serif; font-size: 11px; line-height: 1.15; text-align: right; z-index: 25; pointer-events: none; }
+    #crosshair-center-dot { position: absolute; width: 3px; height: 3px; background-color: #ffffff; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 40; display: none; box-shadow: 0 0 2px rgba(255, 255, 255, 0.8); }
+    .blinking-dot { width: 3px; height: 3px; background-color: #00db84; border-radius: 50%; display: inline-block; box-shadow: 0 0 3px #00db84; animation: slowBlink 2.2s infinite ease-in-out; }
+    @keyframes slowBlink { 0%, 100% { opacity: 0.25; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 2px #00db84); } }
+    .ai-orbit-spinner { position: absolute; inset: -3px; border-radius: 50%; border: 1.2px solid transparent; border-top-color: #00f0ff; border-right-color: rgba(0, 240, 255, 0.4); animation: spinOrbit 2.4s linear infinite; }
+    @keyframes spinOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    #candle-tooltip { position: absolute; top: 8px; left: 8px; z-index: 50; background: rgba(18, 20, 24, 0.88); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(6px); border-radius: 4px; padding: 4px 6px; font-size: 9px; line-height: 1.25; pointer-events: none; display: none; width: 130px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    #ai-modal { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .ai-node-selected { border-color: #00f0ff !important; background: rgba(0, 240, 255, 0.12) !important; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); }
+    .neural-line-anim { stroke-dasharray: 4, 4; animation: dashFlow 1.4s linear infinite; }
+    @keyframes dashFlow { from { stroke-dashoffset: 16; } to { stroke-dashoffset: 0; } }
+    .glass-box { background: rgba(15, 23, 42, 0.78); border: 1px solid rgba(255, 255, 255, 0.09); backdrop-filter: blur(12px); }
+    body.is-fullscreen { max-width: 100vw !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; padding: 0 !important; margin: 0 !important; }
+    body.is-fullscreen #top-header, body.is-fullscreen #top-notification { display: none !important; }
+    body.is-fullscreen #chart-wrapper { height: calc(100% - 64px) !important; }
+    .timeframe-bar-locked { width: 100%; overflow: hidden !important; touch-action: none !important; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; }
   </style>
 </head>
 <body id="app-root" class="bg-black text-white h-screen flex flex-col justify-start max-w-md mx-auto relative select-none">
@@ -194,6 +46,7 @@
         <div class="flex items-center space-x-1.5">
           <span class="text-[13px] font-bold text-neutral-200 tracking-wide">XAUTUSDT</span>
           <span class="text-[9px] px-1 py-0.2 bg-neutral-800 text-neutral-400 rounded">Perp</span>
+          <span id="data-source-badge" class="text-[8px] px-1 rounded bg-cyan-500/20 text-cyan-300">Connecting...</span>
         </div>
         <div class="flex items-baseline space-x-2 mt-0.5">
           <span id="header-price" class="text-3xl font-bold c-up font-num tracking-tight">--.--</span>
@@ -205,18 +58,9 @@
       </div>
 
       <div class="text-[11px] space-y-0.5 pt-0.5 text-right font-num">
-        <div class="flex justify-between space-x-3">
-          <span class="text-neutral-500">24h High</span>
-          <span id="stat-high" class="text-neutral-200">--.--</span>
-        </div>
-        <div class="flex justify-between space-x-3">
-          <span class="text-neutral-500">24h Low</span>
-          <span id="stat-low" class="text-neutral-200">--.--</span>
-        </div>
-        <div class="flex justify-between space-x-3">
-          <span class="text-neutral-500">24h Turnover</span>
-          <span id="stat-turnover" class="text-neutral-200">--M</span>
-        </div>
+        <div class="flex justify-between space-x-3"><span class="text-neutral-500">24h High</span><span id="stat-high" class="text-neutral-200">--.--</span></div>
+        <div class="flex justify-between space-x-3"><span class="text-neutral-500">24h Low</span><span id="stat-low" class="text-neutral-200">--.--</span></div>
+        <div class="flex justify-between space-x-3"><span class="text-neutral-500">24h Turnover</span><span id="stat-turnover" class="text-neutral-200">--M</span></div>
       </div>
     </div>
   </header>
@@ -225,11 +69,9 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">ក្រុម AI ទាំង ៤ កំពុងរង់ចាំវិភាគរាល់ 2:29 នាទី...</span>
+      <span id="mini-council-banner" class="truncate">កំពុងភ្ជាប់ទិន្នន័យផ្សាយផ្ទាល់ XAUTUSDT...</span>
     </div>
-    <button class="text-neutral-500 hover:text-white pl-2">
-      <i class="fa-solid fa-xmark text-xs"></i>
-    </button>
+    <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
 
   <!-- 3. TIMEFRAME BAR -->
@@ -237,14 +79,10 @@
     <div class="flex items-center space-x-3.5">
       <span class="text-white font-bold cursor-pointer text-xs">5m</span>
       <span class="text-neutral-800 text-[10px]">|</span>
-      
-      <!-- ចុចលើ Live ដើម្បីបើកបណ្ដុំវិភាគ AI -->
       <div id="btn-trigger-live" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-80 active:scale-95 transition-transform">
         <span class="blinking-dot"></span>
         <span class="text-white font-semibold text-[11px]">Live</span>
       </div>
-
-      <!-- ចុចលើរូប AI ដើម្បីបើកបណ្ដុំវិភាគ AI -->
       <div id="btn-trigger-ai" class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-1 hover:opacity-80 active:scale-95 transition-transform">
         <div class="ai-orbit-spinner"></div>
         <svg class="w-3 h-3 text-[#00f0ff] fill-current" viewBox="0 0 24 24">
@@ -255,20 +93,12 @@
       </div>
     </div>
 
-    <!-- Right Tool Icons -->
     <div class="flex items-center space-x-3 text-neutral-400">
       <i class="fa-solid fa-pen text-[10px] hover:text-white cursor-pointer"></i>
-      <div class="relative cursor-pointer">
-        <i class="fa-solid fa-sliders text-[11px] hover:text-white"></i>
-        <span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
-      </div>
+      <div class="relative cursor-pointer"><i class="fa-solid fa-sliders text-[11px] hover:text-white"></i><span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full"></span></div>
       <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
-        <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16">
-          <path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" />
-        </svg>
-        <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16">
-          <path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" />
-        </svg>
+        <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16"><path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" /></svg>
+        <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16"><path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" /></svg>
       </button>
     </div>
   </div>
@@ -278,7 +108,6 @@
     <div class="watermark-bybit">BYBIT</div>
     <div id="crosshair-center-dot"></div>
 
-    <!-- Tooltip -->
     <div id="candle-tooltip" class="font-num">
       <div class="text-neutral-400 border-b border-neutral-800 pb-0.5 mb-1 text-[8.5px]" id="tip-time">--/--/-- --:--</div>
       <div class="space-y-0.5">
@@ -293,17 +122,10 @@
       </div>
     </div>
 
-    <!-- Overlay SVG -->
     <svg id="chart-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20">
       <line id="running-price-line" stroke="rgba(255, 255, 255, 0.85)" stroke-width="1" stroke-dasharray="3 3" />
-      <g id="high-marker-group" style="display: none;">
-        <line id="high-line" stroke="#ffffff" stroke-width="1" />
-        <text id="high-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
-      </g>
-      <g id="low-marker-group" style="display: none;">
-        <line id="low-line" stroke="#ffffff" stroke-width="1" />
-        <text id="low-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
-      </g>
+      <g id="high-marker-group" style="display: none;"><line id="high-line" stroke="#ffffff" stroke-width="1" /><text id="high-text" fill="#ffffff" font-family="'Roboto', sans-serif" font-size="11" font-weight="500">--</text></g>
+      <g id="low-marker-group" style="display: none;"><line id="low-line" stroke="#ffffff" stroke-width="1" /><text id="low-text" fill="#ffffff" font-family="'Roboto', sans-serif" font-size="11" font-weight="500">--</text></g>
     </svg>
 
     <div id="live-badge" class="live-price-badge">
@@ -326,18 +148,13 @@
     <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
-  <!-- =========================================================================
-       ៦. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (4 AI COUNCIL + 2:29 AUTO VERIFICATION)
-       ========================================================================= -->
+  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» -->
   <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
     <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
-      <!-- Modal Header + នាឡិការាប់ថយក្រោយ 2:29 នាទី -->
       <div class="px-4 pt-3 pb-2.5 border-b border-neutral-800/80 flex items-center justify-between bg-[#0f131b]">
         <div class="flex items-center space-x-2">
-          <div class="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/40 text-cyan-400 text-xs">
-            <i class="fa-solid fa-brain"></i>
-          </div>
+          <div class="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/40 text-cyan-400 text-xs"><i class="fa-solid fa-brain"></i></div>
           <div>
             <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
               <span>បណ្ដុំវិភាគដោយ AI</span>
@@ -350,43 +167,19 @@
           </div>
         </div>
         <div class="flex items-center space-x-2">
-          <button id="btn-force-scan" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/40 text-[10px] text-cyan-300 font-semibold active:scale-95" title="វិភាគឡើងវិញឥឡូវ">
-            <i class="fa-solid fa-rotate mr-1"></i>ស្កេនភ្លាម
-          </button>
-          <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <button id="btn-force-scan" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/40 text-[10px] text-cyan-300 font-semibold active:scale-95"><i class="fa-solid fa-rotate mr-1"></i>ស្កេនភ្លាម</button>
+          <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
 
-      <!-- Scrollable Modal Body -->
       <div class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1 relative">
-        
-        <!-- ១. ប៊ូតុង AI ទាំង ៤ ជួរផ្ដេក (Gemini, Nemotron, GPT-120B, Qwen 3.8) -->
         <div class="grid grid-cols-4 gap-1.5 pt-0.5 relative z-10" id="ai-nodes-container">
-          <!-- Node 1: Gemini -->
-          <button data-ai="gemini" class="ai-node ai-node-selected py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
-            <div class="text-[10px] font-bold text-white truncate">Gemini</div>
-            <div id="badge-node-gemini" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
-          </button>
-          <!-- Node 2: Nemotron 550B -->
-          <button data-ai="nemotron" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
-            <div class="text-[10px] font-bold text-white truncate">Nemotron</div>
-            <div id="badge-node-nemotron" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
-          </button>
-          <!-- Node 3: GPT-120B -->
-          <button data-ai="gpt120b" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
-            <div class="text-[10px] font-bold text-white truncate">GPT-120B</div>
-            <div id="badge-node-gpt120b" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
-          </button>
-          <!-- Node 4: Qwen 3.8 -->
-          <button data-ai="qwen" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
-            <div class="text-[10px] font-bold text-white truncate">Qwen 3.8</div>
-            <div id="badge-node-qwen" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
-          </button>
+          <button data-ai="gemini" class="ai-node ai-node-selected py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all"><div class="text-[10px] font-bold text-white truncate">Gemini</div><div id="badge-node-gemini" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div></button>
+          <button data-ai="nemotron" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all"><div class="text-[10px] font-bold text-white truncate">Nemotron</div><div id="badge-node-nemotron" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div></button>
+          <button data-ai="gpt120b" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all"><div class="text-[10px] font-bold text-white truncate">GPT-120B</div><div id="badge-node-gpt120b" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div></button>
+          <button data-ai="qwen" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all"><div class="text-[10px] font-bold text-white truncate">Qwen 3.8</div><div id="badge-node-qwen" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div></button>
         </div>
 
-        <!-- ២. ខ្សែរមែកធាង ៤ ខ្សែរ បាញ់ចេញពីប៊ូតុងទាំង ៤ ចូលមកប្រអប់ធំ Chart -->
         <div class="h-9 w-full relative">
           <svg class="w-full h-full" viewBox="0 0 360 36" fill="none">
             <path d="M 45 0 L 45 14 Q 45 32 180 34" stroke="#00f0ff" stroke-width="1.5" class="neural-line-anim" />
@@ -397,46 +190,29 @@
           </svg>
         </div>
 
-        <!-- ៣. ប្រអប់ធំឆាត (បង្ហាញការវិភាគរបស់ AI ទាំង ៤ + Mini Wave Chart) -->
         <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-layer-group"></i>
-              <span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (5m Chart)</span>
-            </span>
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (5m Chart)</span></span>
             <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
           </div>
 
-          <!-- ក្រាហ្វិក Mini AI Prediction Wave -->
           <div class="w-full h-24 bg-black/70 rounded-xl relative overflow-hidden p-1.5 border border-neutral-800/80">
             <svg class="w-full h-full" viewBox="0 0 320 90" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="aiWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <line x1="0" y1="25" x2="320" y2="25" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              <line x1="0" y1="50" x2="320" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              <line x1="0" y1="75" x2="320" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              <path id="ai-wave-area" d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15 L 320 90 L 0 90 Z" fill="url(#aiWaveGrad)"/>
-              <path id="ai-wave-line" d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15" fill="none" stroke="#00f0ff" stroke-width="2"/>
-              <circle cx="230" cy="35" r="3.5" fill="#00db84"/>
-              <text x="200" y="26" fill="#00db84" font-size="8" font-weight="bold">ENTRY</text>
-              <circle cx="316" cy="15" r="3.5" fill="#00f0ff"/>
-              <text x="285" y="12" fill="#00f0ff" font-size="8" font-weight="bold">TP</text>
+              <defs><linearGradient id="aiWaveGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/><stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/></linearGradient></defs>
+              <line x1="0" y1="25" x2="320" y2="25" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><line x1="0" y1="50" x2="320" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><line x1="0" y1="75" x2="320" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <path d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15 L 320 90 L 0 90 Z" fill="url(#aiWaveGrad)"/>
+              <path d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15" fill="none" stroke="#00f0ff" stroke-width="2"/>
+              <circle cx="230" cy="35" r="3.5" fill="#00db84"/><text x="200" y="26" fill="#00db84" font-size="8" font-weight="bold">ENTRY</text>
+              <circle cx="316" cy="15" r="3.5" fill="#00f0ff"/><text x="285" y="12" fill="#00f0ff" font-size="8" font-weight="bold">TP</text>
             </svg>
           </div>
 
-          <!-- ប្រអប់អានមតិ AI ដែលបានជ្រើសរើស ឬមើលទាំង ៤ -->
           <div class="bg-black/60 rounded-xl p-2.5 border border-neutral-800 space-y-1.5">
             <div class="flex justify-between items-center text-[10px]">
               <span id="selected-ai-name" class="font-bold text-cyan-300">🤖 Gemini 3.5 Flash-Lite:</span>
               <span id="selected-ai-vote" class="font-bold font-num px-1.5 py-0.5 rounded bg-neutral-800 text-white">--</span>
             </div>
-            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">
-              កំពុងទាញយកទិន្នន័យទៀន 5m ពិតប្រាកដពី Bybit ដើម្បីឱ្យក្រុម AI ទាំង ៤ វិភាគ...
-            </p>
+            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">កំពុងទាញយកទិន្នន័យទៀន 5m ពិតប្រាកដពី Bybit ដើម្បីឱ្យក្រុម AI ទាំង ៤ វិភាគ...</p>
             <div class="grid grid-cols-3 gap-1 pt-1 border-t border-neutral-800/70 text-[9.5px] font-num text-neutral-400 text-center">
               <div>Entry: <span id="ind-entry" class="text-white">--</span></div>
               <div>TP: <span id="ind-tp" class="text-cyan-400">--</span></div>
@@ -445,7 +221,6 @@
           </div>
         </div>
 
-        <!-- ៤. ខ្សែរមែកធាង ១ ខ្សែរ ចុះពីប្រអប់ធំ មកប្រអប់វាយតម្លៃសរុបខួរក្បាល AI -->
         <div class="h-8 w-full relative">
           <svg class="w-full h-full" viewBox="0 0 360 32" fill="none">
             <line x1="180" y1="0" x2="180" y2="30" stroke="#00f0ff" stroke-width="2" class="neural-line-anim" />
@@ -453,28 +228,16 @@
           </svg>
         </div>
 
-        <!-- ៥. ផ្ទាំងវាយតម្លៃសរុបនៃខួរក្បាល AI ទាំង ៤ (FINAL BRAIN CONSENSUS & 2-ROUND VERIFICATION) -->
         <div class="glass-box rounded-2xl p-3.5 border border-cyan-500/40 space-y-3 shadow-2xl mb-3">
-          
-          <!-- ស្លាកបញ្ជាក់ការផ្ទៀងផ្ទាត់ ២ ជុំ -->
           <div class="flex items-center justify-between text-[10px]">
-            <span class="text-neutral-300 font-bold flex items-center gap-1.5">
-              <i class="fa-solid fa-microchip text-cyan-400"></i>
-              <span>សេចក្ដីសម្រេចសរុបខួរក្បាល AI (Consensus)</span>
-            </span>
-            <span id="verify-status-pill" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-              ជុំទី 1: កំពុងវិភាគ
-            </span>
+            <span class="text-neutral-300 font-bold flex items-center gap-1.5"><i class="fa-solid fa-microchip text-cyan-400"></i><span>សេចក្ដីសម្រេចសរុបខួរក្បាល AI (Consensus)</span></span>
+            <span id="verify-status-pill" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">ជុំទី 1: កំពុងវិភាគ</span>
           </div>
 
-          <!-- Signal សរុប & សំឡេងឆ្នោត (e.g. 4/4 BUY) -->
           <div class="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-cyan-950/50 via-neutral-900 to-neutral-900 border border-cyan-500/30">
             <div>
               <span class="text-[9.5px] text-neutral-400 block">សំឡេងឯកភាព (<span id="consensus-votes" class="text-white font-bold font-num">0/4 AI</span>)</span>
-              <div id="master-signal-text" class="text-base font-bold c-up flex items-center gap-1.5 mt-0.5">
-                <i class="fa-solid fa-circle-notch fa-spin text-xs"></i>
-                <span>WAIT...</span>
-              </div>
+              <div id="master-signal-text" class="text-base font-bold c-up flex items-center gap-1.5 mt-0.5"><i class="fa-solid fa-circle-notch fa-spin text-xs"></i><span>WAIT...</span></div>
             </div>
             <div class="text-right">
               <span class="text-[9.5px] text-neutral-400 block">ទំនុកចិត្តរួម</span>
@@ -482,29 +245,16 @@
             </div>
           </div>
 
-          <!-- តម្លៃ Entry / TP / SL មធ្យមភាគពី AI ទាំង ៤ -->
           <div class="grid grid-cols-3 gap-2 font-num text-center">
-            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block">ចូលផ្សារ (Entry)</span>
-              <span id="master-entry" class="text-xs font-bold text-white">--.--</span>
-            </div>
-            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block">យកចំណេញ (TP)</span>
-              <span id="master-tp" class="text-xs font-bold text-cyan-400">--.--</span>
-            </div>
-            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block">កាត់ខាត (SL)</span>
-              <span id="master-sl" class="text-xs font-bold text-rose-400">--.--</span>
-            </div>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">ចូលផ្សារ (Entry)</span><span id="master-entry" class="text-xs font-bold text-white">--.--</span></div>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">យកចំណេញ (TP)</span><span id="master-tp" class="text-xs font-bold text-cyan-400">--.--</span></div>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">កាត់ខាត (SL)</span><span id="master-sl" class="text-xs font-bold text-rose-400">--.--</span></div>
           </div>
 
-          <!-- របាយការណ៍ប្រៀបធៀបជុំទី ១ និងជុំទី ២ -->
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
             រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារឡើងវិញដើម្បីធានាថាមិនខុសទិសដៅ។
           </div>
-
         </div>
-
       </div>
     </div>
   </div>
@@ -523,9 +273,9 @@
     const currentSymbol = 'XAUTUSDT';
     let candleData = [];
     let ws = null;
+    let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
-    // 1. Chart Engine
     const chart = LightweightCharts.createChart(container, {
       width: wrapper.clientWidth,
       height: wrapper.clientHeight,
@@ -546,7 +296,6 @@
       upColor: '#00f0ff', downColor: '#ff2e56', borderVisible: false, wickUpColor: '#00f0ff', wickDownColor: '#ff2e56', priceLineVisible: false,
     });
 
-    // Indicators
     const indSeries = {
       ma7: chart.addLineSeries({ color: '#f0b90b', lineWidth: 1.5, visible: false, priceLineVisible: false }),
       ma25: chart.addLineSeries({ color: '#e040fb', lineWidth: 1.5, visible: false, priceLineVisible: false }),
@@ -586,33 +335,99 @@
       indSeries.sarDots.setData(candleData.map((d, idx) => ({ time: d.time, value: idx % 2 === 0 ? d.low * 0.998 : d.high * 1.002 })));
     }
 
+    function applyLoadedCandles(rawReversed, sourceName) {
+      candleData = rawReversed.map(item => ({
+        time: Math.floor(parseInt(item[0]) / 1000),
+        open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4]),
+        volume: parseFloat(item[5] || 0), turnover: parseFloat(item[6] || 0),
+      }));
+
+      // លុបថ្ងៃម៉ោងជាន់គ្នានិងតម្រៀបតាមលំដាប់
+      const uniqueMap = new Map();
+      candleData.forEach(c => uniqueMap.set(c.time, c));
+      candleData = Array.from(uniqueMap.values()).sort((a, b) => a.time - b.time);
+
+      candleSeries.setData(candleData);
+      updateIndicators();
+      chart.timeScale().fitContent();
+      candleVolumeMap.clear();
+      candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
+
+      const last = candleData[candleData.length - 1];
+      if (last) updateHeaderPrices(last.close);
+
+      document.getElementById('data-source-badge').innerText = sourceName;
+      document.getElementById('data-source-badge').className = "text-[8px] px-1 rounded bg-emerald-500/20 text-emerald-300";
+    }
+
+    // =========================================================================
+    // ១. ទាញទៀនផ្ទាល់ពី BYBIT តាមរយៈ Browser នៅកម្ពុជា (ជៀស Block IP អាមេរិក!)
+    // =========================================================================
     async function load5000Candles() {
+      let allList = [];
+      let endTime = Date.now();
+      let bybitDirectSuccess = false;
+
+      // សាកល្បងទាញ 5,000 ទៀនផ្ទាល់ពី Bybit ដោយ Browser
+      try {
+        for (let i = 0; i < 5; i++) {
+          const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${currentSymbol}&interval=5&limit=1000&end=${endTime}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Blocked");
+          const json = await res.json();
+          if (json.retCode === 0 && json.result?.list?.length > 0) {
+            const chunk = json.result.list;
+            allList = allList.concat(chunk);
+            endTime = parseInt(chunk[chunk.length - 1][0]) - 1;
+            bybitDirectSuccess = true;
+            if (chunk.length < 1000) break;
+          } else break;
+        }
+      } catch (e) {
+        bybitDirectSuccess = false;
+      }
+
+      if (bybitDirectSuccess && allList.length > 0) {
+        applyLoadedCandles(allList.reverse(), "Bybit Direct");
+        return;
+      }
+
+      // បើ Browser ទាញផ្ទាល់មានបញ្ហា ទាញតាម Server Fallback (Gate.io / OKX)
       try {
         const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=5`);
         const json = await res.json();
-        if (json.retCode === 0 && json.result.list) {
-          candleData = json.result.list.reverse().map(item => ({
-            time: Math.floor(parseInt(item[0]) / 1000),
-            open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4]),
-            volume: parseFloat(item[5]), turnover: parseFloat(item[6]),
-          }));
-          candleSeries.setData(candleData);
-          updateIndicators();
-          chart.timeScale().fitContent();
-          candleVolumeMap.clear();
-          candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
-          const last = candleData[candleData.length - 1];
-          if (last) updateHeaderPrices(last.close);
+        if (json.retCode === 0 && json.result?.list?.length > 0) {
+          applyLoadedCandles(json.result.list.reverse(), json.source || "Server Proxy");
         }
-      } catch (e) {}
+      } catch (e) {
+        document.getElementById('data-source-badge').innerText = "Retry...";
+      }
     }
 
+    // =========================================================================
+    // ២. ទាញ TICKER STATS ផ្ទាល់ពី Bybit នៅកម្ពុជា (Fallback តាម Server)
+    // =========================================================================
     async function loadTickerStats() {
       try {
-        const res = await fetch(`/api/ticker?symbol=${currentSymbol}`);
-        const json = await res.json();
-        if (json.retCode === 0 && json.result.list[0]) {
-          const t = json.result.list[0];
+        let t = null;
+        try {
+          const bRes = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${currentSymbol}`);
+          if (bRes.ok) {
+            const bJson = await bRes.json();
+            if (bJson.retCode === 0 && bJson.result?.list?.[0]) t = bJson.result.list[0];
+          }
+        } catch (err) {}
+
+        if (!t) {
+          const sRes = await fetch(`/api/ticker?symbol=${currentSymbol}`);
+          if (sRes.ok) {
+            const sJson = await sRes.json();
+            if (sJson.retCode === 0 && sJson.result?.list?.[0]) t = sJson.result.list[0];
+          }
+        }
+
+        if (t) {
+          if (t.lastPrice) updateHeaderPrices(parseFloat(t.lastPrice));
           document.getElementById('stat-high').innerText = parseFloat(t.highPrice24h).toFixed(2);
           document.getElementById('stat-low').innerText = parseFloat(t.lowPrice24h).toFixed(2);
           document.getElementById('stat-turnover').innerText = (parseFloat(t.turnover24h) / 1e6).toFixed(2) + 'M';
@@ -631,10 +446,21 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
+    // =========================================================================
+    // ៣. WEBSOCKET LIVE + 20s PING HEARTBEAT (មិនឱ្យផ្តាច់ Connection)
+    // =========================================================================
     function connectBybitWebSocket() {
       if (ws) ws.close();
+      if (wsPingTimer) clearInterval(wsPingTimer);
+
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
-      ws.onopen = () => ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
+        // បាញ់ Ping រៀងរាល់ 20 វិនាទីដើម្បីរក្សាខ្សែរ Live រហូត
+        wsPingTimer = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ op: 'ping' }));
+        }, 20000);
+      };
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.topic && msg.topic.startsWith('kline') && msg.data) {
@@ -655,8 +481,10 @@
       ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
     }
 
-    load5000Candles(); loadTickerStats(); connectBybitWebSocket();
-    setInterval(loadTickerStats, 5000);
+    load5000Candles();
+    loadTickerStats();
+    connectBybitWebSocket();
+    setInterval(loadTickerStats, 3000); // ធ្វើបច្ចុប្បន្នភាពរាល់ 3 វិនាទីជាបន្ថែម
 
     // Indicators Toggle
     document.querySelectorAll('.indicator-tab').forEach(tab => {
@@ -771,15 +599,13 @@
       document.getElementById('countdown').innerText = `00:${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`;
     }, 1000);
 
-    // =========================================================================
-    // ៧. ប្រព័ន្ធ AI COUNCIL ស្វ័យប្រវត្តិរាល់ 2:29 នាទីម្ដង (149 វិនាទី) & ផ្ទៀងផ្ទាត់ ២ ជុំ
-    // =========================================================================
+    // AI COUNCIL
     const aiModal = document.getElementById('ai-modal');
     document.getElementById('btn-trigger-live').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-trigger-ai').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-close-ai').addEventListener('click', () => aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'));
 
-    const CYCLE_SECONDS = 149; // 2 នាទី 29 វិនាទី = 149 វិនាទី
+    const CYCLE_SECONDS = 149;
     let cycleRemaining = CYCLE_SECONDS;
     let roundCount = 0;
     let prevConsensus = null;
@@ -787,19 +613,15 @@
     let selectedAiKey = 'gemini';
     let isScanningAI = false;
 
-    // បង្ហាញព័ត៌មាន AI នីមួយៗពេលចុចលើប៊ូតុងទាំង ៤
     function displaySelectedAiDetail(key) {
       selectedAiKey = key;
       const m = latestModelsMap[key];
       if (!m) return;
-
       const labelMap = { gemini: '🤖 Gemini 3.5 Flash-Lite', nemotron: '🟢 Nemotron 550B', gpt120b: '🟡 OpenAI GPT-120B', qwen: '🟣 Qwen 3.8 27B' };
       document.getElementById('selected-ai-name').innerText = labelMap[key] || m.name;
-
       const voteBadge = document.getElementById('selected-ai-vote');
       voteBadge.innerText = `${m.signal} (${m.confidence}%)`;
       voteBadge.className = `font-bold font-num px-1.5 py-0.5 rounded text-[9.5px] ${m.signal === 'BUY' ? 'bg-cyan-500/20 text-cyan-300' : m.signal === 'SELL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-300'}`;
-
       document.getElementById('selected-ai-reason').innerText = m.reason_km;
       document.getElementById('ind-entry').innerText = Number(m.entry).toFixed(2);
       document.getElementById('ind-tp').innerText = Number(m.tp).toFixed(2);
@@ -814,7 +636,6 @@
       });
     });
 
-    // មុខងារហៅ AI ទាំង ៤ វិភាគព្រមគ្នា
     async function runAiCouncilCycle() {
       if (isScanningAI) return;
       isScanningAI = true;
@@ -824,16 +645,18 @@
       document.getElementById('ai-scan-status').className = 'text-[9px] text-amber-400 font-num';
       document.getElementById('ai-round-badge').innerText = `ជុំទី ${roundCount}`;
 
+      // បញ្ជូនទៀន 60 ដើមចុងក្រោយពី Browser ទៅ Server ដើម្បីកុំឱ្យជាប់ US Block
+      const recentCandles = candleData.slice(-60).map(c => ({ open: c.open, high: c.high, low: c.low, close: c.close, vol: c.volume }));
+
       try {
         const res = await fetch('/api/ai-council', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ round: roundCount, previousVerdict: prevConsensus })
+          body: JSON.stringify({ round: roundCount, previousVerdict: prevConsensus, candles: recentCandles })
         });
         const data = await res.json();
 
         if (data.success && data.models) {
-          // 1. Update ប៊ូតុង AI ទាំង ៤
           data.models.forEach(m => {
             latestModelsMap[m.id] = m;
             const badge = document.getElementById(`badge-node-${m.id}`);
@@ -842,10 +665,8 @@
               badge.className = `text-[9px] font-bold font-num mt-0.5 ${m.signal === 'BUY' ? 'c-up' : m.signal === 'SELL' ? 'c-down' : 'text-amber-400'}`;
             }
           });
-
           displaySelectedAiDetail(selectedAiKey);
 
-          // 2. Update ប្រអប់វាយតម្លៃសរុបខួរក្បាល AI (Consensus Brain)
           const c = data.consensus;
           document.getElementById('consensus-votes').innerText = `${c.votes} AI`;
           document.getElementById('master-confidence').innerText = `${c.confidence}%`;
@@ -865,7 +686,6 @@
             sigEl.className = 'text-base font-bold text-amber-400 flex items-center gap-1.5 mt-0.5';
           }
 
-          // 3. ប្រព័ន្ធផ្ទៀងផ្ទាត់ ជុំទី ១ ធៀប ជុំទី ២
           const verifyPill = document.getElementById('verify-status-pill');
           const compBox = document.getElementById('round-comparison-box');
           if (roundCount === 1) {
@@ -879,7 +699,7 @@
           } else {
             verifyPill.innerText = `⚠️ ជុំទី ${roundCount}: ប្តូរទិសដៅ`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
-            compBox.innerHTML = `⚠️ <b>ការប្រែប្រួលទិសដៅ (Updated):</b> ជុំមុន AI ឱ្យ <b>${prevConsensus.signal}</b> តែជុំនេះទីផ្សារផ្លាស់ប្តូរមកជា <b>${c.signal}</b> វិញ។ សូមប្រុងប្រយ័ត្នតាមតម្លៃថ្មី!`;
+            compBox.innerHTML = `⚠️ <b>ការប្រែប្រួលទិសដៅ (Updated):</b> ជុំមុន AI ឱ្យ <b>${prevConsensus.signal}</b> តែជុំនេះទីផ្សារផ្លាស់ប្តូរមកជា <b>${c.signal}</b> វិញ។`;
           }
 
           prevConsensus = { signal: c.signal, entry: c.entry };
@@ -889,30 +709,23 @@
         }
       } catch (e) {
         document.getElementById('ai-scan-status').innerText = '✖ Error';
-        document.getElementById('ai-scan-status').className = 'text-[9px] text-rose-400 font-num';
       } finally {
         isScanningAI = false;
-        cycleRemaining = CYCLE_SECONDS; // Reset កំណត់ម៉ោង 2:29 ឡើងវិញ
+        cycleRemaining = CYCLE_SECONDS;
       }
     }
 
-    // ដំណើរការជុំទី ១ ភ្លាមៗក្រោយបើកវេបសាយ 2 វិនាទី
-    setTimeout(runAiCouncilCycle, 2000);
-
-    // នាឡិការាប់ថយក្រោយរាល់ 2:29 នាទី (149 វិនាទី) ដើម្បីឱ្យ AI ទាំង ៤ វិភាគម្ដងទៀត
+    setTimeout(runAiCouncilCycle, 3500);
     setInterval(() => {
       if (!isScanningAI) {
         cycleRemaining--;
-        if (cycleRemaining <= 0) {
-          runAiCouncilCycle();
-        }
+        if (cycleRemaining <= 0) runAiCouncilCycle();
       }
       const m = String(Math.floor(cycleRemaining / 60)).padStart(2, '0');
       const s = String(cycleRemaining % 60).padStart(2, '0');
       document.getElementById('ai-cycle-timer').innerText = `${m}:${s}`;
     }, 1000);
 
-    // ប៊ូតុងស្កេនភ្លាមដោយដៃ (បើចង់បង្ខំឱ្យវិភាគមុន 2:29)
     document.getElementById('btn-force-scan').addEventListener('click', () => {
       cycleRemaining = CYCLE_SECONDS;
       runAiCouncilCycle();
