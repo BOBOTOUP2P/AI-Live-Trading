@@ -15,17 +15,72 @@ const OR_KEY     = process.env.OR_KEY;
 const GROQ_KEY   = process.env.GROQ_KEY;
 
 // =========================================================================
-// ១. PROXY FALLBACK (Bybit -> Gate.io XAUT_USDT -> OKX XAUT-USDT-SWAP)
+// ១. FOREX FACTORY ECONOMIC CALENDAR ENGINE (10-Min Cache)
+// =========================================================================
+let ffCache = { timestamp: 0, events: [] };
+
+async function getForexFactoryUSDNews() {
+  const now = Date.now();
+  // Cache 10 នាទី ដើម្បីលឿន និងការពារកុំឱ្យជាប់ Rate Limit
+  if (ffCache.events.length > 0 && (now - ffCache.timestamp) < 10 * 60 * 1000) {
+    return ffCache.events;
+  }
+
+  try {
+    const res = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    if (res.ok) {
+      const allEvents = await res.json();
+      if (Array.isArray(allEvents)) {
+        // ច្រោះយកតែព័ត៌មាន USD (High & Medium Impact ដែលប៉ះពាល់មាសខ្លាំង)
+        const usdEvents = allEvents
+          .filter(ev => ev.country === 'USD' && (ev.impact === 'High' || ev.impact === 'Medium'))
+          .map(ev => {
+            const eventMs = new Date(ev.date).getTime();
+            // បម្លែងម៉ោងមកជាម៉ោងកម្ពុជា (Phnom Penh UTC+7)
+            const khTime = new Date(eventMs).toLocaleString('en-GB', {
+              timeZone: 'Asia/Phnom_Penh',
+              day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
+            });
+            return {
+              title: ev.title,
+              impact: ev.impact,
+              timestamp: eventMs,
+              khTime: khTime,
+              forecast: ev.forecast || '--',
+              previous: ev.previous || '--'
+            };
+          })
+          .sort((a, b) => a.timestamp - b.timestamp);
+
+        ffCache = { timestamp: now, events: usdEvents };
+        return usdEvents;
+      }
+    }
+  } catch (e) {
+    console.error('Forex Factory Fetch Error:', e.message);
+  }
+  return ffCache.events;
+}
+
+app.get('/api/news', async (req, res) => {
+  const events = await getForexFactoryUSDNews();
+  const now = Date.now();
+  // យកព័ត៌មានដែលទើបចេញក្នុង ២ ម៉ោងមុន និងព័ត៌មានជិតចេញខាងមុខ
+  const relevant = events.filter(ev => ev.timestamp >= now - 2 * 3600 * 1000).slice(0, 8);
+  res.json({ success: true, events: relevant });
+});
+
+// =========================================================================
+// ២. BYBIT / GATE.IO / OKX MARKET DATA PROXY
 // =========================================================================
 async function fetchFallbackKlines() {
-  // 1. សាកល្បង Gate.io Futures (មិន Block US Render)
   try {
     const gRes = await fetch('https://api.gateio.ws/api/v4/futures/usdt/candlesticks?contract=XAUT_USDT&interval=5m&limit=1000');
     if (gRes.ok) {
       const gData = await gRes.json();
       if (Array.isArray(gData) && gData.length > 0) {
         return {
-          source: 'Gate.io Futures',
+          source: 'Gate.io',
           list: gData.map(c => [
             String(c.t * 1000), String(c.o), String(c.h), String(c.l), String(c.c), String(c.v || 0), String(c.sum || 0)
           ]).reverse()
@@ -34,27 +89,21 @@ async function fetchFallbackKlines() {
     }
   } catch (e) {}
 
-  // 2. សាកល្បង OKX Swap
   try {
     const oRes = await fetch('https://www.okx.com/api/v5/market/candles?instId=XAUT-USDT-SWAP&bar=5m&limit=300');
     if (oRes.ok) {
       const oJson = await oRes.json();
       if (oJson.code === '0' && oJson.data) {
-        return {
-          source: 'OKX Swap',
-          list: oJson.data.map(c => [c[0], c[1], c[2], c[3], c[4], c[5], c[7]])
-        };
+        return { source: 'OKX', list: oJson.data.map(c => [c[0], c[1], c[2], c[3], c[4], c[5], c[7]]) };
       }
     }
   } catch (e) {}
-
   return { source: 'none', list: [] };
 }
 
 app.get('/api/klines', async (req, res) => {
   const { symbol = 'XAUTUSDT', interval = '5' } = req.query;
   try {
-    // សាកល្បង Bybit (ដើរប្រសិនបើ Render នៅ Singapore/EU)
     const bRes = await fetch(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}&interval=${interval}&limit=1000`);
     if (bRes.ok) {
       const bJson = await bRes.json();
@@ -62,7 +111,6 @@ app.get('/api/klines', async (req, res) => {
         return res.json({ retCode: 0, source: 'Bybit', result: { list: bJson.result.list } });
       }
     }
-    // បើ Bybit Block IP អាមេរិក បង្វែរទៅ Gate/OKX ភ្លាម
     const fb = await fetchFallbackKlines();
     res.json({ retCode: 0, source: fb.source, result: { list: fb.list } });
   } catch (error) {
@@ -79,7 +127,6 @@ app.get('/api/ticker', async (req, res) => {
       const bJson = await bRes.json();
       if (bJson.retCode === 0 && bJson.result?.list?.[0]) return res.json(bJson);
     }
-    // Fallback Gate.io Ticker
     const gRes = await fetch('https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=XAUT_USDT');
     if (gRes.ok) {
       const gArr = await gRes.json();
@@ -89,10 +136,7 @@ app.get('/api/ticker', async (req, res) => {
           retCode: 0,
           result: {
             list: [{
-              lastPrice: g.last,
-              markPrice: g.mark_price,
-              highPrice24h: g.high_24h,
-              lowPrice24h: g.low_24h,
+              lastPrice: g.last, markPrice: g.mark_price, highPrice24h: g.high_24h, lowPrice24h: g.low_24h,
               turnover24h: String(parseFloat(g.volume_24h_settle || 0)),
               price24hPcnt: String(parseFloat(g.change_percentage || 0) / 100)
             }]
@@ -107,7 +151,7 @@ app.get('/api/ticker', async (req, res) => {
 });
 
 // =========================================================================
-// ២. ក្បួនគណនាបច្ចេកទេស & AI COUNCIL
+// ៣. ក្បួនគណនាបច្ចេកទេស & AI COUNCIL (រួមជាមួយព័ត៌មាន Forex Factory)
 // =========================================================================
 function calcIndicators(candles) {
   const closes = candles.map(c => c.close);
@@ -149,16 +193,12 @@ function parseAIJson(rawText, currentPrice) {
         entry: parseFloat(obj.entry) || currentPrice,
         tp: parseFloat(obj.tp) || (currentPrice + 12),
         sl: parseFloat(obj.sl) || (currentPrice - 6),
-        reason_km: obj.reason_km || "វិភាគតាមលំនាំទៀន និងសន្ទុះទីផ្សារបច្ចុប្បន្ន។"
+        reason_km: obj.reason_km || "វិភាគតាមលំនាំទៀន និងព័ត៌មានសេដ្ឋកិច្ចបច្ចុប្បន្ន។"
       };
     }
   } catch (e) {}
   return {
-    signal: 'WAIT',
-    confidence: 70,
-    entry: currentPrice,
-    tp: currentPrice + 10,
-    sl: currentPrice - 6,
+    signal: 'WAIT', confidence: 70, entry: currentPrice, tp: currentPrice + 10, sl: currentPrice - 6,
     reason_km: "ទីផ្សារកំពុងប្រែប្រួល រង់ចាំសញ្ញាណបំបែកតំបន់ច្បាស់លាស់។"
   };
 }
@@ -168,39 +208,52 @@ app.post('/api/ai-council', async (req, res) => {
 
   try {
     let candles = clientCandles;
-    // ប្រសិនបើ Browser មិនបានផ្ញើទៀនមក ទាញពី Fallback Server
     if (!candles || candles.length < 10) {
       const fb = await fetchFallbackKlines();
       candles = fb.list.reverse().slice(-60).map(c => ({
         open: parseFloat(c[1]), high: parseFloat(c[2]), low: parseFloat(c[3]), close: parseFloat(c[4]), vol: parseFloat(c[5] || 0)
       }));
     }
-
     if (!candles || candles.length === 0) throw new Error("No candle data available");
 
     const last = candles[candles.length - 1];
     const ind = calcIndicators(candles);
     const last8 = candles.slice(-8).map(c => `[O:${c.open},H:${c.high},L:${c.low},C:${c.close}]`).join(' ');
 
+    // ទាញយកព័ត៌មាន Forex Factory មកឱ្យ AI អានរួមគ្នា
+    const nowMs = Date.now();
+    const allNews = await getForexFactoryUSDNews();
+    const nearNews = allNews.filter(n => Math.abs(n.timestamp - nowMs) <= 4 * 3600 * 1000).slice(0, 4);
+    const newsSummary = nearNews.length > 0
+      ? nearNews.map(n => {
+          const diffMin = Math.round((n.timestamp - nowMs) / 60000);
+          const timing = diffMin >= 0 ? `in ${diffMin} mins` : `${Math.abs(diffMin)} mins ago`;
+          return `${n.impact} Impact USD News: "${n.title}" (${timing}, Forecast: ${n.forecast}, Prev: ${n.previous})`;
+        }).join(' | ')
+      : "No High/Medium Impact USD news within ±4 hours.";
+
     const verifyNote = previousVerdict
-      ? `Previous round (2.29m ago) consensus was ${previousVerdict.signal} at $${previousVerdict.entry}. Verify if this setup is now CONFIRMED or REVERSED.`
+      ? `Previous round (2.29m ago) consensus was ${previousVerdict.signal}. Verify if setup is CONFIRMED or REVERSED.`
       : `This is Round 1 initial scan.`;
 
-    const prompt = `You are a top Gold Futures (XAUTUSDT) 5m Quant Trader.
+    const prompt = `You are a top Gold Futures (XAUTUSDT) 5m Quant & Macro Trader.
 Current Price: ${last.close}
 EMA7: ${ind.ema7} | EMA25: ${ind.ema25} | RSI14: ${ind.rsi14}
 2h High: ${ind.recentHigh} | 2h Low: ${ind.recentLow}
 Last 8 Candles (5m): ${last8}
+Forex Factory USD Economic News: ${newsSummary}
 Context: ${verifyNote}
 
-Respond ONLY with valid JSON (no markdown, no extra text):
+Rules:
+- If High-Impact USD news is within 15 minutes BEFORE release, strongly prefer "WAIT" to protect capital unless structure is crystal clear.
+- Respond ONLY with valid JSON (no markdown, no extra text):
 {
   "signal": "BUY" or "SELL" or "WAIT",
   "confidence": 80-98,
   "entry": number,
   "tp": number,
   "sl": number,
-  "reason_km": "សរសេរការវិភាគបច្ចេកទេសសង្ខេប ២ ប្រយោគជាភាសាខ្មែរច្បាស់លាស់ (បញ្ជាក់ពី RSI, EMA, ឬទៀន)"
+  "reason_km": "សរសេរការវិភាគបច្ចេកទេស និងព័ត៌មាន Forex Factory សង្ខេប ២ ប្រយោគជាភាសាខ្មែរច្បាស់លាស់"
 }`;
 
     const callGemini = async () => {
@@ -269,7 +322,7 @@ Respond ONLY with valid JSON (no markdown, no extra text):
     const avgConf  = Math.round(aligned.reduce((a, b) => a + b.confidence, 0) / aligned.length);
 
     res.json({
-      success: true, round, timestamp: Date.now(), market: { price: last.close, ...ind }, models: results,
+      success: true, round, timestamp: nowMs, market: { price: last.close, ...ind }, models: results,
       consensus: {
         signal: masterSignal, votes: `${voteCount}/4`, confidence: avgConf, entry: avgEntry, tp: avgTp, sl: avgSl,
         verifiedWithPrev: previousVerdict ? (previousVerdict.signal === masterSignal ? 'CONFIRMED' : 'CHANGED') : 'INITIAL'
@@ -281,4 +334,4 @@ Respond ONLY with valid JSON (no markdown, no extra text):
 });
 
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
-app.listen(PORT, () => console.log(`Server running on port ${PORT} with Multi-Exchange Fallback`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} - Forex Factory + 4-AI Ready`));
