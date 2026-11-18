@@ -101,7 +101,7 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">BOBOTOU AI កំពុងវិភាគដើម្បីបោះប្រអប់ TP/SL ចូលក្រាហ្វ...</span>
+      <span id="mini-council-banner" class="truncate">BOBOTOU AI កំពុងស្កេនទីផ្សាររកសញ្ញាណច្បាស់លាស់...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
@@ -126,7 +126,6 @@
     </div>
 
     <div class="flex items-center space-x-3 text-neutral-400">
-      <!-- ១. ប៊ូតុងប៊ិច: ពេលបើកធម្មតា / ពេលបិទមានបន្ទាត់ឆ្នូតកាត់ -->
       <button id="btn-toggle-ai-box" class="p-1 rounded text-cyan-400 hover:text-white transition-colors flex items-center justify-center" title="បើក/បិទ ប្រអប់ស្រមោល AI">
         <svg id="icon-pen-on" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -137,13 +136,11 @@
         </svg>
       </button>
 
-      <!-- ២. ប៊ូតុងត្រេបី (Sliders) -->
       <button id="btn-pos-style-menu" class="relative p-1 rounded hover:text-white transition-colors flex items-center justify-center" title="ជ្រើសរើសទម្រង់ប្រអប់ TP/SL">
         <i class="fa-solid fa-sliders text-[11px]"></i>
         <span id="sliders-red-dot" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
       </button>
 
-      <!-- ៣. Fullscreen -->
       <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
         <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16"><path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" /></svg>
         <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16"><path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" /></svg>
@@ -157,7 +154,6 @@
         <span class="text-[9px] text-cyan-400">3 Styles</span>
       </div>
 
-      <!-- ផ្នែកទី ១ (គោលដំបូង) -->
       <button data-style="dotted-left" class="style-opt-btn style-opt-active w-full text-left px-2.5 py-2 rounded-lg border border-transparent text-[10.5px] text-neutral-300 hover:bg-neutral-800/70 transition-all flex items-start gap-2">
         <span class="text-cyan-400 font-bold mt-0.5">1.</span>
         <div>
@@ -166,7 +162,6 @@
         </div>
       </button>
 
-      <!-- ផ្នែកទី ២ (Standard) -->
       <button data-style="standard" class="style-opt-btn w-full text-left px-2.5 py-2 rounded-lg border border-transparent text-[10.5px] text-neutral-300 hover:bg-neutral-800/70 transition-all flex items-start gap-2">
         <span class="text-emerald-400 font-bold mt-0.5">2.</span>
         <div>
@@ -175,7 +170,6 @@
         </div>
       </button>
 
-      <!-- ផ្នែកទី ៣ (Minimal) -->
       <button data-style="minimal" class="style-opt-btn w-full text-left px-2.5 py-2 rounded-lg border border-transparent text-[10.5px] text-neutral-300 hover:bg-neutral-800/70 transition-all flex items-start gap-2">
         <span class="text-amber-400 font-bold mt-0.5">3.</span>
         <div>
@@ -208,15 +202,11 @@
 
     <!-- SVG Overlay Layer -->
     <svg id="chart-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20">
-      
-      <!-- ប្រអប់ស្រមោល ចំណេញ (បៃតង) និង ខាត (ក្រហម) របស់ AI (នៅកន្លែងដើមមិនខិតឡើយ) -->
       <g id="trade-pos-svg" style="display: none;">
-        <!-- ខ្សែរចុចៗលាតទទឹងវែងទៅខាងឆ្វេង (សម្រាប់ទម្រង់ទី ១) -->
         <line id="ext-tp-line" x1="0" y1="0" x2="0" y2="0" stroke="rgba(0, 219, 132, 0.85)" stroke-width="1" stroke-dasharray="3 3" style="display: none;" />
         <line id="ext-entry-line" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255, 255, 255, 0.8)" stroke-width="1" stroke-dasharray="3 3" style="display: none;" />
         <line id="ext-sl-line" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255, 46, 86, 0.85)" stroke-width="1" stroke-dasharray="3 3" style="display: none;" />
 
-        <!-- ប្រអប់ស្រមោល -->
         <rect id="pos-tp-rect" x="0" y="0" width="0" height="0" fill="rgba(0, 219, 132, 0.18)" stroke="#00db84" stroke-width="1" />
         <rect id="pos-sl-rect" x="0" y="0" width="0" height="0" fill="rgba(255, 46, 86, 0.18)" stroke="#ff2e56" stroke-width="1" />
         <line id="pos-entry-line" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="1.1" />
@@ -227,7 +217,7 @@
       <g id="low-marker-group" style="display: none;"><line id="low-line" stroke="#ffffff" stroke-width="1" /><text id="low-text" fill="#ffffff" font-family="'Roboto', sans-serif" font-size="11" font-weight="500">--</text></g>
     </svg>
 
-    <!-- ស្លាកលេខ TP / Entry+PnL / SL -->
+    <!-- ស្លាកលេខ TP / Entry (% តែប៉ុណ្ណោះ) / SL -->
     <div id="trade-pos-labels" class="absolute inset-0 pointer-events-none z-30" style="display: none;">
       <div id="lbl-tp" class="pos-label-pill bg-[#00db84] text-black">TP: --</div>
       <div id="lbl-entry" class="pos-label-pill bg-neutral-900/95 text-white border border-cyan-400/60">Entry: --</div>
@@ -358,7 +348,7 @@
           </div>
 
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
-            រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារឡើងវិញដើម្បីធានាថាមិនខុសទិសដៅ។ (ប្រអប់ស្រមោលត្រូវបានបោះចូលក្រាហ្វដោយស្វ័យប្រវត្តិ)
+            រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារឡើងវិញ។ ប្រសិនបើសញ្ញាណច្បាស់លាស់ (BUY/SELL) ប្រអប់ TP/SL នឹងបង្ហាញលើក្រាហ្វដោយស្វ័យប្រវត្តិ។
           </div>
         </div>
       </div>
@@ -382,9 +372,8 @@
     let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
-    // ទិន្នន័យ និងស្ថានភាពប្រអប់ស្រមោល AI
     let showAiBox = true;
-    let aiBoxStyle = 'dotted-left'; // គោលដំបូង: ប្រអប់នៅដដែល ខ្សែរចុចៗ & អក្សរខិតទៅឆ្វេង
+    let aiBoxStyle = 'dotted-left';
     let aiTradePos = {
       active: false,
       side: 'LONG',
@@ -657,7 +646,7 @@
       });
     });
 
-    // ១. ប៊ូតុងបិទ/បើកប៊ិច
+    // ប៊ូតុងបិទ/បើកប៊ិច
     const btnToggleAiBox = document.getElementById('btn-toggle-ai-box');
     const iconPenOn = document.getElementById('icon-pen-on');
     const iconPenOff = document.getElementById('icon-pen-off');
@@ -675,7 +664,7 @@
       }
     });
 
-    // ២. ប៊ូតុងត្រេបី (SLIDERS): បើកកូនផ្ទាំង ៣ ផ្នែក
+    // ប៊ូតុងត្រេបី (SLIDERS): បើកកូនផ្ទាំង ៣ ផ្នែក
     const btnPosStyleMenu = document.getElementById('btn-pos-style-menu');
     const posStyleMenu = document.getElementById('pos-style-menu');
     const slidersRedDot = document.getElementById('sliders-red-dot');
@@ -704,19 +693,19 @@
     });
 
     // =========================================================================
-    // ៣. គូសប្រអប់ស្រមោល ចំណេញ/ខាត របស់ AI (ប្រអប់នៅដដែល / ខ្សែរចុចៗលាតទៅឆ្វេង)
+    // គូសប្រអប់ស្រមោល ចំណេញ/ខាត របស់ AI (ប្រើតែភាគរយ % គ្មានសញ្ញា $ លុយទេ!)
     // =========================================================================
     function renderTradePositionBox() {
       const svgGroup = document.getElementById('trade-pos-svg');
       const lblGroup = document.getElementById('trade-pos-labels');
 
+      // ប្រសិនបើ AI មិនទាន់ច្បាស់លាស់ (WAIT -> active=false) មិនបង្ហាញប្រអប់ឡើយ!
       if (!showAiBox || !aiTradePos.active || candleData.length === 0) {
         svgGroup.style.display = 'none';
         lblGroup.style.display = 'none';
         return;
       }
 
-      // ប្រអប់ស្រមោលនៅកន្លែងដើមថេរជានិច្ច (មិនខិតតាមទៅឆ្វេងឡើយ)
       const startIdx = Math.max(0, aiTradePos.anchorCandleIdx - 8);
       const widthBars = 14;
 
@@ -742,7 +731,6 @@
       const slRect = document.getElementById('pos-sl-rect');
       const entryLine = document.getElementById('pos-entry-line');
 
-      // ប្រអប់ស្រមោលរក្សាទម្រង់ស្អាតនៅកន្លែងដើម
       tpRect.setAttribute('x', boxX);
       tpRect.setAttribute('y', Math.min(yEntry, yTp));
       tpRect.setAttribute('width', boxW);
@@ -764,7 +752,7 @@
       const lblSl = document.getElementById('lbl-sl');
       const lblEntry = document.getElementById('lbl-entry');
 
-      // គណនាតួលេខចំណេញ/ខាត
+      // គណនាភាគរយសុទ្ធសាធ (ដក $ លុយចេញអស់ហើយ!)
       const currentPrice = candleData[candleData.length - 1].close;
       const pnlDiff = aiTradePos.side === 'LONG' ? (currentPrice - aiTradePos.entry) : (aiTradePos.entry - currentPrice);
       const pnlPct = (pnlDiff / aiTradePos.entry) * 100;
@@ -773,11 +761,10 @@
       const rr = (reward / risk).toFixed(2);
       const tpPct = ((Math.abs(aiTradePos.tp - aiTradePos.entry) / aiTradePos.entry) * 100).toFixed(2);
       const slPct = ((Math.abs(aiTradePos.entry - aiTradePos.sl) / aiTradePos.entry) * 100).toFixed(2);
-      const pnlSign = pnlDiff >= 0 ? '+' : '';
-      const pnlColorClass = pnlDiff >= 0 ? 'text-[#00db84]' : 'text-[#ff2e56]';
+      const pnlSign = pnlPct >= 0 ? '+' : '';
+      const pnlColorClass = pnlPct >= 0 ? 'text-[#00db84]' : 'text-[#ff2e56]';
 
       if (aiBoxStyle === 'dotted-left') {
-        // ផ្នែកទី ១ (គោល): ប្រអប់នៅដដែល តែបាញ់ខ្សែរចុចៗទទឹងវែងទៅឆ្វេង & ខិតអក្សរទៅឆ្វេង
         if (boxX > 8) {
           extTpLine.style.display = 'block';
           extTpLine.setAttribute('x1', 6); extTpLine.setAttribute('y1', yTp);
@@ -796,7 +783,6 @@
           extSlLine.style.display = 'none';
         }
 
-        // ខិតអក្សរទាំង ៣ ទៅគែមខាងឆ្វេង ដើម្បីទុកប្រអប់TP/SLខាងស្តាំឱ្យទូលាយស្រឡះ
         lblTp.style.left = '6px'; lblTp.style.top = yTp + 'px';
         lblTp.innerText = `TP: ${aiTradePos.tp.toFixed(2)} (+${tpPct}%)`;
 
@@ -805,10 +791,9 @@
 
         lblEntry.style.display = 'block';
         lblEntry.style.left = '6px'; lblEntry.style.top = yEntry + 'px';
-        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}$${pnlDiff.toFixed(2)} (${pnlSign}${pnlPct.toFixed(2)}%)</span> | R:R ${rr}`;
+        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}${pnlPct.toFixed(2)}%</span> | R:R ${rr}`;
 
       } else if (aiBoxStyle === 'standard') {
-        // ផ្នែកទី ២: ទម្រង់ធម្មតា (គ្មានខ្សែរចុចៗលាតទៅឆ្វេង អក្សរនៅលើប្រអប់ធម្មតា)
         extTpLine.style.display = 'none';
         extEntryLine.style.display = 'none';
         extSlLine.style.display = 'none';
@@ -821,10 +806,9 @@
 
         lblEntry.style.display = 'block';
         lblEntry.style.left = (boxX + 4) + 'px'; lblEntry.style.top = yEntry + 'px';
-        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}$${pnlDiff.toFixed(2)} (${pnlSign}${pnlPct.toFixed(2)}%)</span> | R:R ${rr}`;
+        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}${pnlPct.toFixed(2)}%</span> | R:R ${rr}`;
 
       } else {
-        // ផ្នែកទី ៣: ទម្រង់ទទេ (មានតែអក្សរ TP និង SL គ្មានលេខតម្លៃឡើយ)
         extTpLine.style.display = 'none';
         extEntryLine.style.display = 'none';
         extSlLine.style.display = 'none';
@@ -969,9 +953,17 @@
       voteBadge.innerText = `${m.signal} (${m.confidence}%)`;
       voteBadge.className = `font-bold font-num px-1.5 py-0.5 rounded text-[9.5px] ${m.signal === 'BUY' ? 'bg-cyan-500/20 text-cyan-300' : m.signal === 'SELL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-300'}`;
       document.getElementById('selected-ai-reason').innerText = m.reason_km;
-      document.getElementById('ind-entry').innerText = Number(m.entry).toFixed(2);
-      document.getElementById('ind-tp').innerText = Number(m.tp).toFixed(2);
-      document.getElementById('ind-sl').innerText = Number(m.sl).toFixed(2);
+
+      // បើ AI ឆ្លើយ WAIT គឺមិនបង្ហាញតួលេខ Entry/TP/SL ទេ
+      if (m.signal === 'WAIT') {
+        document.getElementById('ind-entry').innerText = '--';
+        document.getElementById('ind-tp').innerText = '--';
+        document.getElementById('ind-sl').innerText = '--';
+      } else {
+        document.getElementById('ind-entry').innerText = Number(m.entry).toFixed(2);
+        document.getElementById('ind-tp').innerText = Number(m.tp).toFixed(2);
+        document.getElementById('ind-sl').innerText = Number(m.sl).toFixed(2);
+      }
     }
 
     document.querySelectorAll('.ai-node').forEach(btn => {
@@ -1013,11 +1005,10 @@
           displaySelectedAiDetail(selectedAiKey);
 
           const c = data.consensus;
+          const isClearSignal = (c.signal === 'BUY' || c.signal === 'SELL');
+
           document.getElementById('consensus-votes').innerText = `${c.votes} AI`;
           document.getElementById('master-confidence').innerText = `${c.confidence}%`;
-          document.getElementById('master-entry').innerText = c.entry;
-          document.getElementById('master-tp').innerText = c.tp;
-          document.getElementById('master-sl').innerText = c.sl;
 
           const sigEl = document.getElementById('master-signal-text');
           if (c.signal === 'BUY') {
@@ -1027,45 +1018,66 @@
             sigEl.innerHTML = `<i class="fa-solid fa-circle-arrow-down"></i><span>STRONG SELL (SHORT)</span>`;
             sigEl.className = 'text-base font-bold c-down flex items-center gap-1.5 mt-0.5';
           } else {
-            sigEl.innerHTML = `<i class="fa-solid fa-pause-circle"></i><span>WAIT / NEUTRAL</span>`;
+            sigEl.innerHTML = `<i class="fa-solid fa-pause-circle"></i><span>WAIT (រង់ចាំសញ្ញាណច្បាស់)</span>`;
             sigEl.className = 'text-base font-bold text-amber-400 flex items-center gap-1.5 mt-0.5';
           }
 
-          const entryNum = parseFloat(c.entry);
-          const tpNum = parseFloat(c.tp);
-          const slNum = parseFloat(c.sl);
-          const side = (c.signal === 'SELL' || tpNum < entryNum) ? 'SHORT' : 'LONG';
+          // =====================================================================
+          // វិន័យ WAIT៖ បើច្បាស់លាស់ (BUY/SELL) ទើបបោះប្រអប់ TP/SL ចូលក្រាហ្វ!
+          // បើជា WAIT គឺលាក់ប្រអប់មិនបោះសញ្ញាណឱ្យចូលផ្សារឡើយ!
+          // =====================================================================
+          if (isClearSignal) {
+            document.getElementById('master-entry').innerText = c.entry;
+            document.getElementById('master-tp').innerText = c.tp;
+            document.getElementById('master-sl').innerText = c.sl;
 
-          if (candleData.length > 0 && !isNaN(entryNum) && !isNaN(tpNum) && !isNaN(slNum)) {
-            aiTradePos = {
-              active: true,
-              side: side,
-              signalLabel: c.signal,
-              anchorCandleIdx: candleData.length - 1,
-              entry: entryNum,
-              tp: tpNum,
-              sl: slNum
-            };
+            const entryNum = parseFloat(c.entry);
+            const tpNum = parseFloat(c.tp);
+            const slNum = parseFloat(c.sl);
+            const side = (c.signal === 'SELL' || tpNum < entryNum) ? 'SHORT' : 'LONG';
+
+            if (candleData.length > 0 && !isNaN(entryNum) && !isNaN(tpNum) && !isNaN(slNum)) {
+              aiTradePos = {
+                active: true,
+                side: side,
+                signalLabel: c.signal,
+                anchorCandleIdx: candleData.length - 1,
+                entry: entryNum,
+                tp: tpNum,
+                sl: slNum
+              };
+            }
+            document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): ${c.signal} | Entry ${c.entry} | TP ${c.tp}`;
+          } else {
+            document.getElementById('master-entry').innerText = '--.--';
+            document.getElementById('master-tp').innerText = '--.--';
+            document.getElementById('master-sl').innerText = '--.--';
+            aiTradePos.active = false; // លាក់ប្រអប់ស្រមោល ព្រោះកំពុង WAIT
+            document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): WAIT • ទីផ្សារមិនទាន់ច្បាស់លាស់ (រង់ចាំ)...`;
           }
 
           const verifyPill = document.getElementById('verify-status-pill');
           const compBox = document.getElementById('round-comparison-box');
-          if (roundCount === 1) {
+
+          if (!isClearSignal) {
+            verifyPill.innerText = `ជុំទី ${roundCount}: ⏳ រង់ចាំ (WAIT)`;
+            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃថាទីផ្សារកំពុងប្រែប្រួលមិនទាន់មានទិសដៅច្បាស់ (RSI: ${data.market.rsi14}) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b> ដើម្បីការពារសុវត្ថិភាព!`;
+          } else if (roundCount === 1) {
             verifyPill.innerText = 'ជុំទី 1: វិភាគដំបូង';
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
-            compBox.innerHTML = `📌 <b>ជុំទី ១ (${new Date().toLocaleTimeString()}):</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ $${c.entry} (បានបោះប្រអប់ TP/SL ចូលក្រាហ្វរួចរាល់)។ រង់ចាំ <b>2:29 នាទី</b> ទៀតដើម្បីផ្ទៀងផ្ទាត់ជុំទី ២!`;
+            compBox.innerHTML = `📌 <b>ជុំទី ១ (${new Date().toLocaleTimeString()}):</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បានបោះប្រអប់ TP/SL ចូលក្រាហ្វរួចរាល់)។ រង់ចាំ <b>2:29 នាទី</b> ទៀតដើម្បីផ្ទៀងផ្ទាត់ជុំទី ២!`;
           } else if (c.verifiedWithPrev === 'CONFIRMED') {
             verifyPill.innerText = `✅ ជុំទី ${roundCount}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${roundCount} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${prevConsensus.signal})! ប្រអប់ស្រមោលលើក្រាហ្វត្រូវបានធ្វើបច្ចុប្បន្នភាព។`;
+            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${roundCount} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន! ប្រអប់ស្រមោលលើក្រាហ្វត្រូវបានធ្វើបច្ចុប្បន្នភាព។`;
           } else {
-            verifyPill.innerText = `⚠️ ជុំទី ${roundCount}: ប្តូរទិសដៅ`;
-            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
-            compBox.innerHTML = `⚠️ <b>ការប្រែប្រួលទិសដៅ (Updated):</b> ជុំមុន AI ឱ្យ <b>${prevConsensus.signal}</b> តែជុំនេះទីផ្សារផ្លាស់ប្តូរមកជា <b>${c.signal}</b> វិញ (ប្រអប់ស្រមោលលើក្រាហ្វបានប្តូរតាម AI ថ្មីហើយ)។`;
+            verifyPill.innerText = `⚠️ ជុំទី ${roundCount}: សញ្ញាណថ្មី`;
+            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+            compBox.innerHTML = `⚡ <b>មានសញ្ញាណចូលផ្សារថ្មី (New Signal):</b> ក្រុម AI បានរកឃើញទិសដៅ <b>${c.signal}</b> ច្បាស់លាស់ និងបានបោះប្រអប់ TP/SL ចូលក្នុងក្រាហ្វរួចរាល់!`;
           }
 
           prevConsensus = { signal: c.signal, entry: c.entry, tp: c.tp, sl: c.sl };
-          document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): ${c.signal} | Entry $${c.entry} | TP $${c.tp}`;
           document.getElementById('ai-scan-status').innerText = `● រួចរាល់ (${new Date().toLocaleTimeString()})`;
           document.getElementById('ai-scan-status').className = 'text-[9px] text-emerald-400 font-num';
         }
