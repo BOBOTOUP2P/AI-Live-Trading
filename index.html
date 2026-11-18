@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Bybit Live - AI Neural Hub</title>
+  <title>Bybit Live - 4-AI Council Engine</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,7 +37,6 @@
     .c-up { color: #00f0ff; }
     .c-down { color: #ff2e56; }
 
-    /* Watermark Bybit */
     .watermark-bybit {
       position: absolute;
       top: 55%;
@@ -129,23 +128,20 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
 
-    /* ==============================================================
-       AI MODAL & NEURAL BRANCHES STYLING
-       ============================================================== */
+    /* AI MODAL & NEURAL TREE FLOW */
     #ai-modal {
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .ai-node-active {
+    .ai-node-selected {
       border-color: #00f0ff !important;
-      background: rgba(0, 240, 255, 0.15) !important;
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
-      color: #ffffff !important;
+      background: rgba(0, 240, 255, 0.12) !important;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
     }
 
     .neural-line-anim {
       stroke-dasharray: 4, 4;
-      animation: dashFlow 1.5s linear infinite;
+      animation: dashFlow 1.4s linear infinite;
     }
 
     @keyframes dashFlow {
@@ -154,8 +150,8 @@
     }
 
     .glass-box {
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.09);
       backdrop-filter: blur(12px);
     }
 
@@ -229,7 +225,7 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span class="truncate">ចុចលើ Live ឬរូប AI ដើម្បីបើកផ្ទាំង «បណ្ដុំវិភាគដោយ AI»...</span>
+      <span id="mini-council-banner" class="truncate">ក្រុម AI ទាំង ៤ កំពុងរង់ចាំវិភាគរាល់ 2:29 នាទី...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2">
       <i class="fa-solid fa-xmark text-xs"></i>
@@ -242,14 +238,14 @@
       <span class="text-white font-bold cursor-pointer text-xs">5m</span>
       <span class="text-neutral-800 text-[10px]">|</span>
       
-      <!-- Trigger បើក AI Modal (ចុចលើ Live) -->
-      <div id="btn-trigger-live" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-80 active:scale-95 transition-transform" title="បើកបណ្ដុំវិភាគដោយ AI">
+      <!-- ចុចលើ Live ដើម្បីបើកបណ្ដុំវិភាគ AI -->
+      <div id="btn-trigger-live" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-80 active:scale-95 transition-transform">
         <span class="blinking-dot"></span>
         <span class="text-white font-semibold text-[11px]">Live</span>
       </div>
 
-      <!-- Trigger បើក AI Modal (ចុចលើរូប AI) -->
-      <div id="btn-trigger-ai" class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-1 hover:opacity-80 active:scale-95 transition-transform" title="បើកបណ្ដុំវិភាគដោយ AI">
+      <!-- ចុចលើរូប AI ដើម្បីបើកបណ្ដុំវិភាគ AI -->
+      <div id="btn-trigger-ai" class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-1 hover:opacity-80 active:scale-95 transition-transform">
         <div class="ai-orbit-spinner"></div>
         <svg class="w-3 h-3 text-[#00f0ff] fill-current" viewBox="0 0 24 24">
           <path d="M11 2L12.8 7.2L18 9L12.8 10.8L11 16L9.2 10.8L4 9L9.2 7.2L11 2Z" />
@@ -262,25 +258,16 @@
     <!-- Right Tool Icons -->
     <div class="flex items-center space-x-3 text-neutral-400">
       <i class="fa-solid fa-pen text-[10px] hover:text-white cursor-pointer"></i>
-      
       <div class="relative cursor-pointer">
         <i class="fa-solid fa-sliders text-[11px] hover:text-white"></i>
         <span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
       </div>
-
-      <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none" title="Toggle Fullscreen">
+      <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
         <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16">
-          <path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" />
-          <path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" />
-          <path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" />
-          <path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" />
+          <path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" />
         </svg>
-
         <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16">
-          <path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" />
-          <path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" />
-          <path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" />
-          <path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" />
+          <path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" />
         </svg>
       </button>
     </div>
@@ -289,7 +276,6 @@
   <!-- 4. CHART AREA -->
   <div class="relative w-full flex-1 bg-black overflow-hidden" id="chart-wrapper">
     <div class="watermark-bybit">BYBIT</div>
-
     <div id="crosshair-center-dot"></div>
 
     <!-- Tooltip -->
@@ -310,19 +296,16 @@
     <!-- Overlay SVG -->
     <svg id="chart-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20">
       <line id="running-price-line" stroke="rgba(255, 255, 255, 0.85)" stroke-width="1" stroke-dasharray="3 3" />
-
       <g id="high-marker-group" style="display: none;">
         <line id="high-line" stroke="#ffffff" stroke-width="1" />
         <text id="high-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
       </g>
-
       <g id="low-marker-group" style="display: none;">
         <line id="low-line" stroke="#ffffff" stroke-width="1" />
         <text id="low-text" fill="#ffffff" font-family="'Roboto', -apple-system, sans-serif" font-size="11" font-weight="500">--</text>
       </g>
     </svg>
 
-    <!-- Badge Countdown -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
       <div class="text-neutral-400 text-[9px]" id="countdown">00:04:59</div>
@@ -340,178 +323,185 @@
       <button data-ind="Mark" class="indicator-tab hover:text-white transition-colors">Mark</button>
       <button data-ind="SAR" class="indicator-tab hover:text-white transition-colors">SAR</button>
     </div>
-    <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer">
-      <i class="fa-solid fa-gear text-xs"></i>
-    </div>
+    <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
   <!-- =========================================================================
-       ៦. ផ្ទាំងវិភាគបញ្ញាសិប្បនិម្មិត AI SIGNAL HUB (MODAL & NEURAL BRANCHES)
+       ៦. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (4 AI COUNCIL + 2:29 AUTO VERIFICATION)
        ========================================================================= -->
-  <div id="ai-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none">
-    <div class="bg-[#0b0e14] border-t border-cyan-500/30 rounded-t-3xl max-h-[92vh] h-[92vh] flex flex-col overflow-hidden shadow-2xl relative">
+  <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
+    <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
-      <!-- Top Handle Bar & Header -->
-      <div class="px-4 pt-3 pb-2 border-b border-neutral-800/80 flex items-center justify-between">
+      <!-- Modal Header + នាឡិការាប់ថយក្រោយ 2:29 នាទី -->
+      <div class="px-4 pt-3 pb-2.5 border-b border-neutral-800/80 flex items-center justify-between bg-[#0f131b]">
         <div class="flex items-center space-x-2">
           <div class="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/40 text-cyan-400 text-xs">
             <i class="fa-solid fa-brain"></i>
           </div>
           <div>
-            <h2 class="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
+            <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
               <span>បណ្ដុំវិភាគដោយ AI</span>
-              <span class="text-[9px] px-1.5 py-0.2 bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30">Pro Engine</span>
+              <span id="ai-round-badge" class="text-[9px] px-1.5 py-0.5 bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30 font-num">ជុំទី 1</span>
             </h2>
-            <p class="text-[10px] text-neutral-400">ប្រព័ន្ធខួរក្បាលវិភាគ Signal បោះឱ្យចូលផ្សារ Real-Time</p>
+            <p class="text-[10px] text-neutral-400 flex items-center gap-1.5">
+              <span>ផ្ទៀងផ្ទាត់រាល់ 2:29 នាទីម្ដង</span>
+              <span class="text-cyan-400 font-num font-bold" id="ai-cycle-timer">02:29</span>
+            </p>
           </div>
         </div>
-        <button id="btn-close-ai" class="w-8 h-8 rounded-full bg-neutral-800/80 text-neutral-400 hover:text-white flex items-center justify-center text-sm">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <div class="flex items-center space-x-2">
+          <button id="btn-force-scan" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/40 text-[10px] text-cyan-300 font-semibold active:scale-95" title="វិភាគឡើងវិញឥឡូវ">
+            <i class="fa-solid fa-rotate mr-1"></i>ស្កេនភ្លាម
+          </button>
+          <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Scrollable Area -->
-      <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2 relative">
+      <!-- Scrollable Modal Body -->
+      <div class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1 relative">
         
-        <!-- ១. ប៊ូតុង 4 អក្សរជួរផ្ដេក (Gemini, Claude, GPT-4o, DeepSeek) -->
-        <div class="grid grid-cols-4 gap-2 pt-1 relative z-10" id="ai-nodes-container">
-          <button data-ai="gemini" class="ai-node ai-node-active py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/90 text-xs font-semibold transition-all">
-            <div class="text-[10px] text-cyan-400 mb-0.5"><i class="fa-solid fa-bolt"></i></div>
-            <span>Gemini</span>
+        <!-- ១. ប៊ូតុង AI ទាំង ៤ ជួរផ្ដេក (Gemini, Nemotron, GPT-120B, Qwen 3.8) -->
+        <div class="grid grid-cols-4 gap-1.5 pt-0.5 relative z-10" id="ai-nodes-container">
+          <!-- Node 1: Gemini -->
+          <button data-ai="gemini" class="ai-node ai-node-selected py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
+            <div class="text-[10px] font-bold text-white truncate">Gemini</div>
+            <div id="badge-node-gemini" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
           </button>
-          <button data-ai="claude" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/90 text-xs font-semibold text-neutral-400 transition-all">
-            <div class="text-[10px] text-amber-400 mb-0.5"><i class="fa-solid fa-feather"></i></div>
-            <span>Claude</span>
+          <!-- Node 2: Nemotron 550B -->
+          <button data-ai="nemotron" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
+            <div class="text-[10px] font-bold text-white truncate">Nemotron</div>
+            <div id="badge-node-nemotron" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
           </button>
-          <button data-ai="gpt4" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/90 text-xs font-semibold text-neutral-400 transition-all">
-            <div class="text-[10px] text-emerald-400 mb-0.5"><i class="fa-solid fa-microchip"></i></div>
-            <span>GPT-4o</span>
+          <!-- Node 3: GPT-120B -->
+          <button data-ai="gpt120b" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
+            <div class="text-[10px] font-bold text-white truncate">GPT-120B</div>
+            <div id="badge-node-gpt120b" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
           </button>
-          <button data-ai="deepseek" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/90 text-xs font-semibold text-neutral-400 transition-all">
-            <div class="text-[10px] text-purple-400 mb-0.5"><i class="fa-solid fa-compass"></i></div>
-            <span>DeepSeek</span>
+          <!-- Node 4: Qwen 3.8 -->
+          <button data-ai="qwen" class="ai-node py-2 px-1 rounded-xl text-center border border-neutral-800 bg-neutral-900/95 transition-all">
+            <div class="text-[10px] font-bold text-white truncate">Qwen 3.8</div>
+            <div id="badge-node-qwen" class="text-[9px] font-num text-neutral-400 mt-0.5">WAIT...</div>
           </button>
         </div>
 
-        <!-- ២. ខ្សែរមែកធាងទី ១: បាញ់ពីប៊ូតុងទាំង ៤ មកចូលប្រអប់ធំ Chart -->
-        <div class="h-10 w-full relative">
-          <svg class="w-full h-full" viewBox="0 0 360 40" fill="none">
-            <!-- ខ្សែរមែកធាងបាញ់ចេញពីប៊ូតុងទី ១ (Gemini) -->
-            <path d="M 45 0 L 45 18 Q 45 35 180 38" stroke="#00f0ff" stroke-width="1.5" class="neural-line-anim" />
-            <!-- ខ្សែរមែកធាងបាញ់ចេញពីប៊ូតុងទី ២ (Claude) -->
-            <path d="M 135 0 L 135 15 Q 135 35 180 38" stroke="#00f0ff" stroke-width="1.2" opacity="0.7" />
-            <!-- ខ្សែរមែកធាងបាញ់ចេញពីប៊ូតុងទី ៣ (GPT) -->
-            <path d="M 225 0 L 225 15 Q 225 35 180 38" stroke="#00f0ff" stroke-width="1.2" opacity="0.7" />
-            <!-- ខ្សែរមែកធាងបាញ់ចេញពីប៊ូតុងទី ៤ (DeepSeek) -->
-            <path d="M 315 0 L 315 18 Q 315 35 180 38" stroke="#00f0ff" stroke-width="1.5" class="neural-line-anim" />
-            
-            <!-- ចំណុចប្រសព្វកណ្តាល -->
-            <circle cx="180" cy="38" r="3.5" fill="#00f0ff" />
-          </svg>
-        </div>
-
-        <!-- ៣. ប្រអប់ធំ Chart ក្រាហ្វិក AI (AI Visual Chart Canvas) -->
-        <div class="glass-box rounded-2xl p-3 border border-cyan-500/20 relative shadow-xl overflow-hidden">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-[11px] font-semibold text-neutral-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-chart-line text-cyan-400"></i>
-              <span id="ai-chart-title">Gemini Neural Wave Analysis (5m)</span>
-            </span>
-            <span id="ai-chart-accuracy" class="text-[10px] font-bold text-cyan-300 font-num bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/30">
-              Confidence: 94.2%
-            </span>
-          </div>
-
-          <!-- Mini AI Neural Chart Visualization -->
-          <div class="w-full h-36 bg-black/60 rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-neutral-900">
-            <svg class="w-full h-full" viewBox="0 0 320 120" preserveAspectRatio="none">
-              <!-- Gradient Fill Under Chart -->
-              <defs>
-                <linearGradient id="aiGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <!-- ក្រឡាចត្រង្គ Background Grid -->
-              <line x1="0" y1="30" x2="320" y2="30" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              <line x1="0" y1="60" x2="320" y2="60" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              <line x1="0" y1="90" x2="320" y2="90" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-
-              <!-- រលកទិន្នន័យ Wave Chart (Dynamic Wave) -->
-              <path id="ai-wave-area" d="M 0 85 Q 50 30 100 70 T 200 40 T 320 20 L 320 120 L 0 120 Z" fill="url(#aiGrad)"/>
-              <path id="ai-wave-line" d="M 0 85 Q 50 30 100 70 T 200 40 T 320 20" fill="none" stroke="#00f0ff" stroke-width="2.5"/>
-
-              <!-- Entry Pin Point -->
-              <circle id="ai-entry-dot" cx="200" cy="40" r="4" fill="#00db84"/>
-              <text id="ai-entry-text" x="180" y="30" fill="#00db84" font-size="9" font-weight="bold">ENTRY BUY</text>
-
-              <!-- Target Pin Point -->
-              <circle cx="318" cy="20" r="4" fill="#00f0ff"/>
-              <text x="270" y="15" fill="#00f0ff" font-size="9" font-weight="bold">TP TARGET</text>
-            </svg>
-          </div>
-        </div>
-
-        <!-- ៤. ខ្សែរមែកធាងទី ២: ខ្សែរចំនួន ១ ចុះពីប្រអប់ធំ Chart មកផ្ទាំងវាយតម្លៃសរុប -->
+        <!-- ២. ខ្សែរមែកធាង ៤ ខ្សែរ បាញ់ចេញពីប៊ូតុងទាំង ៤ ចូលមកប្រអប់ធំ Chart -->
         <div class="h-9 w-full relative">
           <svg class="w-full h-full" viewBox="0 0 360 36" fill="none">
-            <!-- ខ្សែរមែកធាងធំទី ២ រត់ត្រង់ចុះមកក្រោម -->
-            <line x1="180" y1="0" x2="180" y2="34" stroke="#00f0ff" stroke-width="2" class="neural-line-anim" />
-            <!-- ក្បាលព្រួញ ឬចំណុចបញ្ជូនទិន្នន័យ -->
+            <path d="M 45 0 L 45 14 Q 45 32 180 34" stroke="#00f0ff" stroke-width="1.5" class="neural-line-anim" />
+            <path d="M 135 0 L 135 12 Q 135 32 180 34" stroke="#00f0ff" stroke-width="1.2" opacity="0.8" class="neural-line-anim" />
+            <path d="M 225 0 L 225 12 Q 225 32 180 34" stroke="#00f0ff" stroke-width="1.2" opacity="0.8" class="neural-line-anim" />
+            <path d="M 315 0 L 315 14 Q 315 32 180 34" stroke="#00f0ff" stroke-width="1.5" class="neural-line-anim" />
             <circle cx="180" cy="34" r="3.5" fill="#00f0ff" />
           </svg>
         </div>
 
-        <!-- ៥. ផ្ទាំងវាយតម្លៃសរុបនៃខួរក្បាល AI (AI Brain Synthesis & Signals) -->
-        <div class="glass-box rounded-2xl p-4 border border-cyan-500/30 space-y-3.5 shadow-2xl relative mb-4">
+        <!-- ៣. ប្រអប់ធំឆាត (បង្ហាញការវិភាគរបស់ AI ទាំង ៤ + Mini Wave Chart) -->
+        <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group"></i>
+              <span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (5m Chart)</span>
+            </span>
+            <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
+          </div>
+
+          <!-- ក្រាហ្វិក Mini AI Prediction Wave -->
+          <div class="w-full h-24 bg-black/70 rounded-xl relative overflow-hidden p-1.5 border border-neutral-800/80">
+            <svg class="w-full h-full" viewBox="0 0 320 90" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="aiWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="25" x2="320" y2="25" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <line x1="0" y1="50" x2="320" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <line x1="0" y1="75" x2="320" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+              <path id="ai-wave-area" d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15 L 320 90 L 0 90 Z" fill="url(#aiWaveGrad)"/>
+              <path id="ai-wave-line" d="M 0 65 Q 60 25 130 55 T 230 35 T 320 15" fill="none" stroke="#00f0ff" stroke-width="2"/>
+              <circle cx="230" cy="35" r="3.5" fill="#00db84"/>
+              <text x="200" y="26" fill="#00db84" font-size="8" font-weight="bold">ENTRY</text>
+              <circle cx="316" cy="15" r="3.5" fill="#00f0ff"/>
+              <text x="285" y="12" fill="#00f0ff" font-size="8" font-weight="bold">TP</text>
+            </svg>
+          </div>
+
+          <!-- ប្រអប់អានមតិ AI ដែលបានជ្រើសរើស ឬមើលទាំង ៤ -->
+          <div class="bg-black/60 rounded-xl p-2.5 border border-neutral-800 space-y-1.5">
+            <div class="flex justify-between items-center text-[10px]">
+              <span id="selected-ai-name" class="font-bold text-cyan-300">🤖 Gemini 3.5 Flash-Lite:</span>
+              <span id="selected-ai-vote" class="font-bold font-num px-1.5 py-0.5 rounded bg-neutral-800 text-white">--</span>
+            </div>
+            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">
+              កំពុងទាញយកទិន្នន័យទៀន 5m ពិតប្រាកដពី Bybit ដើម្បីឱ្យក្រុម AI ទាំង ៤ វិភាគ...
+            </p>
+            <div class="grid grid-cols-3 gap-1 pt-1 border-t border-neutral-800/70 text-[9.5px] font-num text-neutral-400 text-center">
+              <div>Entry: <span id="ind-entry" class="text-white">--</span></div>
+              <div>TP: <span id="ind-tp" class="text-cyan-400">--</span></div>
+              <div>SL: <span id="ind-sl" class="text-rose-400">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ៤. ខ្សែរមែកធាង ១ ខ្សែរ ចុះពីប្រអប់ធំ មកប្រអប់វាយតម្លៃសរុបខួរក្បាល AI -->
+        <div class="h-8 w-full relative">
+          <svg class="w-full h-full" viewBox="0 0 360 32" fill="none">
+            <line x1="180" y1="0" x2="180" y2="30" stroke="#00f0ff" stroke-width="2" class="neural-line-anim" />
+            <circle cx="180" cy="30" r="3.5" fill="#00f0ff" />
+          </svg>
+        </div>
+
+        <!-- ៥. ផ្ទាំងវាយតម្លៃសរុបនៃខួរក្បាល AI ទាំង ៤ (FINAL BRAIN CONSENSUS & 2-ROUND VERIFICATION) -->
+        <div class="glass-box rounded-2xl p-3.5 border border-cyan-500/40 space-y-3 shadow-2xl mb-3">
           
-          <!-- សញ្ញាណ Signal បោះឱ្យចូលផ្សារ -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-cyan-950/40 via-neutral-900 to-neutral-900 border border-cyan-500/40">
+          <!-- ស្លាកបញ្ជាក់ការផ្ទៀងផ្ទាត់ ២ ជុំ -->
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-neutral-300 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-microchip text-cyan-400"></i>
+              <span>សេចក្ដីសម្រេចសរុបខួរក្បាល AI (Consensus)</span>
+            </span>
+            <span id="verify-status-pill" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              ជុំទី 1: កំពុងវិភាគ
+            </span>
+          </div>
+
+          <!-- Signal សរុប & សំឡេងឆ្នោត (e.g. 4/4 BUY) -->
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-cyan-950/50 via-neutral-900 to-neutral-900 border border-cyan-500/30">
             <div>
-              <span class="text-[10px] text-neutral-400 font-medium">សញ្ញាណជួញដូរបច្ចុប្បន្ន (Signal)</span>
-              <div id="ai-signal-badge" class="text-base font-bold text-cyan-300 flex items-center gap-1.5 mt-0.5">
-                <i class="fa-solid fa-circle-arrow-up text-cyan-400"></i>
-                <span>STRONG BUY (LONG)</span>
+              <span class="text-[9.5px] text-neutral-400 block">សំឡេងឯកភាព (<span id="consensus-votes" class="text-white font-bold font-num">0/4 AI</span>)</span>
+              <div id="master-signal-text" class="text-base font-bold c-up flex items-center gap-1.5 mt-0.5">
+                <i class="fa-solid fa-circle-notch fa-spin text-xs"></i>
+                <span>WAIT...</span>
               </div>
             </div>
             <div class="text-right">
-              <span class="text-[10px] text-neutral-400">Win Rate ប៉ាន់ស្មាន</span>
-              <div id="ai-win-rate" class="text-base font-bold text-emerald-400 font-num">92.4%</div>
+              <span class="text-[9.5px] text-neutral-400 block">ទំនុកចិត្តរួម</span>
+              <div id="master-confidence" class="text-base font-bold text-emerald-400 font-num">--%</div>
             </div>
           </div>
 
-          <!-- ចំណុចចូលផ្សារ & គ្រប់គ្រងហានិភ័យ (Entry / TP / SL) -->
+          <!-- តម្លៃ Entry / TP / SL មធ្យមភាគពី AI ទាំង ៤ -->
           <div class="grid grid-cols-3 gap-2 font-num text-center">
-            <div class="p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block mb-0.5">តម្លៃចូល (Entry)</span>
-              <span id="ai-entry-val" class="text-xs font-bold text-white">4,018.50</span>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
+              <span class="text-[9px] text-neutral-400 font-sans block">ចូលផ្សារ (Entry)</span>
+              <span id="master-entry" class="text-xs font-bold text-white">--.--</span>
             </div>
-            <div class="p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block mb-0.5">យកចំណេញ (TP)</span>
-              <span id="ai-tp-val" class="text-xs font-bold text-cyan-400">4,042.00</span>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
+              <span class="text-[9px] text-neutral-400 font-sans block">យកចំណេញ (TP)</span>
+              <span id="master-tp" class="text-xs font-bold text-cyan-400">--.--</span>
             </div>
-            <div class="p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
-              <span class="text-[9px] text-neutral-400 font-sans block mb-0.5">កាត់ខាត (SL)</span>
-              <span id="ai-sl-val" class="text-xs font-bold text-rose-400">4,008.20</span>
+            <div class="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800">
+              <span class="text-[9px] text-neutral-400 font-sans block">កាត់ខាត (SL)</span>
+              <span id="master-sl" class="text-xs font-bold text-rose-400">--.--</span>
             </div>
           </div>
 
-          <!-- ការវិភាគបច្ចេកទេសលម្អិតរបស់ខួរក្បាល AI (Reasoning) -->
-          <div class="space-y-2 pt-1 border-t border-neutral-800">
-            <span class="text-[11px] font-bold text-white flex items-center gap-1.5">
-              <i class="fa-solid fa-lightbulb text-amber-400"></i>
-              <span>ការវិភាគបច្ចេកទេសសរុប (Neural Summary)</span>
-            </span>
-            <p id="ai-reasoning-desc" class="text-[11px] text-neutral-300 leading-relaxed font-normal">
-              តាមទិន្នន័យទៀន 5m របស់ XAUTUSDT គូសបញ្ជាក់ថា កម្លាំងទិញបានបង្កើត Liquidity Sweep នៅបាត 3,980.68 ដោយជោគជ័យ។ RSI បច្ចុប្បន្នស្ថិតក្នុងតំបន់ Rebound (48.5) គួបផ្សំនឹង EMA 7 កំពុងកាត់ EMA 25 ឡើងលើ ដែលជាសញ្ញាណ Bullish Expansion យ៉ាងរឹងមាំសម្រាប់ទិសដៅឡើង។
-            </p>
+          <!-- របាយការណ៍ប្រៀបធៀបជុំទី ១ និងជុំទី ២ -->
+          <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
+            រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារឡើងវិញដើម្បីធានាថាមិនខុសទិសដៅ។
           </div>
-
-          <!-- Bottom Action Button -->
-          <button class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-transform">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>ចម្លងសញ្ញាណចូលផ្សារ (Copy Signal)</span>
-          </button>
 
         </div>
 
@@ -519,7 +509,7 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT: ENGINE & AI MODAL ================= -->
+  <!-- ================= JAVASCRIPT ================= -->
   <script>
     const rootBody = document.getElementById('app-root');
     const wrapper = document.getElementById('chart-wrapper');
@@ -531,7 +521,6 @@
     const tooltip = document.getElementById('candle-tooltip');
 
     const currentSymbol = 'XAUTUSDT';
-    const currentInterval = '5';
     let candleData = [];
     let ws = null;
     let candleVolumeMap = new Map();
@@ -540,16 +529,8 @@
     const chart = LightweightCharts.createChart(container, {
       width: wrapper.clientWidth,
       height: wrapper.clientHeight,
-      layout: {
-        background: { color: '#000000' },
-        textColor: '#666e7a',
-        fontSize: 10,
-        fontFamily: "'Roboto', -apple-system, sans-serif",
-      },
-      grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
-      },
+      layout: { background: { color: '#000000' }, textColor: '#666e7a', fontSize: 10, fontFamily: "'Roboto', sans-serif" },
+      grid: { vertLines: { color: 'rgba(255, 255, 255, 0.03)' }, horzLines: { color: 'rgba(255, 255, 255, 0.03)' } },
       crosshair: {
         mode: LightweightCharts.CrosshairMode.Normal,
         vertLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
@@ -562,12 +543,7 @@
     });
 
     const candleSeries = chart.addCandlestickSeries({
-      upColor: '#00f0ff',
-      downColor: '#ff2e56',
-      borderVisible: false,
-      wickUpColor: '#00f0ff',
-      wickDownColor: '#ff2e56',
-      priceLineVisible: false,
+      upColor: '#00f0ff', downColor: '#ff2e56', borderVisible: false, wickUpColor: '#00f0ff', wickDownColor: '#ff2e56', priceLineVisible: false,
     });
 
     // Indicators
@@ -587,76 +563,48 @@
       const getSMA = (count) => {
         const res = [];
         for (let i = count - 1; i < candleData.length; i++) {
-          let sum = 0;
-          for (let j = 0; j < count; j++) sum += candleData[i - j].close;
+          let sum = 0; for (let j = 0; j < count; j++) sum += candleData[i - j].close;
           res.push({ time: candleData[i].time, value: sum / count });
         }
         return res;
       };
       indSeries.ma7.setData(getSMA(7));
       indSeries.ma25.setData(getSMA(25));
-
-      const k = 2 / 8;
-      const emaRes = [];
-      let prevEma = candleData[0].close;
-      candleData.forEach((d, idx) => {
-        const val = idx === 0 ? prevEma : (d.close * k) + (prevEma * (1 - k));
-        prevEma = val;
-        emaRes.push({ time: d.time, value: val });
-      });
+      const k = 2 / 8; const emaRes = []; let prevEma = candleData[0].close;
+      candleData.forEach((d, idx) => { const val = idx === 0 ? prevEma : (d.close * k) + (prevEma * (1 - k)); prevEma = val; emaRes.push({ time: d.time, value: val }); });
       indSeries.ema7.setData(emaRes);
 
-      const bollMid = getSMA(10);
-      const bollUpper = [];
-      const bollLower = [];
+      const bollMid = getSMA(10), bollUpper = [], bollLower = [];
       bollMid.forEach(m => {
         const idx = candleData.findIndex(d => d.time === m.time);
-        let sumSquares = 0;
-        for (let j = 0; j < 10; j++) sumSquares += Math.pow(candleData[idx - j].close - m.value, 2);
-        const stdDev = Math.sqrt(sumSquares / 10);
-        bollUpper.push({ time: m.time, value: m.value + (2 * stdDev) });
-        bollLower.push({ time: m.time, value: m.value - (2 * stdDev) });
+        let sumSq = 0; for (let j = 0; j < 10; j++) sumSq += Math.pow(candleData[idx - j].close - m.value, 2);
+        const sd = Math.sqrt(sumSq / 10);
+        bollUpper.push({ time: m.time, value: m.value + (2 * sd) });
+        bollLower.push({ time: m.time, value: m.value - (2 * sd) });
       });
-      indSeries.bollMid.setData(bollMid);
-      indSeries.bollUpper.setData(bollUpper);
-      indSeries.bollLower.setData(bollLower);
-
-      indSeries.sarDots.setData(candleData.map((d, idx) => ({
-        time: d.time,
-        value: idx % 2 === 0 ? d.low * 0.998 : d.high * 1.002
-      })));
+      indSeries.bollMid.setData(bollMid); indSeries.bollUpper.setData(bollUpper); indSeries.bollLower.setData(bollLower);
+      indSeries.sarDots.setData(candleData.map((d, idx) => ({ time: d.time, value: idx % 2 === 0 ? d.low * 0.998 : d.high * 1.002 })));
     }
 
-    // 2. Fetch 5,000 Candles
     async function load5000Candles() {
       try {
         const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=5`);
         const json = await res.json();
         if (json.retCode === 0 && json.result.list) {
-          const raw = json.result.list.reverse();
-          candleData = raw.map(item => ({
+          candleData = json.result.list.reverse().map(item => ({
             time: Math.floor(parseInt(item[0]) / 1000),
-            open: parseFloat(item[1]),
-            high: parseFloat(item[2]),
-            low: parseFloat(item[3]),
-            close: parseFloat(item[4]),
-            volume: parseFloat(item[5]),
-            turnover: parseFloat(item[6]),
+            open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4]),
+            volume: parseFloat(item[5]), turnover: parseFloat(item[6]),
           }));
-
           candleSeries.setData(candleData);
           updateIndicators();
           chart.timeScale().fitContent();
-
           candleVolumeMap.clear();
           candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
-
           const last = candleData[candleData.length - 1];
           if (last) updateHeaderPrices(last.close);
         }
-      } catch (e) {
-        console.error("Fetch Error:", e);
-      }
+      } catch (e) {}
     }
 
     async function loadTickerStats() {
@@ -669,12 +617,10 @@
           document.getElementById('stat-low').innerText = parseFloat(t.lowPrice24h).toFixed(2);
           document.getElementById('stat-turnover').innerText = (parseFloat(t.turnover24h) / 1e6).toFixed(2) + 'M';
           document.getElementById('header-mark').innerText = parseFloat(t.markPrice).toFixed(2);
-
           const changePct = (parseFloat(t.price24hPcnt) * 100).toFixed(2);
           const chEl = document.getElementById('header-change');
           chEl.innerText = (changePct >= 0 ? '+' : '') + changePct + '%';
           chEl.className = `text-xs font-semibold font-num ${changePct >= 0 ? 'c-up' : 'c-down'}`;
-
           indSeries.markLine.setData(candleData.map(d => ({ time: d.time, value: parseFloat(t.markPrice) })));
         }
       } catch (e) {}
@@ -685,57 +631,39 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // WebSocket Live 5m
     function connectBybitWebSocket() {
       if (ws) ws.close();
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
-      };
+      ws.onopen = () => ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.topic && msg.topic.startsWith('kline') && msg.data) {
           const k = msg.data[0];
           const tSeconds = Math.floor(parseInt(k.start) / 1000);
           const updatedCandle = {
-            time: tSeconds,
-            open: parseFloat(k.open),
-            high: parseFloat(k.high),
-            low: parseFloat(k.low),
-            close: parseFloat(k.close),
-            volume: parseFloat(k.volume),
-            turnover: parseFloat(k.turnover),
+            time: tSeconds, open: parseFloat(k.open), high: parseFloat(k.high), low: parseFloat(k.low), close: parseFloat(k.close),
+            volume: parseFloat(k.volume), turnover: parseFloat(k.turnover),
           };
-
           candleSeries.update(updatedCandle);
           updateHeaderPrices(updatedCandle.close);
           candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
-
           const lastIdx = candleData.length - 1;
-          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) {
-            candleData[lastIdx] = updatedCandle;
-          } else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) {
-            candleData.push(updatedCandle);
-          }
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) candleData[lastIdx] = updatedCandle;
+          else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) candleData.push(updatedCandle);
         }
       };
       ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
     }
 
-    load5000Candles();
-    loadTickerStats();
-    connectBybitWebSocket();
+    load5000Candles(); loadTickerStats(); connectBybitWebSocket();
     setInterval(loadTickerStats, 5000);
 
     // Indicators Toggle
-    const indTabs = document.querySelectorAll('.indicator-tab');
-    indTabs.forEach(tab => {
+    document.querySelectorAll('.indicator-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const indName = tab.getAttribute('data-ind');
-        const isActive = tab.classList.toggle('text-white');
-        tab.classList.toggle('font-bold');
+        const isActive = tab.classList.toggle('text-white'); tab.classList.toggle('font-bold');
         if (isActive) tab.classList.remove('text-neutral-400'); else tab.classList.add('text-neutral-400');
-
         if (indName === 'MA') { indSeries.ma7.applyOptions({ visible: isActive }); indSeries.ma25.applyOptions({ visible: isActive }); }
         else if (indName === 'EMA') { indSeries.ema7.applyOptions({ visible: isActive }); }
         else if (indName === 'BOLL') { indSeries.bollMid.applyOptions({ visible: isActive }); indSeries.bollUpper.applyOptions({ visible: isActive }); indSeries.bollLower.applyOptions({ visible: isActive }); }
@@ -744,260 +672,250 @@
       });
     });
 
-    // Dynamic High / Low Lines (60FPS)
+    // Dynamic High / Low Lines
     function getVisiblePeaks() {
       const logicalRange = chart.timeScale().getVisibleLogicalRange();
       if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
-      const from = Math.max(0, Math.floor(logicalRange.from));
-      const to = Math.min(candleData.length - 1, Math.ceil(logicalRange.to));
-      let currentHighCandle = null, currentLowCandle = null;
+      const from = Math.max(0, Math.floor(logicalRange.from)), to = Math.min(candleData.length - 1, Math.ceil(logicalRange.to));
+      let highC = null, lowC = null;
       for (let i = from; i <= to; i++) {
-        const c = candleData[i];
-        if (!c) continue;
-        if (!currentHighCandle || c.high > currentHighCandle.high) currentHighCandle = c;
-        if (!currentLowCandle || c.low < currentLowCandle.low) currentLowCandle = c;
+        const c = candleData[i]; if (!c) continue;
+        if (!highC || c.high > highC.high) highC = c;
+        if (!lowC || c.low < lowC.low) lowC = c;
       }
-      return { highCandle: currentHighCandle, lowCandle: currentLowCandle };
+      return { highCandle: highC, lowCandle: lowC };
     }
 
     function renderCustomLines() {
       if (candleData.length === 0) return;
-      const lastCandle = candleData[candleData.length - 1];
-      const lastX = chart.timeScale().timeToCoordinate(lastCandle.time);
-      const currentY = candleSeries.priceToCoordinate(lastCandle.close);
+      const last = candleData[candleData.length - 1];
+      const lastX = chart.timeScale().timeToCoordinate(last.time), currentY = candleSeries.priceToCoordinate(last.close);
       const runningLine = document.getElementById('running-price-line');
-
       if (lastX !== null && currentY !== null) {
         runningLine.style.display = 'block';
-        runningLine.setAttribute('x1', lastX);
-        runningLine.setAttribute('y1', currentY);
-        runningLine.setAttribute('x2', wrapper.clientWidth - 50);
-        runningLine.setAttribute('y2', currentY);
+        runningLine.setAttribute('x1', lastX); runningLine.setAttribute('y1', currentY);
+        runningLine.setAttribute('x2', wrapper.clientWidth - 50); runningLine.setAttribute('y2', currentY);
         document.getElementById('live-badge').style.top = currentY + 'px';
-      } else {
-        runningLine.style.display = 'none';
-      }
+      } else runningLine.style.display = 'none';
 
       const { highCandle, lowCandle } = getVisiblePeaks();
       const highGroup = document.getElementById('high-marker-group');
       if (highCandle) {
-        const highX = chart.timeScale().timeToCoordinate(highCandle.time);
-        const highY = candleSeries.priceToCoordinate(highCandle.high);
-        if (highX !== null && highY !== null && highX >= -10 && highX <= wrapper.clientWidth + 10 && highY >= 0 && highY <= wrapper.clientHeight) {
+        const hx = chart.timeScale().timeToCoordinate(highCandle.time), hy = candleSeries.priceToCoordinate(highCandle.high);
+        if (hx !== null && hy !== null && hx >= -10 && hx <= wrapper.clientWidth + 10 && hy >= 0 && hy <= wrapper.clientHeight) {
           highGroup.style.display = 'block';
-          const lineLen = 42;
-          document.getElementById('high-line').setAttribute('x1', highX);
-          document.getElementById('high-line').setAttribute('y1', highY);
-          document.getElementById('high-line').setAttribute('x2', highX + lineLen);
-          document.getElementById('high-line').setAttribute('y2', highY);
-          const t = document.getElementById('high-text');
-          t.setAttribute('x', highX + lineLen + 4);
-          t.setAttribute('y', highY + 4);
-          t.textContent = highCandle.high.toFixed(2);
-        } else { highGroup.style.display = 'none'; }
+          document.getElementById('high-line').setAttribute('x1', hx); document.getElementById('high-line').setAttribute('y1', hy);
+          document.getElementById('high-line').setAttribute('x2', hx + 42); document.getElementById('high-line').setAttribute('y2', hy);
+          const t = document.getElementById('high-text'); t.setAttribute('x', hx + 46); t.setAttribute('y', hy + 4); t.textContent = highCandle.high.toFixed(2);
+        } else highGroup.style.display = 'none';
       }
 
       const lowGroup = document.getElementById('low-marker-group');
       if (lowCandle) {
-        const lowX = chart.timeScale().timeToCoordinate(lowCandle.time);
-        const lowY = candleSeries.priceToCoordinate(lowCandle.low);
-        if (lowX !== null && lowY !== null && lowX >= -10 && lowX <= wrapper.clientWidth + 10 && lowY >= 0 && lowY <= wrapper.clientHeight) {
+        const lx = chart.timeScale().timeToCoordinate(lowCandle.time), ly = candleSeries.priceToCoordinate(lowCandle.low);
+        if (lx !== null && ly !== null && lx >= -10 && lx <= wrapper.clientWidth + 10 && ly >= 0 && ly <= wrapper.clientHeight) {
           lowGroup.style.display = 'block';
-          const lineLen = 25;
-          document.getElementById('low-line').setAttribute('x1', lowX);
-          document.getElementById('low-line').setAttribute('y1', lowY);
-          document.getElementById('low-line').setAttribute('x2', lowX + lineLen);
-          document.getElementById('low-line').setAttribute('y2', lowY);
-          const t = document.getElementById('low-text');
-          t.setAttribute('x', lowX + lineLen + 4);
-          t.setAttribute('y', lowY + 4);
-          t.textContent = lowCandle.low.toFixed(2);
-        } else { lowGroup.style.display = 'none'; }
+          document.getElementById('low-line').setAttribute('x1', lx); document.getElementById('low-line').setAttribute('y1', ly);
+          document.getElementById('low-line').setAttribute('x2', lx + 25); document.getElementById('low-line').setAttribute('y2', ly);
+          const t = document.getElementById('low-text'); t.setAttribute('x', lx + 29); t.setAttribute('y', ly + 4); t.textContent = lowCandle.low.toFixed(2);
+        } else lowGroup.style.display = 'none';
       }
     }
 
     function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
     requestAnimationFrame(syncLoop);
 
-    // Tooltip
+    // Crosshair & Tooltip
     chart.subscribeCrosshairMove(param => {
       if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
-        centerDot.style.display = 'block';
-        centerDot.style.left = param.point.x + 'px';
-        centerDot.style.top = param.point.y + 'px';
-
+        centerDot.style.display = 'block'; centerDot.style.left = param.point.x + 'px'; centerDot.style.top = param.point.y + 'px';
         const data = param.seriesData.get(candleSeries);
         if (data) {
           tooltip.style.display = 'block';
           const date = new Date(param.time * 1000);
-          const timeStr = `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-
-          const changeVal = (data.close - data.open);
-          const changePct = ((changeVal / data.open) * 100);
-          const rangeVal = (data.high - data.low);
-          const rangePct = ((rangeVal / data.low) * 100);
-
-          document.getElementById('tip-time').innerText = timeStr;
+          document.getElementById('tip-time').innerText = `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
           document.getElementById('tip-open').innerText = data.open.toFixed(2);
           document.getElementById('tip-high').innerText = data.high.toFixed(2);
           document.getElementById('tip-low').innerText = data.low.toFixed(2);
           document.getElementById('tip-close').innerText = data.close.toFixed(2);
-
-          const tipChange = document.getElementById('tip-change');
-          const sign = changeVal >= 0 ? '+' : '';
-          tipChange.innerText = `${sign}${changeVal.toFixed(2)} (${sign}${changePct.toFixed(2)}%)`;
-          tipChange.className = changeVal >= 0 ? 'c-up' : 'c-down';
-
-          document.getElementById('tip-range').innerText = `${rangeVal.toFixed(2)} (${rangePct.toFixed(2)}%)`;
-
-          const volData = candleVolumeMap.get(param.time);
-          if (volData && volData.volume !== undefined) {
-            document.getElementById('tip-vol-xaut').innerText = volData.volume.toFixed(3);
-            const usdtVal = volData.turnover ? volData.turnover : (volData.volume * data.close);
-            if (usdtVal >= 1e6) document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e6).toFixed(2) + 'M';
-            else if (usdtVal >= 1e3) document.getElementById('tip-vol-usdt').innerText = (usdtVal / 1e3).toFixed(2) + 'K';
-            else document.getElementById('tip-vol-usdt').innerText = usdtVal.toFixed(2);
-          } else {
-            document.getElementById('tip-vol-xaut').innerText = '0.000';
-            document.getElementById('tip-vol-usdt').innerText = '0.00';
+          const cv = data.close - data.open, cp = (cv / data.open) * 100, rv = data.high - data.low, rp = (rv / data.low) * 100;
+          const tc = document.getElementById('tip-change'), s = cv >= 0 ? '+' : '';
+          tc.innerText = `${s}${cv.toFixed(2)} (${s}${cp.toFixed(2)}%)`; tc.className = cv >= 0 ? 'c-up' : 'c-down';
+          document.getElementById('tip-range').innerText = `${rv.toFixed(2)} (${rp.toFixed(2)}%)`;
+          const vd = candleVolumeMap.get(param.time);
+          if (vd && vd.volume !== undefined) {
+            document.getElementById('tip-vol-xaut').innerText = vd.volume.toFixed(3);
+            const uv = vd.turnover || (vd.volume * data.close);
+            document.getElementById('tip-vol-usdt').innerText = uv >= 1e6 ? (uv/1e6).toFixed(2)+'M' : uv >= 1e3 ? (uv/1e3).toFixed(2)+'K' : uv.toFixed(2);
           }
-
           if (param.point.x < 145) { tooltip.style.left = 'auto'; tooltip.style.right = '8px'; }
           else { tooltip.style.left = '8px'; tooltip.style.right = 'auto'; }
         }
-      } else {
-        centerDot.style.display = 'none';
-        tooltip.style.display = 'none';
-      }
+      } else { centerDot.style.display = 'none'; tooltip.style.display = 'none'; }
     });
 
     // Fullscreen
     let isFull = false;
     btnFullscreen.addEventListener('click', () => {
       isFull = !isFull;
-      if (isFull) {
-        rootBody.classList.add('is-fullscreen');
-        iconMax.classList.add('hidden');
-        iconMin.classList.remove('hidden');
-        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        rootBody.classList.remove('is-fullscreen');
-        iconMax.classList.remove('hidden');
-        iconMin.classList.add('hidden');
-        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      }
+      if (isFull) { rootBody.classList.add('is-fullscreen'); iconMax.classList.add('hidden'); iconMin.classList.remove('hidden'); if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); }
+      else { rootBody.classList.remove('is-fullscreen'); iconMax.classList.remove('hidden'); iconMin.classList.add('hidden'); if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
       setTimeout(() => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); chart.timeScale().fitContent(); }, 100);
     });
+    window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
 
-    window.addEventListener('resize', () => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); });
-
-    // Countdown 5m
-    function updateCountdown() {
-      const now = new Date();
-      const currentSeconds = Math.floor(now.getTime() / 1000);
-      const tfSeconds = 5 * 60;
-      const remainingTotalSeconds = tfSeconds - (currentSeconds % tfSeconds);
-      const minutes = Math.floor(remainingTotalSeconds / 60);
-      const seconds = remainingTotalSeconds % 60;
-      const fmt = (num) => String(num).padStart(2, '0');
-      document.getElementById('countdown').innerText = `00:${fmt(minutes)}:${fmt(seconds)}`;
-    }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+    // Candle 5m Countdown
+    setInterval(() => {
+      const now = Math.floor(Date.now() / 1000);
+      const rem = 300 - (now % 300);
+      document.getElementById('countdown').innerText = `00:${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`;
+    }, 1000);
 
     // =========================================================================
-    // ៧. LOGIC គ្រប់គ្រងផ្ទាំងវិភាគ AI & SWITCHING (GEMINI, CLAUDE, GPT, DEEPSEEK)
+    // ៧. ប្រព័ន្ធ AI COUNCIL ស្វ័យប្រវត្តិរាល់ 2:29 នាទីម្ដង (149 វិនាទី) & ផ្ទៀងផ្ទាត់ ២ ជុំ
     // =========================================================================
     const aiModal = document.getElementById('ai-modal');
-    const btnTriggerLive = document.getElementById('btn-trigger-live');
-    const btnTriggerAi = document.getElementById('btn-trigger-ai');
-    const btnCloseAi = document.getElementById('btn-close-ai');
+    document.getElementById('btn-trigger-live').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
+    document.getElementById('btn-trigger-ai').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
+    document.getElementById('btn-close-ai').addEventListener('click', () => aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'));
 
-    // បើក Modal
-    function openAiModal() {
-      aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+    const CYCLE_SECONDS = 149; // 2 នាទី 29 វិនាទី = 149 វិនាទី
+    let cycleRemaining = CYCLE_SECONDS;
+    let roundCount = 0;
+    let prevConsensus = null;
+    let latestModelsMap = {};
+    let selectedAiKey = 'gemini';
+    let isScanningAI = false;
+
+    // បង្ហាញព័ត៌មាន AI នីមួយៗពេលចុចលើប៊ូតុងទាំង ៤
+    function displaySelectedAiDetail(key) {
+      selectedAiKey = key;
+      const m = latestModelsMap[key];
+      if (!m) return;
+
+      const labelMap = { gemini: '🤖 Gemini 3.5 Flash-Lite', nemotron: '🟢 Nemotron 550B', gpt120b: '🟡 OpenAI GPT-120B', qwen: '🟣 Qwen 3.8 27B' };
+      document.getElementById('selected-ai-name').innerText = labelMap[key] || m.name;
+
+      const voteBadge = document.getElementById('selected-ai-vote');
+      voteBadge.innerText = `${m.signal} (${m.confidence}%)`;
+      voteBadge.className = `font-bold font-num px-1.5 py-0.5 rounded text-[9.5px] ${m.signal === 'BUY' ? 'bg-cyan-500/20 text-cyan-300' : m.signal === 'SELL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-300'}`;
+
+      document.getElementById('selected-ai-reason').innerText = m.reason_km;
+      document.getElementById('ind-entry').innerText = Number(m.entry).toFixed(2);
+      document.getElementById('ind-tp').innerText = Number(m.tp).toFixed(2);
+      document.getElementById('ind-sl').innerText = Number(m.sl).toFixed(2);
     }
 
-    // បិទ Modal
-    function closeAiModal() {
-      aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-    }
-
-    btnTriggerLive.addEventListener('click', openAiModal);
-    btnTriggerAi.addEventListener('click', openAiModal);
-    btnCloseAi.addEventListener('click', closeAiModal);
-
-    // ទិន្នន័យ Signal របស់ AI នីមួយៗ (Smart Signals)
-    const aiProfiles = {
-      gemini: {
-        title: "Gemini Neural Wave Analysis (5m)",
-        confidence: "Confidence: 94.2%",
-        signal: "STRONG BUY (LONG)",
-        isBuy: true,
-        winRate: "92.4%",
-        entry: "4,018.50",
-        tp: "4,042.00",
-        sl: "4,008.20",
-        desc: "តាមទិន្នន័យទៀន 5m របស់ XAUTUSDT គូសបញ្ជាក់ថា កម្លាំងទិញបានបង្កើត Liquidity Sweep នៅបាត 3,980.68 ដោយជោគជ័យ។ RSI បច្ចុប្បន្នស្ថិតក្នុងតំបន់ Rebound (48.5) គួបផ្សំនឹង EMA 7 កំពុងកាត់ EMA 25 ឡើងលើ ដែលជាសញ្ញាណ Bullish Expansion យ៉ាងរឹងមាំសម្រាប់ទិសដៅឡើង។"
-      },
-      claude: {
-        title: "Claude 3.5 Sonnet Precision Flow (5m)",
-        confidence: "Confidence: 96.8%",
-        signal: "BREAKOUT BUY (LONG)",
-        isBuy: true,
-        winRate: "94.5%",
-        entry: "4,020.10",
-        tp: "4,048.50",
-        sl: "4,011.00",
-        desc: "ម៉ូដែលកំណត់រចនាសម្ព័ន្ធទីផ្សារ (Market Structure Shift) បានបញ្ជាក់ច្បាស់លើទៀន 5m ថាតម្លៃកំពុងស្រូបយក Order Block យ៉ាងខ្លាំង។ Bollinger Bands កំពុងបើកមាត់ទូលាយ (Squeeze Expansion) បង្ហាញពីការត្រៀមបាញ់ឡើងទៅកាន់ High ថ្មី។"
-      },
-      gpt4: {
-        title: "OpenAI GPT-4o Momentum Algorithmic (5m)",
-        confidence: "Confidence: 91.5%",
-        signal: "SCALPING BUY (LONG)",
-        isBuy: true,
-        winRate: "89.8%",
-        entry: "4,019.00",
-        tp: "4,036.50",
-        sl: "4,010.50",
-        desc: "ក្បួនដោះស្រាយ Volume Delta បង្ហាញពី Aggressive Market Buyers បានស្រូបយកការលក់ទាំងអស់នៅជុំវិញ Mark Price 4,021.41។ ឱកាសល្អបំផុតសម្រាប់ការចូលលេង Scalping រយៈពេលខ្លីយកកម្រៃលឿនរហ័ស។"
-      },
-      deepseek: {
-        title: "DeepSeek V3 Deep Mathematical Reasoning (5m)",
-        confidence: "Confidence: 95.1%",
-        signal: "ACCUMULATION BUY (LONG)",
-        isBuy: true,
-        winRate: "93.2%",
-        entry: "4,017.80",
-        tp: "4,045.00",
-        sl: "4,007.50",
-        desc: "ការគណនាគម្លាត Fibonacci Golden Pocket (0.618) ផ្គូផ្គងចំកម្ពស់បច្ចុប្បន្ន។ អត្រាហានិភ័យ Risk/Reward ខ្ពស់ដល់ទៅ 1:3.2 សមស្របបំផុតសម្រាប់ការដាក់បញ្ជាទិញចូលផ្សារតាមបែប Technical Mastery។"
-      }
-    };
-
-    // ចុចប្តូរប៊ូតុង AI ទាំង ៤ (Gemini, Claude, GPT, DeepSeek)
-    const aiNodes = document.querySelectorAll('.ai-node');
-    aiNodes.forEach(node => {
-      node.addEventListener('click', () => {
-        aiNodes.forEach(n => n.classList.remove('ai-node-active'));
-        node.classList.add('ai-node-active');
-
-        const aiKey = node.getAttribute('data-ai');
-        const p = aiProfiles[aiKey];
-        if (p) {
-          document.getElementById('ai-chart-title').innerText = p.title;
-          document.getElementById('ai-chart-accuracy').innerText = p.confidence;
-          
-          const sigBadge = document.getElementById('ai-signal-badge');
-          sigBadge.innerHTML = `<i class="fa-solid fa-circle-arrow-up text-cyan-400"></i><span>${p.signal}</span>`;
-          
-          document.getElementById('ai-win-rate').innerText = p.winRate;
-          document.getElementById('ai-entry-val').innerText = p.entry;
-          document.getElementById('ai-tp-val').innerText = p.tp;
-          document.getElementById('ai-sl-val').innerText = p.sl;
-          document.getElementById('ai-reasoning-desc').innerText = p.desc;
-        }
+    document.querySelectorAll('.ai-node').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ai-node').forEach(b => b.classList.remove('ai-node-selected'));
+        btn.classList.add('ai-node-selected');
+        displaySelectedAiDetail(btn.getAttribute('data-ai'));
       });
+    });
+
+    // មុខងារហៅ AI ទាំង ៤ វិភាគព្រមគ្នា
+    async function runAiCouncilCycle() {
+      if (isScanningAI) return;
+      isScanningAI = true;
+      roundCount++;
+
+      document.getElementById('ai-scan-status').innerText = '● កំពុងវិភាគ (4 AI)...';
+      document.getElementById('ai-scan-status').className = 'text-[9px] text-amber-400 font-num';
+      document.getElementById('ai-round-badge').innerText = `ជុំទី ${roundCount}`;
+
+      try {
+        const res = await fetch('/api/ai-council', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ round: roundCount, previousVerdict: prevConsensus })
+        });
+        const data = await res.json();
+
+        if (data.success && data.models) {
+          // 1. Update ប៊ូតុង AI ទាំង ៤
+          data.models.forEach(m => {
+            latestModelsMap[m.id] = m;
+            const badge = document.getElementById(`badge-node-${m.id}`);
+            if (badge) {
+              badge.innerText = `${m.signal} ${m.confidence}%`;
+              badge.className = `text-[9px] font-bold font-num mt-0.5 ${m.signal === 'BUY' ? 'c-up' : m.signal === 'SELL' ? 'c-down' : 'text-amber-400'}`;
+            }
+          });
+
+          displaySelectedAiDetail(selectedAiKey);
+
+          // 2. Update ប្រអប់វាយតម្លៃសរុបខួរក្បាល AI (Consensus Brain)
+          const c = data.consensus;
+          document.getElementById('consensus-votes').innerText = `${c.votes} AI`;
+          document.getElementById('master-confidence').innerText = `${c.confidence}%`;
+          document.getElementById('master-entry').innerText = c.entry;
+          document.getElementById('master-tp').innerText = c.tp;
+          document.getElementById('master-sl').innerText = c.sl;
+
+          const sigEl = document.getElementById('master-signal-text');
+          if (c.signal === 'BUY') {
+            sigEl.innerHTML = `<i class="fa-solid fa-circle-arrow-up"></i><span>STRONG BUY (LONG)</span>`;
+            sigEl.className = 'text-base font-bold c-up flex items-center gap-1.5 mt-0.5';
+          } else if (c.signal === 'SELL') {
+            sigEl.innerHTML = `<i class="fa-solid fa-circle-arrow-down"></i><span>STRONG SELL (SHORT)</span>`;
+            sigEl.className = 'text-base font-bold c-down flex items-center gap-1.5 mt-0.5';
+          } else {
+            sigEl.innerHTML = `<i class="fa-solid fa-pause-circle"></i><span>WAIT / NEUTRAL</span>`;
+            sigEl.className = 'text-base font-bold text-amber-400 flex items-center gap-1.5 mt-0.5';
+          }
+
+          // 3. ប្រព័ន្ធផ្ទៀងផ្ទាត់ ជុំទី ១ ធៀប ជុំទី ២
+          const verifyPill = document.getElementById('verify-status-pill');
+          const compBox = document.getElementById('round-comparison-box');
+          if (roundCount === 1) {
+            verifyPill.innerText = 'ជុំទី 1: វិភាគដំបូង';
+            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+            compBox.innerHTML = `📌 <b>ជុំទី ១ (${new Date().toLocaleTimeString()}):</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ $${c.entry}។ កំពុងរង់ចាំ <b>2:29 នាទី</b> ទៀតដើម្បីផ្ទៀងផ្ទាត់ជុំទី ២!`;
+          } else if (c.verifiedWithPrev === 'CONFIRMED') {
+            verifyPill.innerText = `✅ ជុំទី ${roundCount}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
+            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${roundCount} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${prevConsensus.signal})! នេះបញ្ជាក់ថាសញ្ញាណមានភាពរឹងមាំខ្លាំង (RSI: ${data.market.rsi14} | EMA7: ${data.market.ema7})។`;
+          } else {
+            verifyPill.innerText = `⚠️ ជុំទី ${roundCount}: ប្តូរទិសដៅ`;
+            verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+            compBox.innerHTML = `⚠️ <b>ការប្រែប្រួលទិសដៅ (Updated):</b> ជុំមុន AI ឱ្យ <b>${prevConsensus.signal}</b> តែជុំនេះទីផ្សារផ្លាស់ប្តូរមកជា <b>${c.signal}</b> វិញ។ សូមប្រុងប្រយ័ត្នតាមតម្លៃថ្មី!`;
+          }
+
+          prevConsensus = { signal: c.signal, entry: c.entry };
+          document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): ${c.signal} | Entry $${c.entry} | TP $${c.tp}`;
+          document.getElementById('ai-scan-status').innerText = `● រួចរាល់ (${new Date().toLocaleTimeString()})`;
+          document.getElementById('ai-scan-status').className = 'text-[9px] text-emerald-400 font-num';
+        }
+      } catch (e) {
+        document.getElementById('ai-scan-status').innerText = '✖ Error';
+        document.getElementById('ai-scan-status').className = 'text-[9px] text-rose-400 font-num';
+      } finally {
+        isScanningAI = false;
+        cycleRemaining = CYCLE_SECONDS; // Reset កំណត់ម៉ោង 2:29 ឡើងវិញ
+      }
+    }
+
+    // ដំណើរការជុំទី ១ ភ្លាមៗក្រោយបើកវេបសាយ 2 វិនាទី
+    setTimeout(runAiCouncilCycle, 2000);
+
+    // នាឡិការាប់ថយក្រោយរាល់ 2:29 នាទី (149 វិនាទី) ដើម្បីឱ្យ AI ទាំង ៤ វិភាគម្ដងទៀត
+    setInterval(() => {
+      if (!isScanningAI) {
+        cycleRemaining--;
+        if (cycleRemaining <= 0) {
+          runAiCouncilCycle();
+        }
+      }
+      const m = String(Math.floor(cycleRemaining / 60)).padStart(2, '0');
+      const s = String(cycleRemaining % 60).padStart(2, '0');
+      document.getElementById('ai-cycle-timer').innerText = `${m}:${s}`;
+    }, 1000);
+
+    // ប៊ូតុងស្កេនភ្លាមដោយដៃ (បើចង់បង្ខំឱ្យវិភាគមុន 2:29)
+    document.getElementById('btn-force-scan').addEventListener('click', () => {
+      cycleRemaining = CYCLE_SECONDS;
+      runAiCouncilCycle();
     });
   </script>
 </body>
