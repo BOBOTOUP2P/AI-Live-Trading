@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BOBOTOU (Bybit) - XAUTUSDT 2h Live & AI Council</title>
+  <title>BOBOTOU (Bybit) - XAUTUSDT 2h + DXY Live</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -49,19 +50,19 @@
       z-index: 32;
     }
 
-    #pos-style-menu {
+    #pos-style-menu, #dxy-popover {
       position: absolute;
       top: 38px;
       right: 10px;
-      width: 225px;
       background: rgba(15, 19, 27, 0.96);
       border: 1px solid rgba(0, 240, 255, 0.35);
       backdrop-filter: blur(12px);
       border-radius: 12px;
-      padding: 6px;
       z-index: 60;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.78);
     }
+    #pos-style-menu { width: 225px; padding: 6px; }
+    #dxy-popover { width: 250px; padding: 10px; border-color: rgba(250, 204, 21, 0.4); }
     .style-opt-active {
       background: rgba(0, 240, 255, 0.16) !important;
       border-color: rgba(0, 240, 255, 0.5) !important;
@@ -101,12 +102,12 @@
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i id="banner-icon" class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">BOBOTOU 2h AI + Forex Factory Calendar កំពុងដំណើរការ...</span>
+      <span id="mini-council-banner" class="truncate">BOBOTOU 2h AI + DXY + Multi-News កំពុងដំណើរការ...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
 
-  <!-- 3. TIMEFRAME BAR (ប្តូរមក 2h តែមួយគត់) -->
+  <!-- 3. TIMEFRAME BAR (មានរូប SVG សន្ទស្សន៍ប្រាក់ដុល្លារ $ នៅខាងមុខខ្មៅដៃ) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30 relative">
     <div class="flex items-center space-x-3.5">
       <span class="text-white font-bold cursor-pointer text-xs">2h</span>
@@ -125,7 +126,19 @@
       </div>
     </div>
 
-    <div class="flex items-center space-x-3 text-neutral-400">
+    <!-- Right Toolbar Icons -->
+    <div class="flex items-center space-x-2.5 text-neutral-400">
+      <!-- ថ្មី៖ រូប SVG សន្ទស្សន៍ប្រាក់ដុល្លារ (DXY) នៅខាងមុខខ្មៅដៃ -->
+      <button id="btn-dxy-panel" class="p-1 rounded text-amber-400 hover:text-amber-300 transition-colors flex items-center justify-center relative" title="សន្ទស្សន៍ប្រាក់ដុល្លារ (DXY)">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9.5" stroke-opacity="0.8"/>
+          <path d="M14.8 9.2C14.8 7.9 13.5 7 12 7C10.5 7 9.2 7.8 9.2 9.1C9.2 10.6 10.7 11.2 12.1 11.6C13.6 12 15 12.6 15 14.3C15 15.8 13.6 16.8 12 16.8C10.2 16.8 9 15.8 9 14.4"/>
+          <line x1="12" y1="5.5" x2="12" y2="18.5"/>
+        </svg>
+        <span id="dxy-dot-indicator" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+      </button>
+
+      <!-- ប៊ូតុងខ្មៅដៃ (បើក/បិទ ប្រអប់ TP/SL) -->
       <button id="btn-toggle-ai-box" class="p-1 rounded text-cyan-400 hover:text-white transition-colors flex items-center justify-center" title="បើក/បិទ ប្រអប់ស្រមោល AI">
         <svg id="icon-pen-on" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -136,17 +149,54 @@
         </svg>
       </button>
 
+      <!-- ប៊ូតុងត្រេបី (Sliders) -->
       <button id="btn-pos-style-menu" class="relative p-1 rounded hover:text-white transition-colors flex items-center justify-center" title="ជ្រើសរើសទម្រង់ប្រអប់ TP/SL">
         <i class="fa-solid fa-sliders text-[11px]"></i>
         <span id="sliders-red-dot" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
       </button>
 
+      <!-- Fullscreen -->
       <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
         <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16"><path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" /></svg>
         <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16"><path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" /></svg>
       </button>
     </div>
 
+    <!-- កូនផ្ទាំងតូច DXY (សន្ទស្សន៍ប្រាក់ដុល្លារអាមេរិក) -->
+    <div id="dxy-popover" class="hidden space-y-2">
+      <div class="flex items-center justify-between border-b border-neutral-800 pb-1.5">
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-bold">$</span>
+          <div>
+            <div class="text-[11px] font-bold text-white leading-tight">US Dollar Index (DXY)</div>
+            <div class="text-[9px] text-neutral-400" id="dxy-source">កំពុងផ្ទុក...</div>
+          </div>
+        </div>
+        <span id="dxy-trend-badge" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300">--</span>
+      </div>
+
+      <div class="flex items-baseline justify-between font-num">
+        <span id="dxy-price" class="text-xl font-bold text-amber-400">--.---</span>
+        <span id="dxy-change" class="text-xs font-bold text-neutral-300">0.00%</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1.5 text-[9.5px] font-num text-center">
+        <div class="bg-black/50 p-1.5 rounded-lg border border-neutral-800">
+          <span class="text-neutral-500 block font-sans text-[8.5px]">Day High</span>
+          <span id="dxy-high" class="text-neutral-200 font-bold">--</span>
+        </div>
+        <div class="bg-black/50 p-1.5 rounded-lg border border-neutral-800">
+          <span class="text-neutral-500 block font-sans text-[8.5px]">Day Low</span>
+          <span id="dxy-low" class="text-neutral-200 font-bold">--</span>
+        </div>
+      </div>
+
+      <div id="dxy-gold-impact" class="text-[10px] p-2 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-300 leading-relaxed">
+        កំពុងគណនាឥទ្ធិពលប្រាក់ដុល្លារលើតម្លៃមាស...
+      </div>
+    </div>
+
+    <!-- កូនផ្ទាំងតូចចំនួន ៣ ផ្នែក (Style TP/SL) -->
     <div id="pos-style-menu" class="hidden space-y-1">
       <div class="px-2 py-1 text-[10px] font-bold text-neutral-400 border-b border-neutral-800/80 flex items-center justify-between">
         <span>ទម្រង់ប្រអប់ TP / SL</span>
@@ -222,7 +272,6 @@
       <div id="lbl-sl" class="pos-label-pill bg-[#ff2e56] text-white">SL: --</div>
     </div>
 
-    <!-- Countdown 2 ម៉ោង -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
       <div class="text-neutral-400 text-[9px]" id="countdown">01:59:59</div>
@@ -243,7 +292,7 @@
     <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
-  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ដកប៊ូតុងស្កេនភ្លាមចេញ / វិភាគរាល់ 30 នាទី) -->
+  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» -->
   <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
     <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
@@ -261,7 +310,6 @@
             </p>
           </div>
         </div>
-        <!-- ដកប៊ូតុង "ស្កេនភ្លាម" ចេញ ដើម្បីការពារ API Limit ១០០% -->
         <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
@@ -285,7 +333,7 @@
 
         <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (2h Chart)</span></span>
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (Multi-TF + DXY)</span></span>
             <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
           </div>
 
@@ -305,7 +353,7 @@
               <span id="selected-ai-name" class="font-bold text-cyan-300">🤖 Gemini 3.5 Flash-Lite:</span>
               <span id="selected-ai-vote" class="font-bold font-num px-1.5 py-0.5 rounded bg-neutral-800 text-white">--</span>
             </div>
-            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">កំពុងទាញយកទិន្នន័យទៀន 2h និងព័ត៌មាន Forex Factory ដើម្បីវិភាគ...</p>
+            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">កំពុងទាញយកទៀន 4h/2h/15m, សន្ទស្សន៍ DXY និងព័ត៌មានពហុប្រភព...</p>
             <div class="grid grid-cols-3 gap-1 pt-1 border-t border-neutral-800/70 text-[9.5px] font-num text-neutral-400 text-center">
               <div>Entry: <span id="ind-entry" class="text-white">--</span></div>
               <div>TP: <span id="ind-tp" class="text-cyan-400">--</span></div>
@@ -345,21 +393,35 @@
           </div>
 
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
-            រាល់ 30 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ 2h និងព័ត៌មាន Forex Factory ឡើងវិញ។
+            រាល់ 30 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ (4h/2h/15m) + DXY + ព័ត៌មានពហុប្រភពឡើងវិញ។
           </div>
         </div>
 
         <!-- ប្រតិទិនព័ត៌មាន FOREX FACTORY USD -->
-        <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mb-4 mt-2">
+        <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mt-2">
           <div class="flex items-center justify-between text-[11px]">
             <span class="text-white font-bold flex items-center gap-1.5">
               <i class="fa-solid fa-calendar-days text-rose-400"></i>
-              <span>ប្រតិទិនព័ត៌មានសេដ្ឋកិច្ច Forex Factory (USD)</span>
+              <span>ប្រតិទិន Forex Factory (USD)</span>
             </span>
             <span class="text-[9px] text-neutral-400 font-num">ម៉ោងខ្មែរ (UTC+7)</span>
           </div>
-          <div id="ff-news-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-[10px]">
+          <div id="ff-news-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-[10px]">
             <div class="text-neutral-500 text-center py-2">កំពុងទាញយកប្រតិទិន Forex Factory...</div>
+          </div>
+        </div>
+
+        <!-- ព័ត៌មានទាន់ហេតុការណ៍ពហុប្រភព (Yahoo Gold/DXY + FXStreet RSS) -->
+        <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mb-4 mt-2">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="text-white font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-rss text-amber-400"></i>
+              <span>ព័ត៌មានទីផ្សារមាស & ដុល្លារ (Live RSS)</span>
+            </span>
+            <span class="text-[9px] text-emerald-400">Multi-Source</span>
+          </div>
+          <div id="rss-news-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-[10px]">
+            <div class="text-neutral-500 text-center py-2">កំពុងទាញយកព័ត៌មានថ្មីៗ...</div>
           </div>
         </div>
 
@@ -487,7 +549,6 @@
       setSourceBadge(sourceName, true);
     }
 
-    // ប្រព័ន្ធបង្កើតទៀន 2 ម៉ោង (7,200 វិនាទី) ថ្មីដោយស្វ័យប្រវត្តិពេលអស់ម៉ោង
     function ensureCurrent2hCandleExists() {
       if (candleData.length === 0) return;
       const now = Math.floor(Date.now() / 1000);
@@ -505,7 +566,6 @@
       }
     }
 
-    // ទាញយកទៀន 2h (interval=120) រហូតដល់ 5,000 ដើម
     async function load5000Candles2h() {
       let allList = [];
       let endTime = Date.now();
@@ -595,11 +655,51 @@
       } catch (e) {}
     }
 
-    async function loadForexFactoryNews() {
+    // ទាញយក DXY Live សម្រាប់កូនផ្ទាំង SVG $
+    async function loadLiveDXY() {
+      try {
+        const res = await fetch('/api/dxy');
+        const d = await res.json();
+        if (d && d.price) {
+          document.getElementById('dxy-price').innerText = d.price;
+          document.getElementById('dxy-source').innerText = `Source: ${d.source}`;
+          document.getElementById('dxy-high').innerText = d.high;
+          document.getElementById('dxy-low').innerText = d.low;
+
+          const chPct = parseFloat(d.changePct);
+          const chEl = document.getElementById('dxy-change');
+          chEl.innerText = (chPct >= 0 ? '+' : '') + d.changePct + '%';
+          chEl.className = `text-xs font-bold ${chPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+          const trendBadge = document.getElementById('dxy-trend-badge');
+          const impactBox = document.getElementById('dxy-gold-impact');
+          const dxyDot = document.getElementById('dxy-dot-indicator');
+
+          if (d.trend === 'UP') {
+            trendBadge.innerText = '▲ ដុល្លារឡើង';
+            trendBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300';
+            dxyDot.className = 'absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500';
+            impactBox.innerHTML = `📈 <b>ប្រាក់ដុល្លារកំពុងឡើងថ្លៃ (+${d.changePct}%)៖</b> បង្កើតសម្ពាធទាញតម្លៃមាសឱ្យចុះ ឬយឺតការឡើង (Bearish Pressure on Gold)។`;
+          } else if (d.trend === 'DOWN') {
+            trendBadge.innerText = '▼ ដុល្លារចុះ';
+            trendBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300';
+            dxyDot.className = 'absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#00db84]';
+            impactBox.innerHTML = `📉 <b>ប្រាក់ដុល្លារកំពុងចុះខ្សោយ (${d.changePct}%)៖</b> ជាកម្លាំងរុញតម្លៃមាសឱ្យហក់ឡើងថ្លៃ (Bullish Support for Gold)។`;
+          } else {
+            trendBadge.innerText = '● ថេរ';
+            impactBox.innerHTML = `● <b>ប្រាក់ដុល្លារកំពុងស្ងប់ស្ងាត់៖</b> ទីផ្សារមាសដើរតាមបច្ចេកទេស 2h ជាចម្បង។`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ទាញយកប្រតិទិន Forex Factory + Breaking Gold/USD RSS
+    async function loadMultiSourceNews() {
       try {
         const res = await fetch('/api/news');
         const json = await res.json();
-        const listEl = document.getElementById('ff-news-list');
+        const ffEl = document.getElementById('ff-news-list');
+        const rssEl = document.getElementById('rss-news-list');
 
         if (json.success && json.events && json.events.length > 0) {
           const now = Date.now();
@@ -633,15 +733,32 @@
               </div>
             `;
           });
-
-          listEl.innerHTML = html;
+          ffEl.innerHTML = html;
 
           if (imminentHighNews && imminentHighNews.diffMin <= 30) {
             document.getElementById('banner-icon').className = 'fa-solid fa-triangle-exclamation text-rose-500 text-[10px] animate-pulse';
             document.getElementById('mini-council-banner').innerHTML = `<span class="text-rose-400 font-bold">🔴 ព័ត៌មានធំ ${imminentHighNews.title} ចេញក្នុង ${imminentHighNews.diffMin} នាទី!</span>`;
           }
         } else {
-          listEl.innerHTML = `<div class="text-neutral-500 text-center py-2">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
+          ffEl.innerHTML = `<div class="text-neutral-500 text-center py-2">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
+        }
+
+        // Render Breaking RSS
+        if (json.breaking && json.breaking.length > 0) {
+          rssEl.innerHTML = json.breaking.map(b => {
+            const tStr = new Date(b.timestamp).toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit', hour12: false });
+            return `
+              <div class="p-2 rounded-xl border border-neutral-800/80 bg-neutral-900/60">
+                <div class="flex justify-between items-center text-[8.5px] text-amber-400 font-bold mb-0.5">
+                  <span>${b.source}</span>
+                  <span class="font-num text-neutral-500">${tStr}</span>
+                </div>
+                <div class="text-neutral-200 leading-snug">${b.title}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          rssEl.innerHTML = `<div class="text-neutral-500 text-center py-2">កំពុងរង់ចាំព័ត៌មានទាន់ហេតុការណ៍ថ្មីៗ...</div>`;
         }
       } catch (e) {}
     }
@@ -651,7 +768,6 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    // WebSocket Live 2h (kline.120)
     function connectBybitWebSocket() {
       if (ws) ws.close();
       if (wsPingTimer) clearInterval(wsPingTimer);
@@ -687,10 +803,12 @@
 
     load5000Candles2h();
     loadTickerStats();
-    loadForexFactoryNews();
+    loadLiveDXY();
+    loadMultiSourceNews();
     connectBybitWebSocket();
     setInterval(loadTickerStats, 3000);
-    setInterval(loadForexFactoryNews, 60000);
+    setInterval(loadLiveDXY, 30000);
+    setInterval(loadMultiSourceNews, 60000);
 
     // Indicators Toggle
     document.querySelectorAll('.indicator-tab').forEach(tab => {
@@ -706,27 +824,22 @@
       });
     });
 
-    // ប៊ូតុងបិទ/បើកប៊ិច
-    const btnToggleAiBox = document.getElementById('btn-toggle-ai-box');
-    const iconPenOn = document.getElementById('icon-pen-on');
-    const iconPenOff = document.getElementById('icon-pen-off');
-
-    btnToggleAiBox.addEventListener('click', () => {
-      showAiBox = !showAiBox;
-      if (showAiBox) {
-        iconPenOn.classList.remove('hidden'); iconPenOff.classList.add('hidden'); btnToggleAiBox.classList.add('text-cyan-400');
-      } else {
-        iconPenOn.classList.add('hidden'); iconPenOff.classList.remove('hidden'); btnToggleAiBox.classList.remove('text-cyan-400');
-      }
-    });
-
-    // ប៊ូតុងត្រេបី (SLIDERS): ៣ ទម្រង់
+    // DXY Panel Toggle & Style Menu Toggle
+    const btnDxyPanel = document.getElementById('btn-dxy-panel');
+    const dxyPopover = document.getElementById('dxy-popover');
     const btnPosStyleMenu = document.getElementById('btn-pos-style-menu');
     const posStyleMenu = document.getElementById('pos-style-menu');
     const slidersRedDot = document.getElementById('sliders-red-dot');
 
+    btnDxyPanel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      posStyleMenu.classList.add('hidden');
+      dxyPopover.classList.toggle('hidden');
+    });
+
     btnPosStyleMenu.addEventListener('click', (e) => {
       e.stopPropagation();
+      dxyPopover.classList.add('hidden');
       posStyleMenu.classList.toggle('hidden');
       if (slidersRedDot) slidersRedDot.style.display = 'none';
     });
@@ -743,6 +856,21 @@
 
     document.addEventListener('click', (e) => {
       if (!posStyleMenu.contains(e.target) && !btnPosStyleMenu.contains(e.target)) posStyleMenu.classList.add('hidden');
+      if (!dxyPopover.contains(e.target) && !btnDxyPanel.contains(e.target)) dxyPopover.classList.add('hidden');
+    });
+
+    // ប៊ូតុងបិទ/បើកប៊ិច
+    const btnToggleAiBox = document.getElementById('btn-toggle-ai-box');
+    const iconPenOn = document.getElementById('icon-pen-on');
+    const iconPenOff = document.getElementById('icon-pen-off');
+
+    btnToggleAiBox.addEventListener('click', () => {
+      showAiBox = !showAiBox;
+      if (showAiBox) {
+        iconPenOn.classList.remove('hidden'); iconPenOff.classList.add('hidden'); btnToggleAiBox.classList.add('text-cyan-400');
+      } else {
+        iconPenOn.classList.add('hidden'); iconPenOff.classList.remove('hidden'); btnToggleAiBox.classList.remove('text-cyan-400');
+      }
     });
 
     // គូសប្រអប់ស្រមោល ចំណេញ/ខាត របស់ AI
@@ -925,9 +1053,7 @@
     });
     window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
 
-    // =========================================================================
-    // នាឡិកាទៀន 2 ម៉ោង (7,200 វិនាទី) & Auto Rollover 01:59:59 -> 00:00:00
-    // =========================================================================
+    // នាឡិកាទៀន 2 ម៉ោង
     function update2hCountdownAndRollover() {
       const now = Math.floor(Date.now() / 1000);
       const rem = 7200 - (now % 7200);
@@ -941,15 +1067,13 @@
     setInterval(update2hCountdownAndRollover, 1000);
     update2hCountdownAndRollover();
 
-    // =========================================================================
-    // ប្រព័ន្ធ AI COUNCIL 30 នាទី (SYNC ជាមួយ SERVER CACHE LOCK ១០០%)
-    // =========================================================================
+    // AI COUNCIL 30 នាទី
     const aiModal = document.getElementById('ai-modal');
     document.getElementById('btn-trigger-live').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-trigger-ai').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-close-ai').addEventListener('click', () => aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'));
 
-    let cycleRemaining = 1800; // 30 នាទី = 1,800 វិនាទី
+    let cycleRemaining = 1800;
     let latestModelsMap = {};
     let selectedAiKey = 'gemini';
     let isScanningAI = false;
@@ -1002,7 +1126,6 @@
         const data = await res.json();
 
         if (data.success && data.models) {
-          // ទទួលយកនាឡិកា 30 នាទីពិតពី Server (ដើម្បីឱ្យអ្នកមើលគ្រប់គ្នាស្មើគ្នា)
           if (data.remainingSeconds) cycleRemaining = data.remainingSeconds;
           document.getElementById('ai-round-badge').innerText = `ជុំទី ${data.round || 1}`;
 
@@ -1064,15 +1187,15 @@
           if (!isClearSignal) {
             verifyPill.innerText = `ជុំទី ${data.round}: ⏳ រង់ចាំ (WAIT)`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
-            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃថាទីផ្សារ 2h នៅទ្រឹងគ្មានទិសដៅច្បាស់ (RSI: ${data.market.rsi14}) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
+            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃតាម 4h/2h/15m និង DXY ថាទីផ្សារនៅទ្រឹង (RSI: ${data.market.rsi14}) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
           } else if (data.round === 1) {
             verifyPill.innerText = 'ជុំទី 1: វិភាគដំបូង';
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
-            compBox.innerHTML = `📌 <b>ជុំទី ១:</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បោះប្រអប់ TP/SL ចូលក្រាហ្វ 2h រួចរាល់)។ <b>30 នាទីទៀត</b> នឹងផ្ទៀងផ្ទាត់ជុំបន្ទាប់!`;
+            compBox.innerHTML = `📌 <b>ជុំទី ១:</b> AI ចំនួន ${c.votes} បានវិភាគ Multi-TF + DXY ផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បោះប្រអប់ TP/SL ចូលក្រាហ្វ 2h រួចរាល់)។ <b>30 នាទីទៀត</b> នឹងផ្ទៀងផ្ទាត់ជុំបន្ទាប់!`;
           } else if (c.verifiedWithPrev === 'CONFIRMED') {
             verifyPill.innerText = `✅ ជុំទី ${data.round}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${data.round} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${data.prevSignal})! ទិសដៅ 2h មានភាពរឹងមាំខ្លាំង។`;
+            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${data.round} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${data.prevSignal})! ទិសដៅ 4h/2h និង DXY ស៊ីគ្នាខ្លាំង។`;
           } else {
             verifyPill.innerText = `⚠️ ជុំទី ${data.round}: សញ្ញាណថ្មី`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
