@@ -1,7 +1,7 @@
 {
-  "name": "bybit-live-chart",
-  "version": "1.0.0",
-  "description": "Bybit Realtime Chart",
+  "name": "bybit-ai-council",
+  "version": "2.0.0",
+  "description": "Bybit XAUTUSDT Live Chart with 4-AI Council",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
