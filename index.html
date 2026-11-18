@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BOBOTOU (Bybit) - XAUTUSDT 5m Live & Forex Factory AI</title>
+  <title>BOBOTOU (Bybit) - XAUTUSDT 2h Live & AI Council</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -97,19 +97,19 @@
     </div>
   </header>
 
-  <!-- 2. NOTIFICATION (Forex Factory Alert / AI Banner) -->
+  <!-- 2. NOTIFICATION -->
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-300">
     <div class="flex items-center space-x-2 truncate">
       <i id="banner-icon" class="fa-solid fa-brain text-cyan-400 text-[10px]"></i>
-      <span id="mini-council-banner" class="truncate">BOBOTOU AI + Forex Factory Calendar កំពុងដំណើរការ...</span>
+      <span id="mini-council-banner" class="truncate">BOBOTOU 2h AI + Forex Factory Calendar កំពុងដំណើរការ...</span>
     </div>
     <button class="text-neutral-500 hover:text-white pl-2"><i class="fa-solid fa-xmark text-xs"></i></button>
   </div>
 
-  <!-- 3. TIMEFRAME BAR -->
+  <!-- 3. TIMEFRAME BAR (ប្តូរមក 2h តែមួយគត់) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30 relative">
     <div class="flex items-center space-x-3.5">
-      <span class="text-white font-bold cursor-pointer text-xs">5m</span>
+      <span class="text-white font-bold cursor-pointer text-xs">2h</span>
       <span class="text-neutral-800 text-[10px]">|</span>
       <div id="btn-trigger-live" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-80 active:scale-95 transition-transform">
         <span class="blinking-dot"></span>
@@ -147,7 +147,6 @@
       </button>
     </div>
 
-    <!-- កូនផ្ទាំងតូចចំនួន ៣ ផ្នែក -->
     <div id="pos-style-menu" class="hidden space-y-1">
       <div class="px-2 py-1 text-[10px] font-bold text-neutral-400 border-b border-neutral-800/80 flex items-center justify-between">
         <span>ទម្រង់ប្រអប់ TP / SL</span>
@@ -223,9 +222,10 @@
       <div id="lbl-sl" class="pos-label-pill bg-[#ff2e56] text-white">SL: --</div>
     </div>
 
+    <!-- Countdown 2 ម៉ោង -->
     <div id="live-badge" class="live-price-badge">
       <div class="text-white font-bold" id="badge-price">--.--</div>
-      <div class="text-neutral-400 text-[9px]" id="countdown">00:05:00</div>
+      <div class="text-neutral-400 text-[9px]" id="countdown">01:59:59</div>
     </div>
 
     <div id="chart-container" class="w-full h-full"></div>
@@ -243,7 +243,7 @@
     <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
-  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ភ្ជាប់ប្រតិទិន Forex Factory USD) -->
+  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ដកប៊ូតុងស្កេនភ្លាមចេញ / វិភាគរាល់ 30 នាទី) -->
   <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
     <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
@@ -256,15 +256,13 @@
               <span id="ai-round-badge" class="text-[9px] px-1.5 py-0.5 bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30 font-num">ជុំទី 1</span>
             </h2>
             <p class="text-[10px] text-neutral-400 flex items-center gap-1.5">
-              <span>ផ្ទៀងផ្ទាត់រាល់ 2:29 នាទីម្ដង</span>
-              <span class="text-cyan-400 font-num font-bold" id="ai-cycle-timer">02:29</span>
+              <span>វិភាគរាល់ 30 នាទីម្ដង (24h Safe)</span>
+              <span class="text-cyan-400 font-num font-bold" id="ai-cycle-timer">30:00</span>
             </p>
           </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <button id="btn-force-scan" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/40 text-[10px] text-cyan-300 font-semibold active:scale-95"><i class="fa-solid fa-rotate mr-1"></i>ស្កេនភ្លាម</button>
-          <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+        <!-- ដកប៊ូតុង "ស្កេនភ្លាម" ចេញ ដើម្បីការពារ API Limit ១០០% -->
+        <button id="btn-close-ai" class="w-7 h-7 rounded-full bg-neutral-800/90 text-neutral-400 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1 relative">
@@ -287,7 +285,7 @@
 
         <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (5m Chart)</span></span>
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (2h Chart)</span></span>
             <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
           </div>
 
@@ -307,7 +305,7 @@
               <span id="selected-ai-name" class="font-bold text-cyan-300">🤖 Gemini 3.5 Flash-Lite:</span>
               <span id="selected-ai-vote" class="font-bold font-num px-1.5 py-0.5 rounded bg-neutral-800 text-white">--</span>
             </div>
-            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">កំពុងទាញយកទិន្នន័យទៀន 5m និងព័ត៌មាន Forex Factory ដើម្បីវិភាគ...</p>
+            <p id="selected-ai-reason" class="text-[11px] text-neutral-300 leading-relaxed min-h-[38px]">កំពុងទាញយកទិន្នន័យទៀន 2h និងព័ត៌មាន Forex Factory ដើម្បីវិភាគ...</p>
             <div class="grid grid-cols-3 gap-1 pt-1 border-t border-neutral-800/70 text-[9.5px] font-num text-neutral-400 text-center">
               <div>Entry: <span id="ind-entry" class="text-white">--</span></div>
               <div>TP: <span id="ind-tp" class="text-cyan-400">--</span></div>
@@ -347,11 +345,11 @@
           </div>
 
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
-            រាល់ 2:29 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ និងព័ត៌មាន Forex Factory ឡើងវិញ។
+            រាល់ 30 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ 2h និងព័ត៌មាន Forex Factory ឡើងវិញ។
           </div>
         </div>
 
-        <!-- ៧. ប្រតិទិនព័ត៌មាន FOREX FACTORY USD (ម៉ោងនៅកម្ពុជា UTC+7) -->
+        <!-- ប្រតិទិនព័ត៌មាន FOREX FACTORY USD -->
         <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mb-4 mt-2">
           <div class="flex items-center justify-between text-[11px]">
             <span class="text-white font-bold flex items-center gap-1.5">
@@ -468,7 +466,7 @@
       candleData.forEach(c => uniqueMap.set(c.time, c));
       candleData = Array.from(uniqueMap.values()).sort((a, b) => a.time - b.time);
 
-      ensureCurrent5mCandleExists();
+      ensureCurrent2hCandleExists();
 
       candleSeries.setData(candleData);
       updateIndicators();
@@ -489,10 +487,11 @@
       setSourceBadge(sourceName, true);
     }
 
-    function ensureCurrent5mCandleExists() {
+    // ប្រព័ន្ធបង្កើតទៀន 2 ម៉ោង (7,200 វិនាទី) ថ្មីដោយស្វ័យប្រវត្តិពេលអស់ម៉ោង
+    function ensureCurrent2hCandleExists() {
       if (candleData.length === 0) return;
       const now = Math.floor(Date.now() / 1000);
-      const currentBarTime = now - (now % 300);
+      const currentBarTime = now - (now % 7200);
       const last = candleData[candleData.length - 1];
 
       if (currentBarTime > last.time) {
@@ -506,14 +505,15 @@
       }
     }
 
-    async function load5000Candles() {
+    // ទាញយកទៀន 2h (interval=120) រហូតដល់ 5,000 ដើម
+    async function load5000Candles2h() {
       let allList = [];
       let endTime = Date.now();
       let bybitDirectSuccess = false;
 
       try {
         for (let i = 0; i < 5; i++) {
-          const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${currentSymbol}&interval=5&limit=1000&end=${endTime}`;
+          const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${currentSymbol}&interval=120&limit=1000&end=${endTime}`;
           const res = await fetch(url);
           if (!res.ok) throw new Error("Blocked");
           const json = await res.json();
@@ -533,7 +533,7 @@
       }
 
       try {
-        const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=5`);
+        const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=120`);
         const json = await res.json();
         if (json.retCode === 0 && json.result?.list?.length > 0) {
           let srcLabel = json.source || "Proxy";
@@ -572,7 +572,7 @@
           const livePrice = parseFloat(t.lastPrice);
           if (livePrice) {
             updateHeaderPrices(livePrice);
-            ensureCurrent5mCandleExists();
+            ensureCurrent2hCandleExists();
             if (candleData.length > 0) {
               const last = candleData[candleData.length - 1];
               last.close = livePrice;
@@ -595,7 +595,6 @@
       } catch (e) {}
     }
 
-    // ទាញយកប្រតិទិន Forex Factory USD មកបង្ហាញ & ព្រមាន
     async function loadForexFactoryNews() {
       try {
         const res = await fetch('/api/news');
@@ -637,13 +636,12 @@
 
           listEl.innerHTML = html;
 
-          // ប្រសិនបើមានព័ត៌មានក្រហមចេញក្នុងរយៈពេល 30 នាទីខាងមុខ បង្ហាញនៅ Banner លើគេ
           if (imminentHighNews && imminentHighNews.diffMin <= 30) {
             document.getElementById('banner-icon').className = 'fa-solid fa-triangle-exclamation text-rose-500 text-[10px] animate-pulse';
-            document.getElementById('mini-council-banner').innerHTML = `<span class="text-rose-400 font-bold">🔴 ប្រយ័ត្ន! ព័ត៌មាន ${imminentHighNews.title} ចេញក្នុង ${imminentHighNews.diffMin} នាទីទៀត!</span>`;
+            document.getElementById('mini-council-banner').innerHTML = `<span class="text-rose-400 font-bold">🔴 ព័ត៌មានធំ ${imminentHighNews.title} ចេញក្នុង ${imminentHighNews.diffMin} នាទី!</span>`;
           }
         } else {
-          listEl.innerHTML = `<div class="text-neutral-500 text-center py-2">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ (ទីផ្សារស្ងប់ស្ងាត់)</div>`;
+          listEl.innerHTML = `<div class="text-neutral-500 text-center py-2">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
         }
       } catch (e) {}
     }
@@ -653,13 +651,14 @@
       document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
+    // WebSocket Live 2h (kline.120)
     function connectBybitWebSocket() {
       if (ws) ws.close();
       if (wsPingTimer) clearInterval(wsPingTimer);
 
       ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
       ws.onopen = () => {
-        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.5.${currentSymbol}`] }));
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.120.${currentSymbol}`] }));
         wsPingTimer = setInterval(() => {
           if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ op: 'ping' }));
         }, 20000);
@@ -686,12 +685,12 @@
       ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
     }
 
-    load5000Candles();
+    load5000Candles2h();
     loadTickerStats();
     loadForexFactoryNews();
     connectBybitWebSocket();
     setInterval(loadTickerStats, 3000);
-    setInterval(loadForexFactoryNews, 60000); // Update ព័ត៌មាន Forex Factory រាល់ ១ នាទី
+    setInterval(loadForexFactoryNews, 60000);
 
     // Indicators Toggle
     document.querySelectorAll('.indicator-tab').forEach(tab => {
@@ -833,7 +832,6 @@
       }
     }
 
-    // Dynamic High / Low Lines
     function getVisiblePeaks() {
       const logicalRange = chart.timeScale().getVisibleLogicalRange();
       if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
@@ -927,28 +925,31 @@
     });
     window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
 
-    // 5m Countdown & Auto Rollover
-    function update5mCountdownAndRollover() {
+    // =========================================================================
+    // នាឡិកាទៀន 2 ម៉ោង (7,200 វិនាទី) & Auto Rollover 01:59:59 -> 00:00:00
+    // =========================================================================
+    function update2hCountdownAndRollover() {
       const now = Math.floor(Date.now() / 1000);
-      const rem = 300 - (now % 300);
-      ensureCurrent5mCandleExists();
-      const m = Math.floor(rem / 60);
+      const rem = 7200 - (now % 7200);
+      ensureCurrent2hCandleExists();
+      const h = Math.floor(rem / 3600);
+      const m = Math.floor((rem % 3600) / 60);
       const s = rem % 60;
-      document.getElementById('countdown').innerText = `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      const fmt = (n) => String(n).padStart(2, '0');
+      document.getElementById('countdown').innerText = `${fmt(h)}:${fmt(m)}:${fmt(s)}`;
     }
-    setInterval(update5mCountdownAndRollover, 1000);
-    update5mCountdownAndRollover();
+    setInterval(update2hCountdownAndRollover, 1000);
+    update2hCountdownAndRollover();
 
-    // AI COUNCIL
+    // =========================================================================
+    // ប្រព័ន្ធ AI COUNCIL 30 នាទី (SYNC ជាមួយ SERVER CACHE LOCK ១០០%)
+    // =========================================================================
     const aiModal = document.getElementById('ai-modal');
     document.getElementById('btn-trigger-live').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-trigger-ai').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
     document.getElementById('btn-close-ai').addEventListener('click', () => aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'));
 
-    const CYCLE_SECONDS = 149;
-    let cycleRemaining = CYCLE_SECONDS;
-    let roundCount = 0;
-    let prevConsensus = null;
+    let cycleRemaining = 1800; // 30 នាទី = 1,800 វិនាទី
     let latestModelsMap = {};
     let selectedAiKey = 'gemini';
     let isScanningAI = false;
@@ -986,11 +987,9 @@
     async function runAiCouncilCycle() {
       if (isScanningAI) return;
       isScanningAI = true;
-      roundCount++;
 
-      document.getElementById('ai-scan-status').innerText = '● កំពុងវិភាគ (4 AI)...';
+      document.getElementById('ai-scan-status').innerText = '● កំពុងទាញ/វិភាគ (4 AI)...';
       document.getElementById('ai-scan-status').className = 'text-[9px] text-amber-400 font-num';
-      document.getElementById('ai-round-badge').innerText = `ជុំទី ${roundCount}`;
 
       const recentCandles = candleData.slice(-60).map(c => ({ open: c.open, high: c.high, low: c.low, close: c.close, vol: c.volume }));
 
@@ -998,11 +997,15 @@
         const res = await fetch('/api/ai-council', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ round: roundCount, previousVerdict: prevConsensus, candles: recentCandles })
+          body: JSON.stringify({ candles: recentCandles })
         });
         const data = await res.json();
 
         if (data.success && data.models) {
+          // ទទួលយកនាឡិកា 30 នាទីពិតពី Server (ដើម្បីឱ្យអ្នកមើលគ្រប់គ្នាស្មើគ្នា)
+          if (data.remainingSeconds) cycleRemaining = data.remainingSeconds;
+          document.getElementById('ai-round-badge').innerText = `ជុំទី ${data.round || 1}`;
+
           data.models.forEach(m => {
             latestModelsMap[m.id] = m;
             const badge = document.getElementById(`badge-node-${m.id}`);
@@ -1046,63 +1049,60 @@
                 active: true, side: side, signalLabel: c.signal, anchorCandleIdx: candleData.length - 1, entry: entryNum, tp: tpNum, sl: slNum
               };
             }
-            document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): ${c.signal} | Entry ${c.entry} | TP ${c.tp}`;
+            document.getElementById('mini-council-banner').innerText = `AI 2h (${c.votes}): ${c.signal} | Entry ${c.entry} | TP ${c.tp}`;
           } else {
             document.getElementById('master-entry').innerText = '--.--';
             document.getElementById('master-tp').innerText = '--.--';
             document.getElementById('master-sl').innerText = '--.--';
             aiTradePos.active = false;
-            document.getElementById('mini-council-banner').innerText = `AI Council (${c.votes}): WAIT • កំពុងរង់ចាំទីផ្សារច្បាស់លាស់...`;
+            document.getElementById('mini-council-banner').innerText = `AI 2h (${c.votes}): WAIT • កំពុងរង់ចាំចំណុចច្បាស់លាស់...`;
           }
 
           const verifyPill = document.getElementById('verify-status-pill');
           const compBox = document.getElementById('round-comparison-box');
 
           if (!isClearSignal) {
-            verifyPill.innerText = `ជុំទី ${roundCount}: ⏳ រង់ចាំ (WAIT)`;
+            verifyPill.innerText = `ជុំទី ${data.round}: ⏳ រង់ចាំ (WAIT)`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
-            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃថាទីផ្សារមិនទាន់មានទិសដៅច្បាស់ (ឬជិតម៉ោងព័ត៌មាន Forex Factory) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
-          } else if (roundCount === 1) {
+            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃថាទីផ្សារ 2h នៅទ្រឹងគ្មានទិសដៅច្បាស់ (RSI: ${data.market.rsi14}) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
+          } else if (data.round === 1) {
             verifyPill.innerText = 'ជុំទី 1: វិភាគដំបូង';
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
-            compBox.innerHTML = `📌 <b>ជុំទី ១ (${new Date().toLocaleTimeString()}):</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បានបោះប្រអប់ TP/SL ចូលក្រាហ្វរួចរាល់)។ រង់ចាំ <b>2:29 នាទី</b> ទៀតដើម្បីផ្ទៀងផ្ទាត់ជុំទី ២!`;
+            compBox.innerHTML = `📌 <b>ជុំទី ១:</b> AI ចំនួន ${c.votes} បានផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បោះប្រអប់ TP/SL ចូលក្រាហ្វ 2h រួចរាល់)។ <b>30 នាទីទៀត</b> នឹងផ្ទៀងផ្ទាត់ជុំបន្ទាប់!`;
           } else if (c.verifiedWithPrev === 'CONFIRMED') {
-            verifyPill.innerText = `✅ ជុំទី ${roundCount}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
+            verifyPill.innerText = `✅ ជុំទី ${data.round}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${roundCount} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន! ប្រអប់ស្រមោលលើក្រាហ្វត្រូវបានធ្វើបច្ចុប្បន្នភាព។`;
+            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${data.round} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${data.prevSignal})! ទិសដៅ 2h មានភាពរឹងមាំខ្លាំង។`;
           } else {
-            verifyPill.innerText = `⚠️ ជុំទី ${roundCount}: សញ្ញាណថ្មី`;
+            verifyPill.innerText = `⚠️ ជុំទី ${data.round}: សញ្ញាណថ្មី`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
-            compBox.innerHTML = `⚡ <b>មានសញ្ញាណចូលផ្សារថ្មី (New Signal):</b> ក្រុម AI បានរកឃើញទិសដៅ <b>${c.signal}</b> ច្បាស់លាស់ និងបានបោះប្រអប់ TP/SL ចូលក្នុងក្រាហ្វរួចរាល់!`;
+            compBox.innerHTML = `⚡ <b>សញ្ញាណថ្មី (Updated):</b> ក្រុម AI បានរកឃើញទិសដៅ <b>${c.signal}</b> ច្បាស់លាស់ និងបានបោះប្រអប់ TP/SL ចូលក្នុងក្រាហ្វ 2h រួចរាល់!`;
           }
 
-          prevConsensus = { signal: c.signal, entry: c.entry, tp: c.tp, sl: c.sl };
-          document.getElementById('ai-scan-status').innerText = `● រួចរាល់ (${new Date().toLocaleTimeString()})`;
+          const scanDate = new Date(data.timestamp || Date.now());
+          document.getElementById('ai-scan-status').innerText = `● រួចរាល់ (${scanDate.toLocaleTimeString()})`;
           document.getElementById('ai-scan-status').className = 'text-[9px] text-emerald-400 font-num';
         }
       } catch (e) {
         document.getElementById('ai-scan-status').innerText = '✖ Error';
       } finally {
         isScanningAI = false;
-        cycleRemaining = CYCLE_SECONDS;
       }
     }
 
-    setTimeout(runAiCouncilCycle, 3500);
+    setTimeout(runAiCouncilCycle, 3000);
     setInterval(() => {
       if (!isScanningAI) {
         cycleRemaining--;
-        if (cycleRemaining <= 0) runAiCouncilCycle();
+        if (cycleRemaining <= 0) {
+          cycleRemaining = 1800;
+          runAiCouncilCycle();
+        }
       }
       const m = String(Math.floor(cycleRemaining / 60)).padStart(2, '0');
       const s = String(cycleRemaining % 60).padStart(2, '0');
       document.getElementById('ai-cycle-timer').innerText = `${m}:${s}`;
     }, 1000);
-
-    document.getElementById('btn-force-scan').addEventListener('click', () => {
-      cycleRemaining = CYCLE_SECONDS;
-      runAiCouncilCycle();
-    });
   </script>
 </body>
 </html>
