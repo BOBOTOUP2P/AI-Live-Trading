@@ -138,7 +138,7 @@ async function getForexFactoryUSDNews() {
               previous: ev.previous || '--',
               actual: ev.actual || '',
               link: 'https://www.forexfactory.com/calendar',
-              description: `US Economic Calendar Event (${ev.impact} Impact): ${ev.title}. Forecast: ${ev.forecast || 'N/A'}, Previous: ${ev.previous || 'N/A'}${ev.actual ? ', Actual: ' + ev.actual : ''}.`
+              description: `US Economic Calendar (${ev.impact}): ${ev.title}. Forecast: ${ev.forecast || 'N/A'}, Previous: ${ev.previous || 'N/A'}${ev.actual ? ', Actual: ' + ev.actual : ''}.`
             };
           })
           .sort((a, b) => a.timestamp - b.timestamp);
@@ -229,7 +229,7 @@ app.get('/api/news', async (req, res) => {
 });
 
 // =========================================================================
-// ៣. GEMINI NEWS EXPLAINER (សរសេរអត្ថបទវិភាគខ្មែរវែងច្បាស់លាស់ពីព័ត៌មានពិត)
+// ៣. GEMINI NEWS EXPLAINER (អត្ថបទវិភាគខ្មែរវែងច្បាស់លាស់ពីព័ត៌មានពិត)
 // =========================================================================
 const newsExplainCache = new Map();
 
@@ -433,9 +433,38 @@ function parseAIJson(rawText, currentPrice) {
   };
 }
 
+// =========================================================================
+// ៦. ប្រព័ន្ធគ្រប់គ្រងប្រវត្តិ ៣៨០ ជុំ (FIFO MEMORY CLEANUP SYSTEM: 387 -> DROP 7)
+// =========================================================================
 const SCAN_INTERVAL_MS = 30 * 60 * 1000;
+const MAX_HISTORY_ROUNDS = 380;
+const PURGE_THRESHOLD = 387; // ដល់ ៣៨៧ ជុំ កាត់ ៧ ជុំចាស់ជាងគេចោលភ្លាម
+let roundsHistory = []; // ផ្ទុកទិន្នន័យ 380 ជុំ (History Records)
+
 let councilState = { round: 0, lastScanTime: 0, nextScanTime: 0, previousConsensus: null, latestResponse: null };
 let activeScanPromise = null;
+
+// ត្រួតពិនិត្យផល ចំណេញ ឬ ខាត នៃជុំចាស់ៗតាមតម្លៃមាសបច្ចុប្បន្ន
+function evaluatePreviousRoundOutcome(roundItem, currentPrice) {
+  if (!roundItem || roundItem.outcome !== 'PENDING' || !roundItem.consensus) return;
+  const c = roundItem.consensus;
+  if (c.signal === 'WAIT') {
+    roundItem.outcome = 'NEUTRAL';
+    return;
+  }
+
+  const entry = parseFloat(c.entry);
+  const tp = parseFloat(c.tp);
+  const sl = parseFloat(c.sl);
+
+  if (c.signal === 'BUY') {
+    if (currentPrice >= tp) roundItem.outcome = 'WIN';
+    else if (currentPrice <= sl) roundItem.outcome = 'LOSS';
+  } else if (c.signal === 'SELL') {
+    if (currentPrice <= tp) roundItem.outcome = 'WIN';
+    else if (currentPrice >= sl) roundItem.outcome = 'LOSS';
+  }
+}
 
 async function executeCouncilScan(clientCandles2h) {
   const [res4h, res15m, dxyData, ffEvents, rssNews] = await Promise.all([
@@ -599,6 +628,47 @@ Rules:
   const avgSl    = (aligned.reduce((a, b) => a + b.sl, 0) / aligned.length).toFixed(2);
   const avgConf  = Math.round(aligned.reduce((a, b) => a + b.confidence, 0) / aligned.length);
 
+  // ផ្ទៀងផ្ទាត់លទ្ធផលជុំចាស់ៗ (Check Win/Loss)
+  roundsHistory.forEach(r => evaluatePreviousRoundOutcome(r, last.close));
+
+  // ប្រមូលព័ត៌មានដែលបានកើតឡើងក្នុងជុំ 30m នេះ + Link ពិត
+  const newsInRound = nearFF.concat(rssNews.slice(0, 3)).map(n => ({
+    title: n.title,
+    source: n.source || 'Forex Factory (USD)',
+    link: n.link || 'https://www.forexfactory.com/calendar'
+  }));
+
+  // រក្សាទុកកូនក្រាហ្វិកទៀន (Snapshot 12 ដើមចុងក្រោយ)
+  const candleSnapshot = candles2h.slice(-12).map(c => ({ open: c.open, high: c.high, low: c.low, close: c.close }));
+
+  const currentRoundRecord = {
+    round,
+    timestamp: nowMs,
+    consensus: {
+      signal: masterSignal,
+      votes: `${voteCount}/4`,
+      confidence: avgConf,
+      entry: avgEntry,
+      tp: avgTp,
+      sl: avgSl
+    },
+    models: results,
+    candleSnapshot,
+    newsInRound,
+    outcome: masterSignal === 'WAIT' ? 'NEUTRAL' : 'PENDING'
+  };
+
+  // =========================================================================
+  // ក្បួនដក ៧ ជុំចោលស្វ័យប្រវត្តិពេលដល់ ៣៨៧ ជុំ (FIFO CLEANUP SYSTEM)
+  // =========================================================================
+  roundsHistory.push(currentRoundRecord);
+  if (roundsHistory.length >= PURGE_THRESHOLD) {
+    // កាត់ ៧ ជុំចាស់ៗបំផុតចេញ ដើម្បីសល់ ៣៨០ ជុំជានិច្ច កុំឱ្យធ្ងន់ Server
+    const deleteCount = roundsHistory.length - MAX_HISTORY_ROUNDS;
+    roundsHistory.splice(0, deleteCount);
+    console.log(`[Memory Cleaner] Purged ${deleteCount} oldest rounds. Kept ${roundsHistory.length} active rounds.`);
+  }
+
   const responsePayload = {
     success: true,
     round,
@@ -649,5 +719,10 @@ app.post('/api/ai-council', async (req, res) => {
   }
 });
 
+// Endpoint បញ្ជូនបញ្ជីប្រវត្តិ 30m ទៅកាន់ Browser
+app.get('/api/rounds-history', (req, res) => {
+  res.json({ success: true, count: roundsHistory.length, rounds: roundsHistory });
+});
+
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
-app.listen(PORT, () => console.log(`Server running on port ${PORT} - News Gemini Explainer Ready`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} - 380 Rounds Auto-Purge FIFO Ready`));
