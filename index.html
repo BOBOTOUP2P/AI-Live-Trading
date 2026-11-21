@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BOBOTOU (Bybit) - XAUTUSDT 2h Live + 30m AI History</title>
+  <title>BOBOTOU (Bybit) - XAUTUSDT 2h + 30m Trade History</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,7 +28,7 @@
     @keyframes spinOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     #candle-tooltip { position: absolute; top: 8px; left: 8px; z-index: 50; background: rgba(18, 20, 24, 0.88); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(6px); border-radius: 4px; padding: 4px 6px; font-size: 9px; line-height: 1.25; pointer-events: none; display: none; width: 130px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
     
-    #ai-modal, #ff-full-modal, #rss-full-modal, #news-detail-modal, #history-detail-modal {
+    #ai-modal, #ff-full-modal, #rss-full-modal, #news-detail-modal, #history-full-modal {
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -40,7 +41,7 @@
     .glass-box { background: rgba(15, 23, 42, 0.78); border: 1px solid rgba(255, 255, 255, 0.09); backdrop-filter: blur(12px); }
     body.is-fullscreen { max-width: 100vw !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; padding: 0 !important; margin: 0 !important; }
     body.is-fullscreen #top-header, body.is-fullscreen #top-notification { display: none !important; }
-    body.is-fullscreen #chart-wrapper { height: calc(100% - 96px) !important; }
+    body.is-fullscreen #chart-wrapper { height: calc(100% - 94px) !important; }
     .timeframe-bar-locked { width: 100%; overflow: visible !important; touch-action: none !important; display: flex; align-items: center; justify-content: space-between; padding-left: 10px; padding-right: 10px; }
 
     .pos-label-pill { position: absolute; transform: translateY(-50%); font-family: 'Roboto', sans-serif; font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; pointer-events: none; z-index: 32; }
@@ -50,8 +51,25 @@
     #dxy-popover { width: 250px; padding: 10px; border-color: rgba(250, 204, 21, 0.4); }
     .style-opt-active { background: rgba(0, 240, 255, 0.16) !important; border-color: rgba(0, 240, 255, 0.5) !important; color: #ffffff !important; }
 
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* របារប្រវត្តិ 30m ខាងលើ MA EMA... */
+    .trade-history-bar {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: #090c12;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      z-index: 28;
+    }
+    .history-chips-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .history-chips-scroll::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body id="app-root" class="bg-black text-white h-screen flex flex-col justify-start max-w-md mx-auto relative select-none">
@@ -82,7 +100,7 @@
     </div>
   </header>
 
-  <!-- 2. NOTIFICATION: របារព័ត៌មានពិតរត់វិលជុំ -->
+  <!-- 2. របារព័ត៌មានពិតរត់វិលជុំ -->
   <div id="top-notification" class="px-3 py-1.5 flex items-center justify-between text-[11px] bg-[#0c0d0f] border-b border-neutral-900 text-neutral-200 cursor-pointer hover:bg-neutral-900/90 transition-colors overflow-hidden">
     <div id="ticker-slide-inner" class="flex items-center space-x-2 truncate flex-1">
       <span id="ticker-icon" class="shrink-0 text-[10px]">📰</span>
@@ -112,6 +130,7 @@
       </div>
     </div>
 
+    <!-- Right Toolbar Icons -->
     <div class="flex items-center space-x-1.5 text-neutral-400">
       <button id="btn-open-ff-page" class="p-1 rounded text-rose-400 hover:text-rose-300 transition-colors flex items-center justify-center relative" title="ប្រតិទិន Forex Factory">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -226,27 +245,34 @@
     <div id="chart-container" class="w-full h-full"></div>
   </div>
 
-  <!-- 4.5 ថ្មី៖ របារ TIMELINE ប្រវត្តិ AI (TRADE + HISTORY ICON : 30m) -->
-  <div class="border-t border-neutral-900 bg-[#090c12] px-3 py-1 flex items-center justify-between text-xs z-30 select-none">
-    <!-- Icon ផ្គុំ Trade + History + ": 30m" -->
-    <div class="flex items-center space-x-1.5 shrink-0 pr-2 border-r border-neutral-800" title="ប្រវត្តិវិភាគ AI រៀងរាល់ 30m ម្ដង (ចុចមើល)">
-      <!-- SVG ផ្គុំ Trade + History (Candle Chart + Clock) -->
-      <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9.5" stroke-opacity="0.4"/>
-        <polyline points="12 6 12 12 16 14" stroke="#00db84"/>
-        <path d="M4.5 16.5L8.5 12.5L11.5 15.5L16.5 9.5" stroke="#00f0ff" stroke-width="2.2"/>
-        <polyline points="13.5 9.5 16.5 9.5 16.5 12.5" stroke="#00f0ff"/>
+  <!-- =========================================================================
+       ៥. របារថ្មី៖ ICON TRADE + HISTORY SGV + :30m (នៅខាងលើ MA EMA BOLL)
+       ========================================================================= -->
+  <div class="trade-history-bar">
+    <!-- Icon SVG ថ្មី: Trade Candlestick + Clock History ភ្ជាប់គ្នា + :30m -->
+    <div id="btn-open-history-page" class="flex items-center space-x-1.5 cursor-pointer text-cyan-400 hover:text-white transition-colors shrink-0 pr-2" title="មើលប្រវត្តិវិភាគ AI 30m">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <!-- ទៀន Trade -->
+        <line x1="6" y1="4" x2="6" y2="8"/><rect x="4.5" y="8" width="3" height="7" rx="0.5" fill="#00f0ff" stroke="#00f0ff"/><line x1="6" y1="15" x2="6" y2="19"/>
+        <!-- នាឡិកាប្រវត្តិ History ភ្ជាប់គ្នា -->
+        <path d="M12 21a8 8 0 1 0-7.8-6.3"/>
+        <polyline points="12 9 12 13 15 15"/>
       </svg>
-      <span class="font-bold text-white text-[11px] font-num tracking-tight">: 30m</span>
+      <span class="text-[10px] font-bold text-cyan-300 font-num tracking-tight">:30m</span>
+      <span id="history-count-badge" class="text-[8.5px] px-1 rounded-full bg-neutral-800 text-neutral-400 font-num">0</span>
     </div>
 
-    <!-- បញ្ជីកូន Icon ប្រវត្តិ 30m រត់ដេញគ្នាផ្ដេក (អូសមើលបាន) -->
-    <div id="history-badges-strip" class="flex-1 flex items-center space-x-1.5 overflow-x-auto no-scrollbar pl-2 py-0.5">
-      <span class="text-[10px] text-neutral-500 font-num">កំពុងរង់ចាំជុំទី 1...</span>
+    <!-- បញ្ជីកូន Badges 30m ដេញតម្រៀបគ្នាទៅមុខរាល់ពេលចប់ 30 នាទី -->
+    <div id="history-chips-container" class="history-chips-scroll flex-1 px-1">
+      <span class="text-[9.5px] text-neutral-600 font-num">កំពុងរង់ចាំជុំទី 1...</span>
+    </div>
+
+    <div class="shrink-0 pl-1">
+      <i class="fa-solid fa-chevron-right text-[8.5px] text-neutral-600"></i>
     </div>
   </div>
 
-  <!-- 5. BOTTOM INDICATOR BAR -->
+  <!-- ៦. BOTTOM INDICATOR BAR -->
   <div class="border-t border-neutral-900 bg-black px-4 py-2 flex items-center justify-between text-xs text-neutral-400 z-30 select-none font-medium">
     <div class="flex items-center space-x-6">
       <button data-ind="MA" class="indicator-tab hover:text-white transition-colors">MA</button>
@@ -258,7 +284,7 @@
     <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
-  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ក្រាហ្វិកខ្សែររត់តាមការវិភាគពិត BUY/SELL/WAIT) -->
+  <!-- ៧. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ក្រាហ្វិក Wave រត់តាមការវិភាគសរុបពិតប្រាកដ) -->
   <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
     <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
@@ -297,35 +323,35 @@
           </svg>
         </div>
 
-        <!-- ប្រអប់ធំឆាត (ក្រាហ្វិកខ្សែររត់តាមការវិភាគពិតប្រាកដ DYNAMIC SVG) -->
         <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (2h Prediction Chart)</span></span>
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (2h + DXY + News)</span></span>
             <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
           </div>
 
-          <!-- Mini AI Prediction Wave (គូសខ្សែរស្វ័យប្រវត្តិ មិនទុកនៅដដែលឡើយ) -->
+          <!-- ក្រាហ្វិក Wave ប្រែប្រួលតាមការវិភាគសរុបពិតប្រាកដ (BUY/SELL/WAIT) -->
           <div class="w-full h-24 bg-black/70 rounded-xl relative overflow-hidden p-1.5 border border-neutral-800/80">
-            <svg id="ai-dynamic-svg" class="w-full h-full" viewBox="0 0 320 90" preserveAspectRatio="none">
+            <svg class="w-full h-full" viewBox="0 0 320 90" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="aiWaveGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop id="ai-grad-stop1" offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
-                  <stop id="ai-grad-stop2" offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
+                  <stop id="ai-wave-stop1" offset="0%" stop-color="#00f0ff" stop-opacity="0.35"/>
+                  <stop id="ai-wave-stop2" offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
                 </linearGradient>
               </defs>
               <line x1="0" y1="25" x2="320" y2="25" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
               <line x1="0" y1="50" x2="320" y2="50" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
               <line x1="0" y1="75" x2="320" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
               
-              <!-- ខ្សែរ និងផ្ទៃស្រមោលរត់តាម Signal ពិត -->
+              <!-- Wave Path Dynamic -->
               <path id="ai-wave-area" d="M 0 50 Q 80 50 160 50 T 320 50 L 320 90 L 0 90 Z" fill="url(#aiWaveGrad)"/>
-              <path id="ai-wave-line" d="M 0 50 Q 80 50 160 50 T 320 50" fill="none" stroke="#00f0ff" stroke-width="2.2"/>
-              
-              <!-- ចំណុច Entry & TP Pin -->
-              <circle id="ai-wave-entry-dot" cx="120" cy="50" r="3.5" fill="#ffffff"/>
-              <text id="ai-wave-entry-txt" x="95" y="40" fill="#ffffff" font-size="8" font-weight="bold">ENTRY</text>
-              <circle id="ai-wave-tp-dot" cx="314" cy="50" r="3.5" fill="#00db84"/>
-              <text id="ai-wave-tp-txt" x="285" y="42" fill="#00db84" font-size="8" font-weight="bold">TARGET</text>
+              <path id="ai-wave-line" d="M 0 50 Q 80 50 160 50 T 320 50" fill="none" stroke="#f0b90b" stroke-width="2"/>
+
+              <!-- Dynamic Markers -->
+              <circle id="ai-entry-point" cx="160" cy="50" r="3.5" fill="#ffffff"/>
+              <text id="ai-entry-label" x="140" y="42" fill="#ffffff" font-size="8" font-weight="bold">ENTRY</text>
+
+              <circle id="ai-tp-point" cx="316" cy="50" r="3.5" fill="#00f0ff"/>
+              <text id="ai-tp-label" x="290" y="42" fill="#00f0ff" font-size="8" font-weight="bold">TARGET</text>
             </svg>
           </div>
 
@@ -381,12 +407,43 @@
     </div>
   </div>
 
-  <!-- 7. ទំព័រពេញអេក្រង់៖ ប្រតិទិន FOREX FACTORY -->
+  <!-- ៨. ទំព័រពេញអេក្រង់៖ ប្រវត្តិវិភាគ AI 30 នាទី (ROLLING BUFFER 380 ចុះ 7 ជុំ) -->
+  <div id="history-full-modal" class="fixed inset-0 z-[65] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
+    <div class="px-4 py-3 border-b border-neutral-800/80 flex items-center justify-between bg-[#0d111a]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white">ប្រវត្តិវិភាគ AI រៀងរាល់ 30 នាទី</h2>
+          <p class="text-[10px] text-neutral-400">រក្សាទុក 380 ជុំចុងក្រោយ • មានកូនក្រាហ្វិក PnL & ព័ត៌មាន</p>
+        </div>
+      </div>
+      <button id="btn-close-history-page" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="px-4 py-2 bg-black/50 border-b border-neutral-900 flex items-center justify-between text-[10px] text-neutral-400">
+      <span id="history-audit-stats" class="text-neutral-300 font-num">0 / 380 ជុំ (Buffer Safe)</span>
+      <span class="text-cyan-400">ចុចមើលព័ត៌មាន & ផ្ទៀងផ្ទាត់</span>
+    </div>
+
+    <!-- បញ្ជីកាតប្រវត្តិទាំងអស់ (Card នីមួយៗមានកូនក្រាហ្វិកទៀន, មតិ 4 AI, TP/SL, News) -->
+    <div id="history-cards-list" class="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs">
+      <div class="text-neutral-500 text-center py-10">កំពុងរង់ចាំទិន្នន័យប្រវត្តិជុំដំបូង...</div>
+    </div>
+  </div>
+
+  <!-- ៩. ទំព័រពេញអេក្រង់៖ ប្រតិទិន FOREX FACTORY -->
   <div id="ff-full-modal" class="fixed inset-0 z-[55] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
     <div class="px-4 py-3 border-b border-neutral-800/80 flex items-center justify-between bg-[#0d111a]">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center text-sm"><i class="fa-solid fa-calendar-days"></i></div>
-        <div><h2 class="text-sm font-bold text-white">ប្រតិទិន Forex Factory (USD)</h2><p class="text-[10px] text-neutral-400">ម៉ោងនៅកម្ពុជា (AM / PM) • ចុចអាន Gemini AI វិភាគ</p></div>
+        <div>
+          <h2 class="text-sm font-bold text-white">ប្រតិទិន Forex Factory (USD)</h2>
+          <p class="text-[10px] text-neutral-400">ម៉ោងនៅកម្ពុជា (AM / PM) • ចុចអាន Gemini AI វិភាគ</p>
+        </div>
       </div>
       <button id="btn-close-ff-page" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
     </div>
@@ -399,12 +456,15 @@
     </div>
   </div>
 
-  <!-- 8. ទំព័រពេញអេក្រង់៖ ព័ត៌មានមាស & ដុល្លារ LIVE RSS -->
+  <!-- ១០. ទំព័រពេញអេក្រង់៖ ព័ត៌មានមាស & ដុល្លារ LIVE RSS -->
   <div id="rss-full-modal" class="fixed inset-0 z-[55] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
     <div class="px-4 py-3 border-b border-neutral-800/80 flex items-center justify-between bg-[#0d111a]">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center text-sm"><i class="fa-solid fa-newspaper"></i></div>
-        <div><h2 class="text-sm font-bold text-white">ព័ត៌មានមាស & ដុល្លារ Live</h2><p class="text-[10px] text-neutral-400">Yahoo Finance + FXStreet • ចុចអាន Gemini AI វិភាគ</p></div>
+        <div>
+          <h2 class="text-sm font-bold text-white">ព័ត៌មានមាស & ដុល្លារ Live</h2>
+          <p class="text-[10px] text-neutral-400">Yahoo Finance + FXStreet • ចុចអាន Gemini AI វិភាគ</p>
+        </div>
       </div>
       <button id="btn-close-rss-page" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
     </div>
@@ -417,8 +477,8 @@
     </div>
   </div>
 
-  <!-- 9. ផ្ទាំងព័ត៌មានលម្អិត GEMINI AI EXPLAINER -->
-  <div id="news-detail-modal" class="fixed inset-0 z-[70] bg-[#06090f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
+  <!-- ១១. ផ្ទាំងព័ត៌មានពេញលេញ + GEMINI AI DEEP KHMER ARTICLE + REAL URL -->
+  <div id="news-detail-modal" class="fixed inset-0 z-[75] bg-[#06090f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
     <div class="px-4 py-3 border-b border-neutral-800 flex items-center justify-between bg-[#0f141e]">
       <div class="flex items-center gap-2">
         <span id="nd-impact-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">🔴 High Impact</span>
@@ -429,110 +489,43 @@
 
     <div class="flex-1 overflow-y-auto p-4 space-y-3.5">
       <h3 id="nd-title" class="text-base font-bold text-white leading-snug">--</h3>
+
       <div class="p-3 rounded-2xl bg-black/70 border border-cyan-500/30 space-y-1.5">
         <div class="flex items-center justify-between text-[11px]"><span class="text-neutral-400"><i class="fa-regular fa-calendar text-cyan-400 mr-1.5"></i>ថ្ងៃខែប្រកាស (ខ្មែរ)៖</span><span id="nd-date-km" class="font-bold text-white">--</span></div>
         <div class="flex items-center justify-between text-[11px]"><span class="text-neutral-400"><i class="fa-regular fa-clock text-amber-400 mr-1.5"></i>ម៉ោងច្បាស់លាស់៖</span><span id="nd-time-ampm" class="font-bold text-amber-300 font-num text-xs">--:-- --</span></div>
         <div class="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[11px]"><span class="text-neutral-400">ស្ថានភាពពេលវេលា៖</span><span id="nd-countdown-txt" class="font-bold text-cyan-400 font-num">--</span></div>
       </div>
+
       <div id="nd-stats-grid" class="grid grid-cols-3 gap-2 text-center font-num">
         <div class="p-2 rounded-xl bg-neutral-900 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">តួលេខមុន</span><span id="nd-prev" class="text-xs font-bold text-neutral-200">--</span></div>
         <div class="p-2 rounded-xl bg-neutral-900 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">រំពឹងទុក</span><span id="nd-fcst" class="text-xs font-bold text-amber-400">--</span></div>
         <div class="p-2 rounded-xl bg-neutral-900 border border-neutral-800"><span class="text-[9px] text-neutral-400 font-sans block">លេខពិត</span><span id="nd-actual" class="text-xs font-bold text-cyan-400">--</span></div>
       </div>
+
       <div class="p-3 rounded-2xl bg-neutral-900/70 border border-neutral-800 space-y-2">
         <div class="text-[10.5px] font-bold text-neutral-300 flex items-center justify-between">
           <span><i class="fa-solid fa-link text-sky-400 mr-1.5"></i>ប្រភពព័ត៌មានដើមពិតប្រាកដ</span>
-          <a id="nd-source-link" href="#" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9.5px]">បើកលីង URL <i class="fa-solid fa-arrow-up-right-from-square ml-0.5 text-[8px]"></i></a>
+          <a id="nd-source-link" href="#" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[9.5px] hover:bg-sky-500/30">
+            បើកលីង URL <i class="fa-solid fa-arrow-up-right-from-square ml-0.5 text-[8px]"></i>
+          </a>
         </div>
         <div id="nd-url-text" class="text-[9.5px] text-sky-400/80 font-num truncate select-all">--</div>
         <p id="nd-raw-desc" class="text-[10.5px] text-neutral-400 leading-relaxed border-t border-neutral-800/80 pt-1.5">--</p>
       </div>
+
       <div class="p-3.5 rounded-2xl bg-gradient-to-b from-cyan-950/30 to-neutral-900/90 border border-cyan-500/40 space-y-2.5 shadow-xl mb-4">
-        <div class="flex items-center justify-between"><span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-wand-magic-sparkles"></i><span>អត្ថបទវិភាគលម្អិតដោយ Gemini AI</span></span><span id="nd-gemini-status" class="text-[9px] text-amber-400 font-num">● កំពុងសរសេរ...</span></div>
-        <div id="nd-gemini-article" class="text-[12px] text-neutral-100 leading-relaxed space-y-2">កំពុងបញ្ជូនព័ត៌មានពិតទៅ Gemini...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       ១០. ថ្មី៖ ផ្ទាំងពិនិត្យប្រវត្តិ AI 30m លម្អិត (FULL HISTORY REVIEW MODAL)
-       ========================================================================= -->
-  <div id="history-detail-modal" class="fixed inset-0 z-[65] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
-    <div class="px-4 py-3 border-b border-neutral-800 flex items-center justify-between bg-[#0e131d]">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-sm">
-          <i class="fa-solid fa-clock-rotate-left"></i>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-wand-magic-sparkles"></i><span>អត្ថបទវិភាគលម្អិតដោយ Gemini AI</span></span>
+          <span id="nd-gemini-status" class="text-[9px] text-amber-400 font-num">● កំពុងសរសេរ...</span>
         </div>
-        <div>
-          <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
-            <span id="hist-round-title">ប្រវត្តិវិភាគជុំ #--</span>
-            <span id="hist-result-badge" class="text-[9px] px-1.5 py-0.5 rounded font-bold font-num bg-neutral-800 text-white">--</span>
-          </h2>
-          <p id="hist-time-str" class="text-[10px] text-neutral-400 font-num">--:-- -- (ម៉ោងខ្មែរ)</p>
-        </div>
-      </div>
-      <button id="btn-close-hist-detail" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-4 space-y-3.5">
-      <!-- កាតសង្ខេបលទ្ធផល Signal & Entry/TP/SL -->
-      <div class="p-3.5 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-3">
-        <div class="flex justify-between items-center">
-          <div>
-            <span class="text-[10px] text-neutral-400 block">សញ្ញាណសម្រេច (Consensus)</span>
-            <div id="hist-signal-text" class="text-base font-bold c-up">BUY</div>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-neutral-400 block">សំឡេងគាំទ្រ</span>
-            <span id="hist-votes-text" class="text-xs font-bold font-num text-white">4/4 AI</span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 font-num text-center">
-          <div class="p-2 rounded-xl bg-black/60 border border-neutral-800"><span class="text-[8.5px] text-neutral-400 font-sans block">Entry</span><span id="hist-entry" class="text-xs font-bold text-white">--</span></div>
-          <div class="p-2 rounded-xl bg-black/60 border border-neutral-800"><span class="text-[8.5px] text-neutral-400 font-sans block">TP</span><span id="hist-tp" class="text-xs font-bold text-[#00db84]">--</span></div>
-          <div class="p-2 rounded-xl bg-black/60 border border-neutral-800"><span class="text-[8.5px] text-neutral-400 font-sans block">SL</span><span id="hist-sl" class="text-xs font-bold text-[#ff2e56]">--</span></div>
-        </div>
-
-        <div id="hist-outcome-box" class="p-2 rounded-xl text-[11px] font-bold text-center bg-black/50 border border-neutral-800">
-          --
-        </div>
-      </div>
-
-      <!-- កូនប្រអប់ក្រាហ្វិកទៀនជាក់ស្តែងនៃវគ្គនោះ -->
-      <div class="glass-box rounded-2xl p-3 border border-neutral-800 space-y-1.5">
-        <div class="text-[11px] font-bold text-neutral-300 flex items-center justify-between">
-          <span><i class="fa-solid fa-chart-line text-cyan-400 mr-1.5"></i>ចលនាតម្លៃមាសក្នុងវគ្គនោះ</span>
-          <span id="hist-candle-count" class="text-[9.5px] text-neutral-400 font-num">-- Candles</span>
-        </div>
-        <div id="hist-mini-chart-box" class="w-full h-36 bg-black/80 rounded-xl relative overflow-hidden border border-neutral-800/80"></div>
-      </div>
-
-      <!-- មតិវិភាគ AI ទាំង ៤ ក្នុងជុំនោះ -->
-      <div class="space-y-2">
-        <span class="text-xs font-bold text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-brain text-cyan-400"></i>
-          <span>មតិវិភាគលម្អិតរបស់ AI ទាំង ៤ (ជុំនោះ)</span>
-        </span>
-        <div id="hist-models-list" class="space-y-2"></div>
-      </div>
-
-      <!-- ព័ត៌មាន និង Link ដែលបានកើតឡើងក្នុងអំឡុងពេលនោះ -->
-      <div class="p-3.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 space-y-2 mb-4">
-        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-          <i class="fa-solid fa-newspaper"></i>
-          <span>ព័ត៌មាន & Link ដែលចេញក្នុងអំឡុងពេលនោះ</span>
-        </span>
-        <div id="hist-news-box" class="text-[11px] text-neutral-300 space-y-1.5">
-          គ្មានព័ត៌មានកត់ត្រាក្នុងពេលនោះទេ។
+        <div id="nd-gemini-article" class="text-[12px] text-neutral-100 leading-relaxed space-y-2">
+          កំពុងបញ្ជូនព័ត៌មានពិត និងលីងប្រភពទៅឱ្យ Gemini សរសេរអត្ថបទពន្យល់ជាភាសាខ្មែរ...
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <!-- ================= JAVASCRIPT ================= -->
   <script>
     const rootBody = document.getElementById('app-root');
     const wrapper = document.getElementById('chart-wrapper');
@@ -549,264 +542,1077 @@
     let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
+    let cachedFFEvents = [];
+    let cachedRssEvents = [];
+    let tickerItems = [];
+    let tickerCurrentIdx = 0;
+
     let showAiBox = true;
     let aiBoxStyle = 'dotted-left';
     let aiTradePos = { active: false, side: 'LONG', signalLabel: 'BUY', anchorCandleIdx: 0, entry: 0, tp: 0, sl: 0 };
 
     // =========================================================================
-    // ប្រព័ន្ធផ្ទុកប្រវត្តិ 380 ទៅ 387 ដង (BUFFER AUTO-PURGE & LOCALSTORAGE)
+    // ប្រព័ន្ធចងចាំប្រវត្តិវិភាគ 30 នាទី (ROLLING BUFFER 380 ចុះ 7 ជុំ)
     // =========================================================================
-    const STORAGE_KEY = 'bobotou_ai_30m_history_v2';
-    const MAX_BUFFER = 380;
-    const PURGE_TRIGGER = 387; // ពេលដល់ 387 លុប 7 ចាស់ចោល សល់ 380 ថេរ
-    let aiHistory = [];
+    const HISTORY_STORAGE_KEY = 'bobotou_ai_history_v1';
+    const MAX_HISTORY = 380;
+    const TRIM_CHUNK = 7;
+    let tradeHistoryList = [];
 
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) aiHistory = JSON.parse(saved);
-    } catch (e) { aiHistory = []; }
-
-    function saveHistoryBuffer(newItem) {
-      aiHistory.push(newItem);
-
-      // ប្រសិនបើកើនដល់ 387 ដង លុប 7 ដំបូងចេញ (សល់ 380 វិញ)
-      if (aiHistory.length >= PURGE_TRIGGER) {
-        aiHistory = aiHistory.slice(aiHistory.length - MAX_BUFFER);
-      }
-
+    function loadHistoryFromStorage() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(aiHistory));
-      } catch (e) {
-        // បើពេញ memory កាត់សល់ ២០០
-        aiHistory = aiHistory.slice(-200);
-      }
-      renderHistoryStrip();
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (raw) tradeHistoryList = JSON.parse(raw) || [];
+      } catch (e) { tradeHistoryList = []; }
+      renderHistoryChips();
     }
 
-    function renderHistoryStrip() {
-      const strip = document.getElementById('history-badges-strip');
-      if (aiHistory.length === 0) {
-        strip.innerHTML = `<span class="text-[10px] text-neutral-500 font-num">កំពុងរង់ចាំជុំទី 1...</span>`;
+    function saveHistoryToStorage() {
+      // ក្បួនគ្រប់គ្រង៖ ពេលដល់ 387 ជុំ កាត់ 7 ជុំចាស់ចោល ទុកត្រឹម 380 ជានិច្ច
+      if (tradeHistoryList.length >= MAX_HISTORY + TRIM_CHUNK) {
+        tradeHistoryList.splice(0, TRIM_CHUNK);
+      }
+      try { localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(tradeHistoryList)); } catch (e) {}
+      renderHistoryChips();
+      renderHistoryCardsList();
+    }
+
+    function addHistorySnapshot(data) {
+      if (!data || !data.consensus) return;
+      const c = data.consensus;
+      const now = Date.now();
+      const lastCandles = candleData.slice(-6).map(k => ({ open: k.open, high: k.high, low: k.low, close: k.close }));
+
+      // គណនា PnL ប៉ាន់ស្មានធៀបនឹងតម្លៃបច្ចុប្បន្ន
+      const currentPrice = candleData.length ? candleData[candleData.length - 1].close : parseFloat(c.entry);
+      const isLong = (c.signal === 'BUY');
+      const pnlDiff = isLong ? (currentPrice - parseFloat(c.entry)) : (parseFloat(c.entry) - currentPrice);
+      const pnlPct = (pnlDiff / parseFloat(c.entry)) * 100;
+      const isWin = pnlPct >= 0;
+
+      const snapshot = {
+        round: data.round || (tradeHistoryList.length + 1),
+        timestamp: now,
+        signal: c.signal,
+        entry: c.entry,
+        tp: c.tp,
+        sl: c.sl,
+        confidence: c.confidence,
+        votes: c.votes,
+        models: data.models || [],
+        candles: lastCandles,
+        pnlPct: pnlPct.toFixed(2),
+        isWin: isWin,
+        currentPrice: currentPrice.toFixed(2),
+        // ព័ត៌មានដែលទើបចេញក្នុងអំឡុងពេលនោះ
+        recentNews: (cachedFFEvents.slice(0, 2)).concat(cachedRssEvents.slice(0, 1))
+      };
+
+      tradeHistoryList.push(snapshot);
+      saveHistoryToStorage();
+    }
+
+    function renderHistoryChips() {
+      const container = document.getElementById('history-chips-container');
+      const badge = document.getElementById('history-count-badge');
+      badge.innerText = tradeHistoryList.length;
+
+      if (tradeHistoryList.length === 0) {
+        container.innerHTML = `<span class="text-[9.5px] text-neutral-600 font-num">រង់ចាំជុំទី 1...</span>`;
         return;
       }
 
-      // បង្ហាញកូន Icon 30m រត់ដេញគ្នាផ្ដេក (ពីថ្មីទៅចាស់)
-      let html = '';
-      for (let i = aiHistory.length - 1; i >= 0; i--) {
-        const h = aiHistory[i];
-        const isBuy = h.consensus.signal === 'BUY';
-        const isSell = h.consensus.signal === 'SELL';
-        const colorCls = isBuy ? 'border-cyan-500/50 bg-cyan-950/40 text-cyan-300' : isSell ? 'border-rose-500/50 bg-rose-950/40 text-rose-300' : 'border-amber-500/50 bg-amber-950/40 text-amber-300';
-        const arrow = isBuy ? '▲' : isSell ? '▼' : '●';
-        const t = formatCambodiaAMPM(h.timestamp);
-
-        html += `
-          <button onclick="openHistoryDetail(${i})" class="shrink-0 px-2 py-0.5 rounded-md border ${colorCls} text-[9.5px] font-bold font-num flex items-center space-x-1 hover:brightness-125 active:scale-95 transition-all" title="ជុំ #${h.round} (${t.time12h})">
-            <span>${arrow} #${h.round}</span>
-            <span class="text-[8px] opacity-75">${t.time12h.split(' ')[0]}</span>
-          </button>
-        `;
-      }
-      strip.innerHTML = html;
-    }
-
-    // =========================================================================
-    // ក្រាហ្វិកខ្សែររត់តាមការវិភាគពិត (DYNAMIC PREDICTION WAVE) មិននៅដដែលឡើយ
-    // =========================================================================
-    function updateDynamicPredictionWave(signal, entry, tp, sl) {
-      const waveArea = document.getElementById('ai-wave-area');
-      const waveLine = document.getElementById('ai-wave-line');
-      const stop1 = document.getElementById('ai-grad-stop1');
-      const stop2 = document.getElementById('ai-grad-stop2');
-      const entryDot = document.getElementById('ai-wave-entry-dot');
-      const entryTxt = document.getElementById('ai-wave-entry-txt');
-      const tpDot = document.getElementById('ai-wave-tp-dot');
-      const tpTxt = document.getElementById('ai-wave-tp-txt');
-
-      if (!waveArea || !waveLine) return;
-
-      if (signal === 'BUY') {
-        // រលកបាញ់ឡើងលើ (Bullish Surge)
-        waveArea.setAttribute('d', 'M 0 65 Q 60 75 130 55 T 230 40 T 320 15 L 320 90 L 0 90 Z');
-        waveLine.setAttribute('d', 'M 0 65 Q 60 75 130 55 T 230 40 T 320 15');
-        waveLine.setAttribute('stroke', '#00f0ff');
-        stop1.setAttribute('stop-color', '#00f0ff');
-        stop2.setAttribute('stop-color', '#00f0ff');
-
-        entryDot.setAttribute('cx', '130'); entryDot.setAttribute('cy', '55'); entryDot.setAttribute('fill', '#ffffff');
-        entryTxt.setAttribute('x', '110'); entryTxt.setAttribute('y', '48'); entryTxt.setAttribute('fill', '#ffffff'); entryTxt.textContent = 'ENTRY BUY';
-
-        tpDot.setAttribute('cx', '315'); tpDot.setAttribute('cy', '15'); tpDot.setAttribute('fill', '#00db84');
-        tpTxt.setAttribute('x', '265'); tpTxt.setAttribute('y', '12'); tpTxt.setAttribute('fill', '#00db84'); tpTxt.textContent = 'TP TARGET';
-
-      } else if (signal === 'SELL') {
-        // រលកបាញ់ធ្លាក់ចុះក្រោម (Bearish Dump)
-        waveArea.setAttribute('d', 'M 0 25 Q 60 15 130 35 T 230 50 T 320 75 L 320 90 L 0 90 Z');
-        waveLine.setAttribute('d', 'M 0 25 Q 60 15 130 35 T 230 50 T 320 75');
-        waveLine.setAttribute('stroke', '#ff2e56');
-        stop1.setAttribute('stop-color', '#ff2e56');
-        stop2.setAttribute('stop-color', '#ff2e56');
-
-        entryDot.setAttribute('cx', '130'); entryDot.setAttribute('cy', '35'); entryDot.setAttribute('fill', '#ffffff');
-        entryTxt.setAttribute('x', '105'); entryTxt.setAttribute('y', '28'); entryTxt.setAttribute('fill', '#ffffff'); entryTxt.textContent = 'ENTRY SELL';
-
-        tpDot.setAttribute('cx', '315'); tpDot.setAttribute('cy', '75'); tpDot.setAttribute('fill', '#ff2e56');
-        tpTxt.setAttribute('x', '265'); tpTxt.setAttribute('y', '85'); tpTxt.setAttribute('fill', '#ff2e56'); tpTxt.textContent = 'TP TARGET';
-
-      } else {
-        // រលកយោលសំប៉ែតៗ (Sideways Oscillating / WAIT)
-        waveArea.setAttribute('d', 'M 0 50 Q 80 35 160 50 T 240 50 T 320 50 L 320 90 L 0 90 Z');
-        waveLine.setAttribute('d', 'M 0 50 Q 80 35 160 50 T 240 50 T 320 50');
-        waveLine.setAttribute('stroke', '#f59e0b');
-        stop1.setAttribute('stop-color', '#f59e0b');
-        stop2.setAttribute('stop-color', '#f59e0b');
-
-        entryDot.setAttribute('cx', '160'); entryDot.setAttribute('cy', '50'); entryDot.setAttribute('fill', '#f59e0b');
-        entryTxt.setAttribute('x', '135'); entryTxt.setAttribute('y', '42'); entryTxt.setAttribute('fill', '#f59e0b'); entryTxt.textContent = 'WAITING';
-
-        tpDot.setAttribute('cx', '315'); tpDot.setAttribute('cy', '50'); tpDot.setAttribute('fill', '#f59e0b');
-        tpTxt.setAttribute('x', '265'); tpTxt.setAttribute('y', '42'); tpTxt.setAttribute('fill', '#f59e0b'); tpTxt.textContent = 'RANGE';
-      }
-    }
-
-    // =========================================================================
-    // ផ្ទាំងពិនិត្យប្រវត្តិ AI លម្អិត (OPEN HISTORY DETAIL MODAL)
-    // =========================================================================
-    let histMiniChart = null;
-    let histMiniSeries = null;
-
-    window.openHistoryDetail = function(idx) {
-      const h = aiHistory[idx];
-      if (!h) return;
-
-      const modal = document.getElementById('history-detail-modal');
-      const t = formatCambodiaAMPM(h.timestamp);
-
-      document.getElementById('hist-round-title').innerText = `ប្រវត្តិវិភាគជុំ #${h.round}`;
-      document.getElementById('hist-time-str').innerText = `${t.fullStr} • ${t.fullTimeStr}`;
-
-      const isBuy = h.consensus.signal === 'BUY';
-      const isSell = h.consensus.signal === 'SELL';
-      const sigEl = document.getElementById('hist-signal-text');
-      sigEl.innerText = h.consensus.signal;
-      sigEl.className = isBuy ? 'text-base font-bold c-up' : isSell ? 'text-base font-bold c-down' : 'text-base font-bold text-amber-400';
-
-      document.getElementById('hist-votes-text').innerText = `${h.consensus.votes} AI (${h.consensus.confidence}%)`;
-      document.getElementById('hist-entry').innerText = h.consensus.entry;
-      document.getElementById('hist-tp').innerText = h.consensus.tp;
-      document.getElementById('hist-sl').innerText = h.consensus.sl;
-
-      // គណនាផលចំណេញ/ខាតធៀបនឹងតម្លៃបច្ចុប្បន្ន
-      const curPrice = candleData.length > 0 ? candleData[candleData.length - 1].close : parseFloat(h.consensus.entry);
-      const entryNum = parseFloat(h.consensus.entry);
-      const tpNum = parseFloat(h.consensus.tp);
-      const slNum = parseFloat(h.consensus.sl);
-
-      const resBadge = document.getElementById('hist-result-badge');
-      const outBox = document.getElementById('hist-outcome-box');
-
-      if (h.consensus.signal === 'WAIT') {
-        resBadge.innerText = 'WAIT (ស្ងប់ស្ងាត់)';
-        resBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300';
-        outBox.innerHTML = `⏳ <b>វគ្គរង់ចាំ៖</b> មិនមានការបើក Position ចូលផ្សារក្នុងជុំនេះទេ ដើម្បីការពារហានិភ័យ។`;
-      } else {
-        const isLong = isBuy;
-        let reachedTp = isLong ? curPrice >= tpNum : curPrice <= tpNum;
-        let reachedSl = isLong ? curPrice <= slNum : curPrice >= slNum;
-        const pnlDiff = isLong ? (curPrice - entryNum) : (entryNum - curPrice);
-        const pnlPct = ((pnlDiff / entryNum) * 100).toFixed(2);
-        const sign = pnlDiff >= 0 ? '+' : '';
-
-        if (reachedTp) {
-          resBadge.innerText = '✅ ចំណេញ (WIN TP)';
-          resBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400';
-          outBox.innerHTML = `🎉 <b>ប៉ះគោលដៅ TP ជោគជ័យ!</b> ផលចំណេញប៉ាន់ស្មាន: <span class="text-emerald-400 font-num">+${Math.abs(tpNum - entryNum).toFixed(2)}$</span>`;
-        } else if (reachedSl) {
-          resBadge.innerText = '❌ ប៉ះ SL (LOSS)';
-          resBadge.className = 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-rose-500/20 text-rose-400';
-          outBox.innerHTML = `🛑 <b>ប៉ះចំណុចការពារខាត SL!</b> ការខាតបង់: <span class="text-rose-400 font-num">-${Math.abs(entryNum - slNum).toFixed(2)}$</span>`;
-        } else {
-          resBadge.innerText = `កំពុងរត់ (${sign}${pnlPct}%)`;
-          resBadge.className = pnlDiff >= 0 ? 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-cyan-500/20 text-cyan-300' : 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-rose-500/20 text-rose-300';
-          outBox.innerHTML = `📊 <b>កំពុងដំណើរការ (Running):</b> តម្លៃបច្ចុប្បន្ន $${curPrice.toFixed(2)} (${sign}${pnlPct}%)`;
-        }
-      }
-
-      // Render មតិ AI ទាំង ៤
-      const listEl = document.getElementById('hist-models-list');
-      const labelMap = { gemini: '🤖 Gemini 3.5 Flash-Lite', nemotron: '🟢 Nemotron 550B', gpt120b: '🟡 OpenAI GPT-120B', qwen: '🟣 Qwen 3.8 27B' };
-      listEl.innerHTML = (h.models || []).map(m => {
-        const isB = m.signal === 'BUY'; const isS = m.signal === 'SELL';
-        const cCls = isB ? 'text-cyan-300' : isS ? 'text-rose-400' : 'text-amber-400';
+      // បង្ហាញកូន Chips 10 ជុំចុងក្រោយដេញគ្នាមកមុខ
+      const recent = tradeHistoryList.slice(-12);
+      container.innerHTML = recent.map((item, idx) => {
+        const isBuy = item.signal === 'BUY';
+        const isSell = item.signal === 'SELL';
+        const cls = isBuy ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300' : isSell ? 'border-rose-500/40 bg-rose-950/40 text-rose-300' : 'border-neutral-800 bg-neutral-900 text-amber-300';
+        const tStr = new Date(item.timestamp).toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit', hour12: false });
         return `
-          <div class="p-2.5 rounded-xl bg-black/60 border border-neutral-800 space-y-1">
-            <div class="flex justify-between items-center text-[10.5px]">
-              <span class="font-bold text-neutral-200">${labelMap[m.id] || m.name}</span>
-              <span class="font-bold font-num ${cCls}">${m.signal} (${m.confidence}%)</span>
-            </div>
-            <p class="text-[11px] text-neutral-300 leading-relaxed">${m.reason_km}</p>
+          <div onclick="openHistoryFullPage(${tradeHistoryList.indexOf(item)})" class="px-2 py-0.5 rounded-md border text-[9px] font-bold font-num shrink-0 cursor-pointer active:scale-95 transition-transform ${cls}">
+            ${item.signal} #${item.round} <span class="opacity-70 text-[8px] font-normal font-sans">${tStr}</span>
           </div>
         `;
       }).join('');
 
-      // Render ព័ត៌មាន និង Link ក្នុងវគ្គនោះ
-      const newsBox = document.getElementById('hist-news-box');
-      if (h.news && h.news.length > 0) {
-        newsBox.innerHTML = h.news.map(n => `
-          <div class="p-2 rounded-lg bg-black/40 border border-neutral-800">
-            <div class="flex justify-between items-center text-[9px] text-amber-400 mb-0.5">
-              <span>${n.source || 'News'}</span>
-              <a href="${n.link || '#'}" target="_blank" class="text-sky-400 hover:underline">Link URL <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i></a>
-            </div>
-            <div class="text-neutral-200 font-medium">${n.title}</div>
-          </div>
-        `).join('');
-      } else {
-        newsBox.innerHTML = `<span class="text-neutral-500">គ្មានព័ត៌មានធំប្រកាសក្នុងចន្លោះពេលនោះទេ។</span>`;
+      container.scrollLeft = container.scrollWidth;
+    }
+
+    function renderHistoryCardsList() {
+      const listEl = document.getElementById('history-cards-list');
+      const statsEl = document.getElementById('history-audit-stats');
+      statsEl.innerText = `${tradeHistoryList.length} / ${MAX_HISTORY} ជុំ (Buffer Safe)`;
+
+      if (tradeHistoryList.length === 0) {
+        listEl.innerHTML = `<div class="text-neutral-500 text-center py-10">មិនទាន់មានប្រវត្តិវិភាគ 30m នៅឡើយទេ...</div>`;
+        return;
       }
 
-      // Render កូនក្រាហ្វិកទៀនខ្នាតតូច
-      const chartBox = document.getElementById('hist-mini-chart-box');
-      chartBox.innerHTML = '';
-      const cData = h.candles || candleData.slice(-30);
-      document.getElementById('hist-candle-count').innerText = `${cData.length} Candles`;
+      // បង្ហាញពីថ្មីបំផុតទៅចាស់
+      const reversed = [...tradeHistoryList].reverse();
+      listEl.innerHTML = reversed.map((h) => {
+        const tInfo = formatCambodiaAMPM(h.timestamp);
+        const isBuy = h.signal === 'BUY';
+        const isSell = h.signal === 'SELL';
+        const pnlCls = h.isWin ? 'text-[#00db84]' : 'text-[#ff2e56]';
+        const pnlSign = h.isWin ? '+' : '';
+        const sigBadgeCls = isBuy ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : isSell ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
 
-      setTimeout(() => {
-        histMiniChart = LightweightCharts.createChart(chartBox, {
-          width: chartBox.clientWidth,
-          height: chartBox.clientHeight,
-          layout: { background: { color: 'transparent' }, textColor: '#666', fontSize: 9 },
-          grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.03)' } },
-          timeScale: { visible: false },
-          rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' }
-        });
-        histMiniSeries = histMiniChart.addCandlestickSeries({
-          upColor: '#00f0ff', downColor: '#ff2e56', borderVisible: false, wickUpColor: '#00f0ff', wickDownColor: '#ff2e56'
-        });
-        histMiniSeries.setData(cData);
-        histMiniChart.timeScale().fitContent();
-
-        // គូសបន្ទាត់ Entry, TP, SL លើកូនក្រាហ្វ
-        if (h.consensus.signal !== 'WAIT' && !isNaN(entryNum)) {
-          histMiniSeries.createPriceLine({ price: entryNum, color: '#ffffff', lineWidth: 1, lineStyle: 2, title: 'ENTRY' });
-          if (!isNaN(tpNum)) histMiniSeries.createPriceLine({ price: tpNum, color: '#00db84', lineWidth: 1, lineStyle: 2, title: 'TP' });
-          if (!isNaN(slNum)) histMiniSeries.createPriceLine({ price: slNum, color: '#ff2e56', lineWidth: 1, lineStyle: 2, title: 'SL' });
+        // គំនូរកូនទៀន Mini Candles SVG
+        let candlesSvg = '';
+        if (h.candles && h.candles.length) {
+          const maxP = Math.max(...h.candles.map(c => c.high));
+          const minP = Math.min(...h.candles.map(c => c.low));
+          const range = Math.max(1, maxP - minP);
+          candlesSvg = h.candles.map((c, i) => {
+            const x = 12 + i * 16;
+            const yHigh = 45 - ((c.high - minP) / range) * 38;
+            const yLow = 45 - ((c.low - minP) / range) * 38;
+            const yOpen = 45 - ((c.open - minP) / range) * 38;
+            const yClose = 45 - ((c.close - minP) / range) * 38;
+            const color = c.close >= c.open ? '#00f0ff' : '#ff2e56';
+            const topBody = Math.min(yOpen, yClose);
+            const bodyH = Math.max(2, Math.abs(yClose - yOpen));
+            return `
+              <line x1="${x}" y1="${yHigh}" x2="${x}" y2="${yLow}" stroke="${color}" stroke-width="1"/>
+              <rect x="${x-3}" y="${topBody}" width="6" height="${bodyH}" fill="${color}"/>
+            `;
+          }).join('');
         }
-      }, 100);
 
-      modal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-    };
+        // ព័ត៌មានភ្ជាប់ក្នុងអំឡុងពេលនោះ
+        let newsHtml = '';
+        if (h.recentNews && h.recentNews.length) {
+          newsHtml = `
+            <div class="pt-2 border-t border-neutral-800/80 space-y-1">
+              <span class="text-[9.5px] font-bold text-neutral-400 block"><i class="fa-solid fa-newspaper text-amber-400 mr-1"></i> ព័ត៌មានក្នុងអំឡុងពេលនោះ៖</span>
+              ${h.recentNews.map(n => `
+                <div class="text-[9.5px] text-neutral-300 flex items-center justify-between">
+                  <span class="truncate pr-2">• ${n.title}</span>
+                  <a href="${n.link || 'https://www.forexfactory.com/calendar'}" target="_blank" class="text-cyan-400 font-bold shrink-0 text-[8.5px] hover:underline">Link <i class="fa-solid fa-arrow-up-right-from-square text-[7px]"></i></a>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
 
-    document.getElementById('btn-close-hist-detail').addEventListener('click', () => {
-      document.getElementById('history-detail-modal').classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+        return `
+          <div class="p-3.5 rounded-2xl border border-neutral-800 bg-[#0e121a] space-y-2.5">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-bold font-num border ${sigBadgeCls}">${h.signal} #${h.round}</span>
+                <span class="text-[10px] text-neutral-400 font-num">${tInfo.dayKm} ${tInfo.time12h}</span>
+              </div>
+              <span class="text-xs font-bold font-num ${pnlCls}">PnL: ${pnlSign}${h.pnlPct}%</span>
+            </div>
+
+            <!-- កូនក្រាហ្វិកទៀនជាក់ស្តែង + តួលេខចូលផ្សារ -->
+            <div class="flex items-center justify-between p-2 rounded-xl bg-black/60 border border-neutral-800/70 font-num">
+              <div class="space-y-0.5 text-[9.5px]">
+                <div>Entry: <span class="text-white font-bold">$${h.entry}</span></div>
+                <div>TP: <span class="text-cyan-400 font-bold">$${h.tp}</span> | SL: <span class="text-rose-400 font-bold">$${h.sl}</span></div>
+                <div class="text-neutral-400">ឆ្នោត: <b class="text-white">${h.votes}</b> • ទំនុកចិត្ត: <b class="text-emerald-400">${h.confidence}%</b></div>
+              </div>
+              <div class="w-28 h-12">
+                <svg class="w-full h-full" viewBox="0 0 110 50">${candlesSvg}</svg>
+              </div>
+            </div>
+
+            <!-- មតិ AI ទាំង ៤ សង្ខេប -->
+            <div class="text-[9.5px] text-neutral-300 bg-neutral-900/60 p-2 rounded-lg border border-neutral-800/60 leading-relaxed">
+              ${(h.models || []).map(m => `<b>${m.name}:</b> ${m.signal} (${m.confidence}%) - ${m.reason_km}`).join('<br>')}
+            </div>
+
+            ${newsHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setSourceBadge(sourceName, isOk = true) {
+      const el = document.getElementById('data-source-badge');
+      el.innerText = `BOBOTOU (${sourceName})`;
+      el.className = isOk
+        ? "text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300"
+        : "text-[8.5px] font-semibold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300";
+    }
+
+    const chart = LightweightCharts.createChart(container, {
+      width: wrapper.clientWidth,
+      height: wrapper.clientHeight,
+      layout: { background: { color: '#000000' }, textColor: '#666e7a', fontSize: 10, fontFamily: "'Roboto', sans-serif" },
+      grid: { vertLines: { color: 'rgba(255, 255, 255, 0.03)' }, horzLines: { color: 'rgba(255, 255, 255, 0.03)' } },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
+        horzLine: { color: 'rgba(255, 255, 255, 0.85)', width: 1, style: LightweightCharts.LineStyle.Dashed },
+      },
+      rightPriceScale: { borderColor: 'rgba(255, 255, 255, 0.08)', scaleMargins: { top: 0.12, bottom: 0.12 } },
+      timeScale: { visible: false, rightOffset: 8, barSpacing: 6 },
+      handleScroll: true,
+      handleScale: true,
     });
 
-    renderHistoryStrip();
-  </script>
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: '#00f0ff', downColor: '#ff2e56', borderVisible: false, wickUpColor: '#00f0ff', wickDownColor: '#ff2e56', priceLineVisible: false,
+    });
 
-  <!-- Script Bybit Live & AI Council Cycle (បន្តផ្នែក Logic) -->
-  <script>
-    // បន្តហៅ Bybit & Council
+    const indSeries = {
+      ma7: chart.addLineSeries({ color: '#f0b90b', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      ma25: chart.addLineSeries({ color: '#e040fb', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      ema7: chart.addLineSeries({ color: '#ff9800', lineWidth: 1.5, visible: false, priceLineVisible: false }),
+      bollMid: chart.addLineSeries({ color: '#ffffff', lineWidth: 1, visible: false, priceLineVisible: false }),
+      bollUpper: chart.addLineSeries({ color: '#00b0ff', lineWidth: 1, visible: false, priceLineVisible: false }),
+      bollLower: chart.addLineSeries({ color: '#ab47bc', lineWidth: 1, visible: false, priceLineVisible: false }),
+      markLine: chart.addLineSeries({ color: '#90a4ae', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, visible: false, priceLineVisible: false }),
+      sarDots: chart.addLineSeries({ color: '#00e676', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dotted, visible: false, priceLineVisible: false }),
+    };
+
+    function updateIndicators() {
+      if (candleData.length < 25) return;
+      const getSMA = (count) => {
+        const res = [];
+        for (let i = count - 1; i < candleData.length; i++) {
+          let sum = 0; for (let j = 0; j < count; j++) sum += candleData[i - j].close;
+          res.push({ time: candleData[i].time, value: sum / count });
+        }
+        return res;
+      };
+      indSeries.ma7.setData(getSMA(7));
+      indSeries.ma25.setData(getSMA(25));
+      const k = 2 / 8; const emaRes = []; let prevEma = candleData[0].close;
+      candleData.forEach((d, idx) => { const val = idx === 0 ? prevEma : (d.close * k) + (prevEma * (1 - k)); prevEma = val; emaRes.push({ time: d.time, value: val }); });
+      indSeries.ema7.setData(emaRes);
+
+      const bollMid = getSMA(10), bollUpper = [], bollLower = [];
+      bollMid.forEach(m => {
+        const idx = candleData.findIndex(d => d.time === m.time);
+        let sumSq = 0; for (let j = 0; j < 10; j++) sumSq += Math.pow(candleData[idx - j].close - m.value, 2);
+        const sd = Math.sqrt(sumSq / 10);
+        bollUpper.push({ time: m.time, value: m.value + (2 * sd) });
+        bollLower.push({ time: m.time, value: m.value - (2 * sd) });
+      });
+      indSeries.bollMid.setData(bollMid); indSeries.bollUpper.setData(bollUpper); indSeries.bollLower.setData(bollLower);
+      indSeries.sarDots.setData(candleData.map((d, idx) => ({ time: d.time, value: idx % 2 === 0 ? d.low * 0.998 : d.high * 1.002 })));
+    }
+
+    function applyLoadedCandles(rawReversed, sourceName) {
+      candleData = rawReversed.map(item => ({
+        time: Math.floor(parseInt(item[0]) / 1000),
+        open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4]),
+        volume: parseFloat(item[5] || 0), turnover: parseFloat(item[6] || 0),
+      }));
+
+      const uniqueMap = new Map();
+      candleData.forEach(c => uniqueMap.set(c.time, c));
+      candleData = Array.from(uniqueMap.values()).sort((a, b) => a.time - b.time);
+
+      ensureCurrent2hCandleExists();
+
+      candleSeries.setData(candleData);
+      updateIndicators();
+
+      const total = candleData.length;
+      if (total > 60) chart.timeScale().setVisibleLogicalRange({ from: total - 55, to: total + 6 });
+      else chart.timeScale().fitContent();
+
+      candleVolumeMap.clear();
+      candleData.forEach(c => candleVolumeMap.set(c.time, { volume: c.volume, turnover: c.turnover }));
+
+      const last = candleData[candleData.length - 1];
+      if (last) updateHeaderPrices(last.close);
+
+      setSourceBadge(sourceName, true);
+    }
+
+    function ensureCurrent2hCandleExists() {
+      if (candleData.length === 0) return;
+      const now = Math.floor(Date.now() / 1000);
+      const currentBarTime = now - (now % 7200);
+      const last = candleData[candleData.length - 1];
+
+      if (currentBarTime > last.time) {
+        const newBar = { time: currentBarTime, open: last.close, high: last.close, low: last.close, close: last.close, volume: 0, turnover: 0 };
+        candleData.push(newBar);
+        candleSeries.update(newBar);
+        candleVolumeMap.set(currentBarTime, { volume: 0, turnover: 0 });
+        updateIndicators();
+      }
+    }
+
+    async function load5000Candles2h() {
+      let allList = [], endTime = Date.now(), bybitDirectSuccess = false;
+      try {
+        for (let i = 0; i < 5; i++) {
+          const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${currentSymbol}&interval=120&limit=1000&end=${endTime}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Blocked");
+          const json = await res.json();
+          if (json.retCode === 0 && json.result?.list?.length > 0) {
+            const chunk = json.result.list;
+            allList = allList.concat(chunk);
+            endTime = parseInt(chunk[chunk.length - 1][0]) - 1;
+            bybitDirectSuccess = true;
+            if (chunk.length < 1000) break;
+          } else break;
+        }
+      } catch (e) { bybitDirectSuccess = false; }
+
+      if (bybitDirectSuccess && allList.length > 0) {
+        applyLoadedCandles(allList.reverse(), "Bybit");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/klines?symbol=${currentSymbol}&interval=120`);
+        const json = await res.json();
+        if (json.retCode === 0 && json.result?.list?.length > 0) {
+          let srcLabel = json.source || "Proxy";
+          if (srcLabel.includes("Gate")) srcLabel = "Gate.io";
+          if (srcLabel.includes("OKX")) srcLabel = "OKX";
+          applyLoadedCandles(json.result.list.reverse(), srcLabel);
+        }
+      } catch (e) { setSourceBadge("Retry...", false); }
+    }
+
+    async function loadTickerStats() {
+      try {
+        let t = null;
+        try {
+          const bRes = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${currentSymbol}`);
+          if (bRes.ok) {
+            const bJson = await bRes.json();
+            if (bJson.retCode === 0 && bJson.result?.list?.[0]) { t = bJson.result.list[0]; setSourceBadge("Bybit", true); }
+          }
+        } catch (err) {}
+
+        if (!t) {
+          const sRes = await fetch(`/api/ticker?symbol=${currentSymbol}`);
+          if (sRes.ok) {
+            const sJson = await sRes.json();
+            if (sJson.retCode === 0 && sJson.result?.list?.[0]) t = sJson.result.list[0];
+          }
+        }
+
+        if (t) {
+          const livePrice = parseFloat(t.lastPrice);
+          if (livePrice) {
+            updateHeaderPrices(livePrice);
+            ensureCurrent2hCandleExists();
+            if (candleData.length > 0) {
+              const last = candleData[candleData.length - 1];
+              last.close = livePrice;
+              if (livePrice > last.high) last.high = livePrice;
+              if (livePrice < last.low) last.low = livePrice;
+              candleSeries.update(last);
+            }
+          }
+
+          document.getElementById('stat-high').innerText = parseFloat(t.highPrice24h).toFixed(2);
+          document.getElementById('stat-low').innerText = parseFloat(t.lowPrice24h).toFixed(2);
+          document.getElementById('stat-turnover').innerText = (parseFloat(t.turnover24h) / 1e6).toFixed(2) + 'M';
+          document.getElementById('header-mark').innerText = parseFloat(t.markPrice).toFixed(2);
+          const changePct = (parseFloat(t.price24hPcnt) * 100).toFixed(2);
+          const chEl = document.getElementById('header-change');
+          chEl.innerText = (changePct >= 0 ? '+' : '') + changePct + '%';
+          chEl.className = `text-xs font-semibold font-num ${changePct >= 0 ? 'c-up' : 'c-down'}`;
+          indSeries.markLine.setData(candleData.map(d => ({ time: d.time, value: parseFloat(t.markPrice) })));
+        }
+      } catch (e) {}
+    }
+
+    async function loadLiveDXY() {
+      try {
+        const res = await fetch('/api/dxy');
+        const d = await res.json();
+        if (d && d.price) {
+          document.getElementById('dxy-price').innerText = d.price;
+          document.getElementById('dxy-source').innerText = `Source: ${d.source}`;
+          document.getElementById('dxy-high').innerText = d.high;
+          document.getElementById('dxy-low').innerText = d.low;
+
+          const chPct = parseFloat(d.changePct);
+          const chEl = document.getElementById('dxy-change');
+          chEl.innerText = (chPct >= 0 ? '+' : '') + d.changePct + '%';
+          chEl.className = `text-xs font-bold ${chPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+          const trendBadge = document.getElementById('dxy-trend-badge');
+          const impactBox = document.getElementById('dxy-gold-impact');
+          const dxyDot = document.getElementById('dxy-dot-indicator');
+
+          if (d.trend === 'UP') {
+            trendBadge.innerText = '▲ ដុល្លារឡើង'; trendBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300';
+            dxyDot.className = 'absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500';
+            impactBox.innerHTML = `📈 <b>ប្រាក់ដុល្លារកំពុងឡើងថ្លៃ (+${d.changePct}%)៖</b> បង្កើតសម្ពាធទាញតម្លៃមាសឱ្យចុះ ឬយឺតការឡើង។`;
+          } else if (d.trend === 'DOWN') {
+            trendBadge.innerText = '▼ ដុល្លារចុះ'; trendBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300';
+            dxyDot.className = 'absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#00db84]';
+            impactBox.innerHTML = `📉 <b>ប្រាក់ដុល្លារកំពុងចុះខ្សោយ (${d.changePct}%)៖</b> ជាកម្លាំងរុញតម្លៃមាសឱ្យហក់ឡើងថ្លៃ។`;
+          } else {
+            trendBadge.innerText = '● ថេរ';
+            impactBox.innerHTML = `● <b>ប្រាក់ដុល្លារកំពុងស្ងប់ស្ងាត់៖</b> ទីផ្សារមាសដើរតាមបច្ចេកទេស 2h ជាចម្បង។`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function formatCambodiaAMPM(tsMs) {
+      const dt = new Date(tsMs);
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Phnom_Penh',
+        weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      }).formatToParts(dt);
+
+      const getP = (t) => (parts.find(p => p.type === t) || {}).value || '';
+      const wkMap = { Sun: 'ថ្ងៃអាទិត្យ', Mon: 'ថ្ងៃចន្ទ', Tue: 'ថ្ងៃអង្គារ', Wed: 'ថ្ងៃពុធ', Thu: 'ថ្ងៃព្រហស្បតិ៍', Fri: 'ថ្ងៃសុក្រ', Sat: 'ថ្ងៃសៅរ៍' };
+      const dayKm = wkMap[getP('weekday')] || getP('weekday');
+      const dateStr = `${getP('day')}/${getP('month')}/${getP('year')}`;
+      const time12h = `${getP('hour')}:${getP('minute')} ${getP('dayPeriod')}`;
+
+      const hour24 = parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', hour12: false }).format(dt));
+      let periodKm = 'ព្រឹក';
+      if (hour24 >= 12 && hour24 < 17) periodKm = 'រសៀល';
+      else if (hour24 >= 17 && hour24 < 19) periodKm = 'ល្ងាច';
+      else if (hour24 >= 19 || hour24 < 4) periodKm = 'យប់';
+
+      return { dayKm, dateStr, time12h, periodKm, fullStr: `${dayKm} ${dateStr}`, fullTimeStr: `${time12h} (ពេល${periodKm})` };
+    }
+
+    // Modal Control
+    const ffFullModal = document.getElementById('ff-full-modal');
+    const rssFullModal = document.getElementById('rss-full-modal');
+    const historyFullModal = document.getElementById('history-full-modal');
+    const newsDetailModal = document.getElementById('news-detail-modal');
+
+    function openModal(el) { el.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'); }
+    function closeModal(el) { el.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'); }
+
+    document.getElementById('btn-open-ff-page').addEventListener('click', () => openModal(ffFullModal));
+    document.getElementById('btn-close-ff-page').addEventListener('click', () => closeModal(ffFullModal));
+    document.getElementById('btn-open-rss-page').addEventListener('click', () => openModal(rssFullModal));
+    document.getElementById('btn-close-rss-page').addEventListener('click', () => closeModal(rssFullModal));
+    document.getElementById('btn-close-news-detail').addEventListener('click', () => closeModal(newsDetailModal));
+
+    // ប៊ូតុងបើកទំព័រប្រវត្តិពេញលេញ 380 ជុំ
+    document.getElementById('btn-open-history-page').addEventListener('click', () => {
+      renderHistoryCardsList();
+      openModal(historyFullModal);
+    });
+    document.getElementById('btn-close-history-page').addEventListener('click', () => closeModal(historyFullModal));
+
+    window.openHistoryFullPage = function(index) {
+      renderHistoryCardsList();
+      openModal(historyFullModal);
+    };
+
+    function formatGeminiText(raw) {
+      const escaped = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return escaped.replace(/\*\*(.*?)\*\*/g, '<b class="text-cyan-300">$1</b>').replace(/\n/g, '<br>');
+    }
+
+    window.openNewsDetail = async function(type, idx) {
+      let item = type === 'ff' ? cachedFFEvents[idx] : cachedRssEvents[idx];
+      if (!item) return;
+
+      const isFF = type === 'ff';
+      const ts = item.timestamp;
+      const tInfo = formatCambodiaAMPM(ts);
+      const now = Date.now();
+      const diffMin = Math.round((ts - now) / 60000);
+
+      const impBadge = document.getElementById('nd-impact-badge');
+      if (isFF) {
+        const isHigh = item.impact === 'High';
+        impBadge.innerText = isHigh ? '🔴 High Impact (ខ្លាំង)' : '🟠 Medium Impact (មធ្យម)';
+        impBadge.className = isHigh
+          ? 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40'
+          : 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        document.getElementById('nd-source-tag').innerText = 'Forex Factory (USD)';
+      } else {
+        impBadge.innerText = '📰 Live Breaking News';
+        impBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+        document.getElementById('nd-source-tag').innerText = item.source;
+      }
+
+      document.getElementById('nd-title').innerText = item.title;
+      document.getElementById('nd-date-km').innerText = tInfo.fullStr;
+      document.getElementById('nd-time-ampm').innerText = tInfo.fullTimeStr;
+
+      const cdEl = document.getElementById('nd-countdown-txt');
+      if (diffMin > 0) {
+        const hrs = Math.floor(diffMin / 60), mins = diffMin % 60;
+        cdEl.innerText = hrs > 0 ? `⏳ នៅសល់ ${hrs} ម៉ោង ${mins} នាទីទៀត` : `⏳ នៅសល់ ${mins} នាទីទៀត`;
+        cdEl.className = 'font-bold text-rose-400 font-num';
+      } else if (diffMin === 0) {
+        cdEl.innerText = '⚡ កំពុងប្រកាសឥឡូវនេះ!'; cdEl.className = 'font-bold text-amber-400';
+      } else {
+        const ago = Math.abs(diffMin), hrs = Math.floor(ago / 60), mins = ago % 60;
+        cdEl.innerText = hrs > 0 ? `✅ ចេញរួច ${hrs} ម៉ោង ${mins} នាទីមុន` : `✅ ចេញរួច ${mins} នាទីមុន`;
+        cdEl.className = 'font-bold text-emerald-400 font-num';
+      }
+
+      const statsGrid = document.getElementById('nd-stats-grid');
+      if (isFF) {
+        statsGrid.style.display = 'grid';
+        document.getElementById('nd-prev').innerText = item.previous || '--';
+        document.getElementById('nd-fcst').innerText = item.forecast || '--';
+        document.getElementById('nd-actual').innerText = item.actual || 'រង់ចាំ';
+      } else {
+        statsGrid.style.display = 'none';
+      }
+
+      const realLink = item.link || (isFF ? 'https://www.forexfactory.com/calendar' : 'https://finance.yahoo.com/quote/GC=F/');
+      document.getElementById('nd-source-link').href = realLink;
+      document.getElementById('nd-url-text').innerText = realLink;
+      document.getElementById('nd-raw-desc').innerText = item.description || item.title;
+
+      const gemStatus = document.getElementById('nd-gemini-status');
+      const gemBox = document.getElementById('nd-gemini-article');
+      gemStatus.innerText = '● Gemini កំពុងសរសេរ...';
+      gemStatus.className = 'text-[9px] text-amber-400 font-num';
+      gemBox.innerHTML = `<div class="animate-pulse text-neutral-400 py-3">🤖 កំពុងបញ្ជូនព័ត៌មានពិត និងលីង URL ទៅឱ្យ Gemini សរសេរអត្ថបទពន្យល់លម្អិតជាភាសាខ្មែរ...</div>`;
+
+      openModal(newsDetailModal);
+
+      try {
+        const currentGold = candleData.length > 0 ? candleData[candleData.length - 1].close : '--';
+        const res = await fetch('/api/news-explain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: item.title,
+            source: isFF ? 'Forex Factory' : item.source,
+            impact: item.impact || 'Market News',
+            timeStr: `${tInfo.fullStr} ${tInfo.fullTimeStr}`,
+            forecast: item.forecast || '',
+            previous: item.previous || '',
+            actual: item.actual || '',
+            description: item.description || item.title,
+            link: realLink,
+            goldPrice: currentGold
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.analysis_km) {
+          gemBox.innerHTML = formatGeminiText(data.analysis_km);
+          gemStatus.innerText = data.fromCache ? '● រួចរាល់ (Cached)' : '● រួចរាល់ (Live Gemini)';
+          gemStatus.className = 'text-[9px] text-emerald-400 font-num';
+        } else {
+          gemBox.innerText = 'មិនអាចភ្ជាប់ទៅ Gemini បានទេឥឡូវនេះ សូមចុចបើកលីង URL ខាងលើដើម្បីអានប្រភពដើម។';
+          gemStatus.innerText = '✖ Error';
+        }
+      } catch (e) {
+        gemBox.innerText = 'មានបញ្ហាបណ្តាញ សូមសាកល្បងម្ដងទៀត។';
+        gemStatus.innerText = '✖ Error';
+      }
+    };
+
+    function renderTickerItem() {
+      if (tickerItems.length === 0) return;
+      const slideInner = document.getElementById('ticker-slide-inner');
+      slideInner.classList.add('ticker-switching');
+      setTimeout(() => {
+        if (tickerCurrentIdx >= tickerItems.length) tickerCurrentIdx = 0;
+        const cur = tickerItems[tickerCurrentIdx];
+        document.getElementById('ticker-icon').innerText = cur.icon;
+        document.getElementById('ticker-text').innerHTML = cur.html;
+        slideInner.classList.remove('ticker-switching');
+      }, 300);
+    }
+
+    setInterval(() => {
+      if (tickerItems.length > 1) {
+        tickerCurrentIdx = (tickerCurrentIdx + 1) % tickerItems.length;
+        renderTickerItem();
+      }
+    }, 4500);
+
+    document.getElementById('top-notification').addEventListener('click', () => {
+      if (tickerItems.length > 0) {
+        const cur = tickerItems[tickerCurrentIdx] || tickerItems[0];
+        openNewsDetail(cur.type, cur.idx);
+      } else {
+        openModal(ffFullModal);
+      }
+    });
+
+    async function loadMultiSourceNews() {
+      try {
+        const res = await fetch('/api/news');
+        const json = await res.json();
+        const ffEl = document.getElementById('ff-news-list');
+        const rssEl = document.getElementById('rss-news-list');
+        const ffDot = document.getElementById('ff-alert-dot');
+        let newTickerList = [];
+
+        if (json.success && json.events && json.events.length > 0) {
+          cachedFFEvents = json.events;
+          const now = Date.now();
+          let html = '';
+          let hasUrgent = false;
+
+          json.events.forEach((ev, idx) => {
+            const diffMin = Math.round((ev.timestamp - now) / 60000);
+            const isHigh = ev.impact === 'High';
+            const dot = isHigh ? '🔴' : '🟠';
+            const borderCls = isHigh ? 'border-rose-500/35 bg-rose-950/20' : 'border-neutral-800 bg-neutral-900/80';
+            const tInfo = formatCambodiaAMPM(ev.timestamp);
+
+            let timeLabel = `${tInfo.fullStr} • ${tInfo.time12h}`;
+            if (diffMin >= 0 && diffMin <= 60) {
+              timeLabel = `<span class="text-rose-400 font-bold">សល់ ${diffMin} នាទី</span> (${tInfo.time12h})`;
+              if (isHigh) hasUrgent = true;
+            } else if (diffMin < 0 && diffMin >= -60) {
+              timeLabel = `<span class="text-amber-400">ចេញរួច ${Math.abs(diffMin)} នាទីមុន</span> (${tInfo.time12h})`;
+            }
+
+            newTickerList.push({
+              type: 'ff', idx: idx, icon: dot,
+              html: `<span class="text-amber-300 font-num">[${tInfo.time12h}]</span> <b>${ev.title}</b> <span class="text-neutral-400 text-[10px]">(Fcst: ${ev.forecast})</span>`
+            });
+
+            html += `
+              <div onclick="openNewsDetail('ff', ${idx})" class="p-3 rounded-2xl border ${borderCls} flex justify-between items-center cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
+                <div class="pr-2 truncate">
+                  <div class="font-bold text-neutral-100 text-xs truncate">${dot} ${ev.title}</div>
+                  <div class="text-[10px] text-neutral-400 font-num mt-1">${timeLabel}</div>
+                </div>
+                <div class="text-right text-[10px] font-num shrink-0 text-neutral-400 flex items-center gap-2.5">
+                  <div><div>Fcst: <span class="text-white font-bold">${ev.forecast}</span></div><div>Prev: <span class="text-neutral-300">${ev.previous}</span></div></div>
+                  <i class="fa-solid fa-chevron-right text-neutral-600 text-[10px]"></i>
+                </div>
+              </div>
+            `;
+          });
+          ffEl.innerHTML = html;
+          if (hasUrgent) ffDot.classList.remove('hidden'); else ffDot.classList.add('hidden');
+        } else {
+          cachedFFEvents = [];
+          ffEl.innerHTML = `<div class="text-neutral-500 text-center py-10">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
+        }
+
+        if (json.breaking && json.breaking.length > 0) {
+          cachedRssEvents = json.breaking;
+          rssEl.innerHTML = json.breaking.map((b, idx) => {
+            const tInfo = formatCambodiaAMPM(b.timestamp);
+            newTickerList.push({
+              type: 'rss', idx: idx, icon: '📰',
+              html: `<span class="text-sky-400 font-bold">[${b.source}]</span> ${b.title}`
+            });
+
+            return `
+              <div onclick="openNewsDetail('rss', ${idx})" class="p-3 rounded-2xl border border-neutral-800 bg-neutral-900/75 cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
+                <div class="flex justify-between items-center text-[9.5px] text-amber-400 font-bold mb-1">
+                  <span>${b.source}</span>
+                  <span class="font-num text-neutral-400">${tInfo.dayKm} ${tInfo.time12h} <i class="fa-solid fa-chevron-right ml-1 text-neutral-600"></i></span>
+                </div>
+                <div class="text-neutral-100 text-xs leading-relaxed">${b.title}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          cachedRssEvents = [];
+          rssEl.innerHTML = `<div class="text-neutral-500 text-center py-10">កំពុងរង់ចាំព័ត៌មានទាន់ហេតុការណ៍ថ្មីៗ...</div>`;
+        }
+
+        if (newTickerList.length > 0) {
+          const wasEmpty = tickerItems.length === 0;
+          tickerItems = newTickerList;
+          if (wasEmpty) renderTickerItem();
+        }
+      } catch (e) {}
+    }
+
+    function updateHeaderPrices(price) {
+      document.getElementById('header-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      document.getElementById('badge-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
+    }
+
+    function connectBybitWebSocket() {
+      if (ws) ws.close();
+      if (wsPingTimer) clearInterval(wsPingTimer);
+
+      ws = new WebSocket('wss://stream.bybit.com/v5/public/linear');
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ op: 'subscribe', args: [`kline.120.${currentSymbol}`] }));
+        wsPingTimer = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ op: 'ping' }));
+        }, 20000);
+      };
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.topic && msg.topic.startsWith('kline') && msg.data) {
+          setSourceBadge("Bybit", true);
+          const k = msg.data[0];
+          const tSeconds = Math.floor(parseInt(k.start) / 1000);
+          const updatedCandle = {
+            time: tSeconds, open: parseFloat(k.open), high: parseFloat(k.high), low: parseFloat(k.low), close: parseFloat(k.close),
+            volume: parseFloat(k.volume), turnover: parseFloat(k.turnover),
+          };
+          candleSeries.update(updatedCandle);
+          updateHeaderPrices(updatedCandle.close);
+          candleVolumeMap.set(tSeconds, { volume: updatedCandle.volume, turnover: updatedCandle.turnover });
+
+          const lastIdx = candleData.length - 1;
+          if (lastIdx >= 0 && candleData[lastIdx].time === updatedCandle.time) candleData[lastIdx] = updatedCandle;
+          else if (lastIdx >= 0 && updatedCandle.time > candleData[lastIdx].time) { candleData.push(updatedCandle); updateIndicators(); }
+        }
+      };
+      ws.onclose = () => setTimeout(connectBybitWebSocket, 3000);
+    }
+
+    loadHistoryFromStorage();
+    load5000Candles2h();
+    loadTickerStats();
+    loadLiveDXY();
+    loadMultiSourceNews();
+    connectBybitWebSocket();
+    setInterval(loadTickerStats, 3000);
+    setInterval(loadLiveDXY, 30000);
+    setInterval(loadMultiSourceNews, 60000);
+
+    // Indicators Toggle
+    document.querySelectorAll('.indicator-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const indName = tab.getAttribute('data-ind');
+        const isActive = tab.classList.toggle('text-white'); tab.classList.toggle('font-bold');
+        if (isActive) tab.classList.remove('text-neutral-400'); else tab.classList.add('text-neutral-400');
+        if (indName === 'MA') { indSeries.ma7.applyOptions({ visible: isActive }); indSeries.ma25.applyOptions({ visible: isActive }); }
+        else if (indName === 'EMA') { indSeries.ema7.applyOptions({ visible: isActive }); }
+        else if (indName === 'BOLL') { indSeries.bollMid.applyOptions({ visible: isActive }); indSeries.bollUpper.applyOptions({ visible: isActive }); indSeries.bollLower.applyOptions({ visible: isActive }); }
+        else if (indName === 'Mark') { indSeries.markLine.applyOptions({ visible: isActive }); }
+        else if (indName === 'SAR') { indSeries.sarDots.applyOptions({ visible: isActive }); }
+      });
+    });
+
+    // DXY & Style Menu
+    const btnDxyPanel = document.getElementById('btn-dxy-panel');
+    const dxyPopover = document.getElementById('dxy-popover');
+    const btnPosStyleMenu = document.getElementById('btn-pos-style-menu');
+    const posStyleMenu = document.getElementById('pos-style-menu');
+    const slidersRedDot = document.getElementById('sliders-red-dot');
+
+    btnDxyPanel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      posStyleMenu.classList.add('hidden');
+      dxyPopover.classList.toggle('hidden');
+    });
+
+    btnPosStyleMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dxyPopover.classList.add('hidden');
+      posStyleMenu.classList.toggle('hidden');
+      if (slidersRedDot) slidersRedDot.style.display = 'none';
+    });
+
+    document.querySelectorAll('.style-opt-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.style-opt-btn').forEach(b => b.classList.remove('style-opt-active'));
+        btn.classList.add('style-opt-active');
+        aiBoxStyle = btn.getAttribute('data-style');
+        posStyleMenu.classList.add('hidden');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!posStyleMenu.contains(e.target) && !btnPosStyleMenu.contains(e.target)) posStyleMenu.classList.add('hidden');
+      if (!dxyPopover.contains(e.target) && !btnDxyPanel.contains(e.target)) dxyPopover.classList.add('hidden');
+    });
+
+    // Pencil Toggle
+    const btnToggleAiBox = document.getElementById('btn-toggle-ai-box');
+    const iconPenOn = document.getElementById('icon-pen-on');
+    const iconPenOff = document.getElementById('icon-pen-off');
+
+    btnToggleAiBox.addEventListener('click', () => {
+      showAiBox = !showAiBox;
+      if (showAiBox) {
+        iconPenOn.classList.remove('hidden'); iconPenOff.classList.add('hidden'); btnToggleAiBox.classList.add('text-cyan-400');
+      } else {
+        iconPenOn.classList.add('hidden'); iconPenOff.classList.remove('hidden'); btnToggleAiBox.classList.remove('text-cyan-400');
+      }
+    });
+
+    function renderTradePositionBox() {
+      const svgGroup = document.getElementById('trade-pos-svg');
+      const lblGroup = document.getElementById('trade-pos-labels');
+
+      if (!showAiBox || !aiTradePos.active || candleData.length === 0) {
+        svgGroup.style.display = 'none';
+        lblGroup.style.display = 'none';
+        return;
+      }
+
+      const startIdx = Math.max(0, aiTradePos.anchorCandleIdx - 8);
+      const widthBars = 14;
+
+      const x1 = chart.timeScale().logicalToCoordinate(startIdx);
+      const x2 = chart.timeScale().logicalToCoordinate(startIdx + widthBars);
+      const yEntry = candleSeries.priceToCoordinate(aiTradePos.entry);
+      const yTp = candleSeries.priceToCoordinate(aiTradePos.tp);
+      const ySl = candleSeries.priceToCoordinate(aiTradePos.sl);
+
+      if (x1 === null || x2 === null || yEntry === null || yTp === null || ySl === null) {
+        svgGroup.style.display = 'none';
+        lblGroup.style.display = 'none';
+        return;
+      }
+
+      svgGroup.style.display = 'block';
+      lblGroup.style.display = 'block';
+
+      const boxX = Math.min(x1, x2);
+      const boxW = Math.max(40, Math.abs(x2 - x1));
+
+      const tpRect = document.getElementById('pos-tp-rect');
+      const slRect = document.getElementById('pos-sl-rect');
+      const entryLine = document.getElementById('pos-entry-line');
+
+      tpRect.setAttribute('x', boxX); tpRect.setAttribute('y', Math.min(yEntry, yTp)); tpRect.setAttribute('width', boxW); tpRect.setAttribute('height', Math.max(1, Math.abs(yTp - yEntry)));
+      slRect.setAttribute('x', boxX); slRect.setAttribute('y', Math.min(yEntry, ySl)); slRect.setAttribute('width', boxW); slRect.setAttribute('height', Math.max(1, Math.abs(ySl - yEntry)));
+      entryLine.setAttribute('x1', boxX); entryLine.setAttribute('y1', yEntry); entryLine.setAttribute('x2', boxX + boxW); entryLine.setAttribute('y2', yEntry);
+
+      const extTpLine = document.getElementById('ext-tp-line');
+      const extEntryLine = document.getElementById('ext-entry-line');
+      const extSlLine = document.getElementById('ext-sl-line');
+      const lblTp = document.getElementById('lbl-tp');
+      const lblSl = document.getElementById('lbl-sl');
+      const lblEntry = document.getElementById('lbl-entry');
+
+      const currentPrice = candleData[candleData.length - 1].close;
+      const pnlDiff = aiTradePos.side === 'LONG' ? (currentPrice - aiTradePos.entry) : (aiTradePos.entry - currentPrice);
+      const pnlPct = (pnlDiff / aiTradePos.entry) * 100;
+      const reward = Math.abs(aiTradePos.tp - aiTradePos.entry);
+      const risk = Math.abs(aiTradePos.entry - aiTradePos.sl) || 1;
+      const rr = (reward / risk).toFixed(2);
+      const tpPct = ((Math.abs(aiTradePos.tp - aiTradePos.entry) / aiTradePos.entry) * 100).toFixed(2);
+      const slPct = ((Math.abs(aiTradePos.entry - aiTradePos.sl) / aiTradePos.entry) * 100).toFixed(2);
+      const pnlSign = pnlPct >= 0 ? '+' : '';
+      const pnlColorClass = pnlPct >= 0 ? 'text-[#00db84]' : 'text-[#ff2e56]';
+
+      if (aiBoxStyle === 'dotted-left') {
+        if (boxX > 8) {
+          extTpLine.style.display = 'block'; extTpLine.setAttribute('x1', 6); extTpLine.setAttribute('y1', yTp); extTpLine.setAttribute('x2', boxX); extTpLine.setAttribute('y2', yTp);
+          extEntryLine.style.display = 'block'; extEntryLine.setAttribute('x1', 6); extEntryLine.setAttribute('y1', yEntry); extEntryLine.setAttribute('x2', boxX); extEntryLine.setAttribute('y2', yEntry);
+          extSlLine.style.display = 'block'; extSlLine.setAttribute('x1', 6); extSlLine.setAttribute('y1', ySl); extSlLine.setAttribute('x2', boxX); extSlLine.setAttribute('y2', ySl);
+        } else {
+          extTpLine.style.display = 'none'; extEntryLine.style.display = 'none'; extSlLine.style.display = 'none';
+        }
+
+        lblTp.style.left = '6px'; lblTp.style.top = yTp + 'px'; lblTp.innerText = `TP: ${aiTradePos.tp.toFixed(2)} (+${tpPct}%)`;
+        lblSl.style.left = '6px'; lblSl.style.top = ySl + 'px'; lblSl.innerText = `SL: ${aiTradePos.sl.toFixed(2)} (-${slPct}%)`;
+        lblEntry.style.display = 'block'; lblEntry.style.left = '6px'; lblEntry.style.top = yEntry + 'px';
+        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}${pnlPct.toFixed(2)}%</span> | R:R ${rr}`;
+
+      } else if (aiBoxStyle === 'standard') {
+        extTpLine.style.display = 'none'; extEntryLine.style.display = 'none'; extSlLine.style.display = 'none';
+        lblTp.style.left = (boxX + 4) + 'px'; lblTp.style.top = yTp + 'px'; lblTp.innerText = `TP: ${aiTradePos.tp.toFixed(2)} (+${tpPct}%)`;
+        lblSl.style.left = (boxX + 4) + 'px'; lblSl.style.top = ySl + 'px'; lblSl.innerText = `SL: ${aiTradePos.sl.toFixed(2)} (-${slPct}%)`;
+        lblEntry.style.display = 'block'; lblEntry.style.left = (boxX + 4) + 'px'; lblEntry.style.top = yEntry + 'px';
+        lblEntry.innerHTML = `AI ${aiTradePos.signalLabel} <span class="${pnlColorClass}">${pnlSign}${pnlPct.toFixed(2)}%</span> | R:R ${rr}`;
+
+      } else {
+        extTpLine.style.display = 'none'; extEntryLine.style.display = 'none'; extSlLine.style.display = 'none';
+        lblTp.style.left = (boxX + 4) + 'px'; lblTp.style.top = yTp + 'px'; lblTp.innerText = 'TP';
+        lblSl.style.left = (boxX + 4) + 'px'; lblSl.style.top = ySl + 'px'; lblSl.innerText = 'SL';
+        lblEntry.style.display = 'none';
+      }
+    }
+
+    function getVisiblePeaks() {
+      const logicalRange = chart.timeScale().getVisibleLogicalRange();
+      if (!logicalRange || candleData.length === 0) return { highCandle: null, lowCandle: null };
+      const from = Math.max(0, Math.floor(logicalRange.from)), to = Math.min(candleData.length - 1, Math.ceil(logicalRange.to));
+      let highC = null, lowC = null;
+      for (let i = from; i <= to; i++) {
+        const c = candleData[i]; if (!c) continue;
+        if (!highC || c.high > highC.high) highC = c;
+        if (!lowC || c.low < lowC.low) lowC = c;
+      }
+      return { highCandle: highC, lowCandle: lowC };
+    }
+
+    function renderCustomLines() {
+      if (candleData.length === 0) return;
+      const last = candleData[candleData.length - 1];
+      const lastX = chart.timeScale().timeToCoordinate(last.time), currentY = candleSeries.priceToCoordinate(last.close);
+      const runningLine = document.getElementById('running-price-line');
+      if (lastX !== null && currentY !== null) {
+        runningLine.style.display = 'block';
+        runningLine.setAttribute('x1', lastX); runningLine.setAttribute('y1', currentY);
+        runningLine.setAttribute('x2', wrapper.clientWidth - 50); runningLine.setAttribute('y2', currentY);
+        document.getElementById('live-badge').style.top = currentY + 'px';
+      } else runningLine.style.display = 'none';
+
+      const { highCandle, lowCandle } = getVisiblePeaks();
+      const highGroup = document.getElementById('high-marker-group');
+      if (highCandle) {
+        const hx = chart.timeScale().timeToCoordinate(highCandle.time), hy = candleSeries.priceToCoordinate(highCandle.high);
+        if (hx !== null && hy !== null && hx >= -10 && hx <= wrapper.clientWidth + 10 && hy >= 0 && hy <= wrapper.clientHeight) {
+          highGroup.style.display = 'block';
+          document.getElementById('high-line').setAttribute('x1', hx); document.getElementById('high-line').setAttribute('y1', hy);
+          document.getElementById('high-line').setAttribute('x2', hx + 42); document.getElementById('high-line').setAttribute('y2', hy);
+          const t = document.getElementById('high-text'); t.setAttribute('x', hx + 46); t.setAttribute('y', hy + 4); t.textContent = highCandle.high.toFixed(2);
+        } else highGroup.style.display = 'none';
+      }
+
+      const lowGroup = document.getElementById('low-marker-group');
+      if (lowCandle) {
+        const lx = chart.timeScale().timeToCoordinate(lowCandle.time), ly = candleSeries.priceToCoordinate(lowCandle.low);
+        if (lx !== null && ly !== null && lx >= -10 && lx <= wrapper.clientWidth + 10 && ly >= 0 && ly <= wrapper.clientHeight) {
+          lowGroup.style.display = 'block';
+          document.getElementById('low-line').setAttribute('x1', lx); document.getElementById('low-line').setAttribute('y1', ly);
+          document.getElementById('low-line').setAttribute('x2', lx + 25); document.getElementById('low-line').setAttribute('y2', ly);
+          const t = document.getElementById('low-text'); t.setAttribute('x', lx + 29); t.setAttribute('y', ly + 4); t.textContent = lowCandle.low.toFixed(2);
+        } else lowGroup.style.display = 'none';
+      }
+
+      renderTradePositionBox();
+    }
+
+    function syncLoop() { renderCustomLines(); requestAnimationFrame(syncLoop); }
+    requestAnimationFrame(syncLoop);
+
+    chart.subscribeCrosshairMove(param => {
+      if (param.point && param.point.x > 0 && param.point.y > 0 && param.point.x < wrapper.clientWidth && param.point.y < wrapper.clientHeight && param.time) {
+        centerDot.style.display = 'block'; centerDot.style.left = param.point.x + 'px'; centerDot.style.top = param.point.y + 'px';
+        const data = param.seriesData.get(candleSeries);
+        if (data) {
+          tooltip.style.display = 'block';
+          const date = new Date(param.time * 1000);
+          document.getElementById('tip-time').innerText = `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+          document.getElementById('tip-open').innerText = data.open.toFixed(2);
+          document.getElementById('tip-high').innerText = data.high.toFixed(2);
+          document.getElementById('tip-low').innerText = data.low.toFixed(2);
+          document.getElementById('tip-close').innerText = data.close.toFixed(2);
+          const cv = data.close - data.open, cp = (cv / data.open) * 100, rv = data.high - data.low, rp = (rv / data.low) * 100;
+          const tc = document.getElementById('tip-change'), s = cv >= 0 ? '+' : '';
+          tc.innerText = `${s}${cv.toFixed(2)} (${s}${cp.toFixed(2)}%)`; tc.className = cv >= 0 ? 'c-up' : 'c-down';
+          document.getElementById('tip-range').innerText = `${rv.toFixed(2)} (${rp.toFixed(2)}%)`;
+          const vd = candleVolumeMap.get(param.time);
+          if (vd && vd.volume !== undefined) {
+            document.getElementById('tip-vol-xaut').innerText = vd.volume.toFixed(3);
+            const uv = vd.turnover || (vd.volume * data.close);
+            document.getElementById('tip-vol-usdt').innerText = uv >= 1e6 ? (uv/1e6).toFixed(2)+'M' : uv >= 1e3 ? (uv/1e3).toFixed(2)+'K' : uv.toFixed(2);
+          }
+          if (param.point.x < 145) { tooltip.style.left = 'auto'; tooltip.style.right = '8px'; }
+          else { tooltip.style.left = '8px'; tooltip.style.right = 'auto'; }
+        }
+      } else { centerDot.style.display = 'none'; tooltip.style.display = 'none'; }
+    });
+
+    let isFull = false;
+    btnFullscreen.addEventListener('click', () => {
+      isFull = !isFull;
+      if (isFull) { rootBody.classList.add('is-fullscreen'); iconMax.classList.add('hidden'); iconMin.classList.remove('hidden'); if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); }
+      else { rootBody.classList.remove('is-fullscreen'); iconMax.classList.remove('hidden'); iconMin.classList.add('hidden'); if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+      setTimeout(() => { chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }); }, 100);
+    });
+    window.addEventListener('resize', () => chart.applyOptions({ width: wrapper.clientWidth, height: wrapper.clientHeight }));
+
+    function update2hCountdownAndRollover() {
+      const now = Math.floor(Date.now() / 1000);
+      const rem = 7200 - (now % 7200);
+      ensureCurrent2hCandleExists();
+      const h = Math.floor(rem / 3600);
+      const m = Math.floor((rem % 3600) / 60);
+      const s = rem % 60;
+      const fmt = (n) => String(n).padStart(2, '0');
+      document.getElementById('countdown').innerText = `${fmt(h)}:${fmt(m)}:${fmt(s)}`;
+    }
+    setInterval(update2hCountdownAndRollover, 1000);
+    update2hCountdownAndRollover();
+
+    // AI COUNCIL
+    const aiModal = document.getElementById('ai-modal');
+    document.getElementById('btn-trigger-live').addEventListener('click', () => openModal(aiModal));
+    document.getElementById('btn-trigger-ai').addEventListener('click', () => openModal(aiModal));
+    document.getElementById('btn-close-ai').addEventListener('click', () => closeModal(aiModal));
+
+    let cycleRemaining = 1800;
+    let latestModelsMap = {};
+    let selectedAiKey = 'gemini';
+    let isScanningAI = false;
+
+    // =========================================================================
+    // មុខងារកែប្រែខ្សែរក្រាហ្វិក Wave ក្នុងប្រអប់ AI តាមការវិភាគពិតប្រាកដ (BUY/SELL/WAIT)
+    // =========================================================================
+    function updateAiDynamicWave(signal) {
+      const waveArea = document.getElementById('ai-wave-area');
+      const waveLine = document.getElementById('ai-wave-line');
+      const stop1 = document.getElementById('ai-wave-stop1');
+      const stop2 = document.getElementById('ai-wave-stop2');
+      const entryPt = document.getElementById('ai-entry-point');
+      const entryLbl = document.getElementById('ai-entry-label');
+      const tpPt = document.getElementById('ai-tp-point');
+      const tpLbl = document.getElementById('ai-tp-label');
+
+      if (signal === 'BUY') {
+        // រលកបាញ់ឡើងលើទៅរក TP ពណ៌បៃតងទឹកសមុទ្រ
+        waveArea.setAttribute('d', 'M 0 75 Q 80 70 160 55 T 240 35 T 320 12 L 320 90 L 0 90 Z');
+        waveLine.setAttribute('d', 'M 0 75 Q 80 70 160 55 T 240 35 T 320 12');
+        waveLine.setAttribute('stroke', '#00f0ff');
+        stop1.setAttribute('stop-color', '#00f0ff'); stop2.setAttribute('stop-color', '#00f0ff');
+        entryPt.setAttribute('cx', '160'); entryPt.setAttribute('cy', '55'); entryPt.setAttribute('fill', '#00db84');
+        entryLbl.setAttribute('x', '135'); entryLbl.setAttribute('y', '46'); entryLbl.setAttribute('fill', '#00db84'); entryLbl.textContent = 'BUY ENTRY';
+        tpPt.setAttribute('cx', '316'); tpPt.setAttribute('cy', '12'); tpPt.setAttribute('fill', '#00f0ff');
+        tpLbl.setAttribute('x', '280'); tpLbl.setAttribute('y', '22'); tpLbl.setAttribute('fill', '#00f0ff'); tpLbl.textContent = 'TP HIGH';
+      } else if (signal === 'SELL') {
+        // រលកបាញ់ទម្លាក់ចុះក្រោមទៅរក TP ពណ៌ក្រហម
+        waveArea.setAttribute('d', 'M 0 15 Q 80 20 160 35 T 240 55 T 320 78 L 320 90 L 0 90 Z');
+        waveLine.setAttribute('d', 'M 0 15 Q 80 20 160 35 T 240 55 T 320 78');
+        waveLine.setAttribute('stroke', '#ff2e56');
+        stop1.setAttribute('stop-color', '#ff2e56'); stop2.setAttribute('stop-color', '#ff2e56');
+        entryPt.setAttribute('cx', '160'); entryPt.setAttribute('cy', '35'); entryPt.setAttribute('fill', '#ff2e56');
+        entryLbl.setAttribute('x', '135'); entryLbl.setAttribute('y', '26'); entryLbl.setAttribute('fill', '#ff2e56'); entryLbl.textContent = 'SELL ENTRY';
+        tpPt.setAttribute('cx', '316'); tpPt.setAttribute('cy', '78'); tpPt.setAttribute('fill', '#00f0ff');
+        tpLbl.setAttribute('x', '280'); tpLbl.setAttribute('y', '70'); tpLbl.setAttribute('fill', '#00f0ff'); tpLbl.textContent = 'TP LOW';
+      } else {
+        // រលករត់សំប៉ែតៗ (Sideways Neutral) ពណ៌លឿងទុំ
+        waveArea.setAttribute('d', 'M 0 50 Q 80 46 160 52 T 240 48 T 320 50 L 320 90 L 0 90 Z');
+        waveLine.setAttribute('d', 'M 0 50 Q 80 46 160 52 T 240 48 T 320 50');
+        waveLine.setAttribute('stroke', '#f0b90b');
+        stop1.setAttribute('stop-color', '#f0b90b'); stop2.setAttribute('stop-color', '#f0b90b');
+        entryPt.setAttribute('cx', '160'); entryPt.setAttribute('cy', '52'); entryPt.setAttribute('fill', '#f0b90b');
+        entryLbl.setAttribute('x', '135'); entryLbl.setAttribute('y', '42'); entryLbl.setAttribute('fill', '#f0b90b'); entryLbl.textContent = 'WAITING';
+        tpPt.setAttribute('cx', '316'); tpPt.setAttribute('cy', '50'); tpPt.setAttribute('fill', '#94a3b8');
+        tpLbl.setAttribute('x', '270'); tpLbl.setAttribute('y', '42'); tpLbl.setAttribute('fill', '#94a3b8'); tpLbl.textContent = 'NO TARGET';
+      }
+    }
+
+    function displaySelectedAiDetail(key) {
+      selectedAiKey = key;
+      const m = latestModelsMap[key];
+      if (!m) return;
+      const labelMap = { gemini: '🤖 Gemini 3.5 Flash-Lite', nemotron: '🟢 Nemotron 550B', gpt120b: '🟡 OpenAI GPT-120B', qwen: '🟣 Qwen 3.8 27B' };
+      document.getElementById('selected-ai-name').innerText = labelMap[key] || m.name;
+      const voteBadge = document.getElementById('selected-ai-vote');
+      voteBadge.innerText = `${m.signal} (${m.confidence}%)`;
+      voteBadge.className = `font-bold font-num px-1.5 py-0.5 rounded text-[9.5px] ${m.signal === 'BUY' ? 'bg-cyan-500/20 text-cyan-300' : m.signal === 'SELL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-300'}`;
+      document.getElementById('selected-ai-reason').innerText = m.reason_km;
+
+      if (m.signal === 'WAIT') {
+        document.getElementById('ind-entry').innerText = '--';
+        document.getElementById('ind-tp').innerText = '--';
+        document.getElementById('ind-sl').innerText = '--';
+      } else {
+        document.getElementById('ind-entry').innerText = Number(m.entry).toFixed(2);
+        document.getElementById('ind-tp').innerText = Number(m.tp).toFixed(2);
+        document.getElementById('ind-sl').innerText = Number(m.sl).toFixed(2);
+      }
+    }
+
+    document.querySelectorAll('.ai-node').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ai-node').forEach(b => b.classList.remove('ai-node-selected'));
+        btn.classList.add('ai-node-selected');
+        displaySelectedAiDetail(btn.getAttribute('data-ai'));
+      });
+    });
+
     async function runAiCouncilCycle() {
       if (isScanningAI) return;
       isScanningAI = true;
@@ -841,6 +1647,9 @@
           const c = data.consensus;
           const isClearSignal = (c.signal === 'BUY' || c.signal === 'SELL');
 
+          // កែប្រែខ្សែរក្រាហ្វិក Wave ក្នុងប្រអប់ AI តាម Signal ពិតប្រាកដ
+          updateAiDynamicWave(c.signal);
+
           document.getElementById('consensus-votes').innerText = `${c.votes} AI`;
           document.getElementById('master-confidence').innerText = `${c.confidence}%`;
 
@@ -855,9 +1664,6 @@
             sigEl.innerHTML = `<i class="fa-solid fa-pause-circle"></i><span>WAIT (រង់ចាំសញ្ញាណច្បាស់)</span>`;
             sigEl.className = 'text-base font-bold text-amber-400 flex items-center gap-1.5 mt-0.5';
           }
-
-          // ថ្មី៖ កែសម្រួលក្រាហ្វិកខ្សែររលកក្នុងប្រអប់ AI ឱ្យរត់តាម Signal ពិតប្រាកដ
-          updateDynamicPredictionWave(c.signal, parseFloat(c.entry), parseFloat(c.tp), parseFloat(c.sl));
 
           if (isClearSignal) {
             document.getElementById('master-entry').innerText = c.entry;
@@ -879,18 +1685,8 @@
             aiTradePos.active = false;
           }
 
-          // រក្សាទុកប្រវត្តិ 30m ចូល Buffer (380-387 Auto-Purge)
-          if (!data.fromCache) {
-            const historyItem = {
-              round: data.round || (aiHistory.length + 1),
-              timestamp: data.timestamp || Date.now(),
-              consensus: c,
-              models: data.models,
-              candles: recentCandles.slice(-25),
-              news: (cachedFFEvents.slice(0, 2)).concat(cachedRssEvents.slice(0, 2))
-            };
-            saveHistoryBuffer(historyItem);
-          }
+          // កត់ត្រាប្រវត្តិចូល Buffer 380 ជុំ
+          addHistorySnapshot(data);
 
           const verifyPill = document.getElementById('verify-status-pill');
           const compBox = document.getElementById('round-comparison-box');
@@ -898,15 +1694,15 @@
           if (!isClearSignal) {
             verifyPill.innerText = `ជុំទី ${data.round}: ⏳ រង់ចាំ (WAIT)`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
-            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃតាម 4h/2h/15m និង DXY ថាទីផ្សារនៅទ្រឹង ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
+            compBox.innerHTML = `⏳ <b>សញ្ញាណមិនទាន់ច្បាស់លាស់ (WAIT):</b> ក្រុម AI ទាំង ៤ វាយតម្លៃតាម 4h/2h/15m និង DXY ថាទីផ្សារនៅទ្រឹង (RSI: ${data.market.rsi14}) ដូច្នេះ <b>AI មិនបោះប្រអប់ TP/SL ចូលក្រាហ្វទេ</b>!`;
           } else if (data.round === 1) {
             verifyPill.innerText = 'ជុំទី 1: វិភាគដំបូង';
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
-            compBox.innerHTML = `📌 <b>ជុំទី ១:</b> AI ចំនួន ${c.votes} បានវិភាគផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បោះប្រអប់ TP/SL ចូលក្រាហ្វរួចរាល់)។ <b>30 នាទីទៀត</b> នឹងផ្ទៀងផ្ទាត់ជុំបន្ទាប់!`;
+            compBox.innerHTML = `📌 <b>ជុំទី ១:</b> AI ចំនួន ${c.votes} បានវិភាគ Multi-TF + DXY ផ្តល់មតិ <b>${c.signal}</b> នៅតម្លៃ ${c.entry} (បោះប្រអប់ TP/SL ចូលក្រាហ្វ 2h រួចរាល់)។ <b>30 នាទីទៀត</b> នឹងផ្ទៀងផ្ទាត់ជុំបន្ទាប់!`;
           } else if (c.verifiedWithPrev === 'CONFIRMED') {
             verifyPill.innerText = `✅ ជុំទី ${data.round}: ផ្ទៀងផ្ទាត់ត្រូវគ្នា`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${data.round} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន! ទិសដៅមានភាពរឹងមាំខ្លាំង។`;
+            compBox.innerHTML = `✅ <b>ផ្ទៀងផ្ទាត់ជោគជ័យ (Round ${data.round} Confirmed):</b> ក្រុម AI ទាំង ៤ នៅតែរក្សាទិសដៅ <b>${c.signal}</b> ដូចជុំមុន (${data.prevSignal})! ទិសដៅ 4h/2h និង DXY ស៊ីគ្នាខ្លាំង។`;
           } else {
             verifyPill.innerText = `⚠️ ជុំទី ${data.round}: សញ្ញាណថ្មី`;
             verifyPill.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
