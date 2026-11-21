@@ -14,7 +14,7 @@ const GEMINI_KEY = process.env.GEMINI_KEY;
 const OR_KEY     = process.env.OR_KEY;
 const GROQ_KEY   = process.env.GROQ_KEY;
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = 5500) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -105,7 +105,7 @@ app.get('/api/dxy', async (req, res) => {
 });
 
 // =========================================================================
-// ២. FOREX FACTORY CALENDAR + MULTI-SOURCE BREAKING NEWS RSS
+// ២. FOREX FACTORY + MULTI-SOURCE RSS (ទាញយក LINK URL ពិត & ខ្លឹមសារពិត)
 // =========================================================================
 let ffCache = { timestamp: 0, events: [] };
 let rssCache = { timestamp: 0, headlines: [] };
@@ -136,7 +136,9 @@ async function getForexFactoryUSDNews() {
               khTime: khTime,
               forecast: ev.forecast || '--',
               previous: ev.previous || '--',
-              actual: ev.actual || ''
+              actual: ev.actual || '',
+              link: 'https://www.forexfactory.com/calendar',
+              description: `US Economic Calendar Event (${ev.impact} Impact): ${ev.title}. Forecast: ${ev.forecast || 'N/A'}, Previous: ${ev.previous || 'N/A'}${ev.actual ? ', Actual: ' + ev.actual : ''}.`
             };
           })
           .sort((a, b) => a.timestamp - b.timestamp);
@@ -149,17 +151,31 @@ async function getForexFactoryUSDNews() {
   return ffCache.events;
 }
 
+function cleanXmlText(str) {
+  return (str || '')
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, '$1')
+    .replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function parseRssItems(xmlText, sourceName) {
   const items = [];
   const itemMatches = xmlText.match(/<item>[\s\S]*?<\/item>/gi) || [];
-  for (const raw of itemMatches.slice(0, 8)) {
-    const titleMatch = raw.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i);
-    const dateMatch = raw.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+  for (const raw of itemMatches.slice(0, 10)) {
+    const titleMatch = raw.match(/<title>([\s\S]*?)<\/title>/i);
+    const linkMatch  = raw.match(/<link>([\s\S]*?)<\/link>/i);
+    const descMatch  = raw.match(/<description>([\s\S]*?)<\/description>/i);
+    const dateMatch  = raw.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+
     if (titleMatch && titleMatch[1]) {
-      const cleanTitle = titleMatch[1]
-        .replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/<[^>]+>/g, '').trim();
-      const ts = dateMatch ? new Date(dateMatch[1]).getTime() : Date.now();
-      items.push({ source: sourceName, title: cleanTitle, timestamp: ts });
+      const title = cleanXmlText(titleMatch[1]);
+      const link = linkMatch ? cleanXmlText(linkMatch[1]) : '';
+      const desc = descMatch ? cleanXmlText(descMatch[1]).slice(0, 600) : '';
+      const ts = dateMatch ? new Date(cleanXmlText(dateMatch[1])).getTime() : Date.now();
+      items.push({ source: sourceName, title, link, description: desc, timestamp: isNaN(ts) ? Date.now() : ts });
     }
   }
   return items;
@@ -172,7 +188,7 @@ async function getBreakingGoldMacroNews() {
   }
 
   const feeds = [
-    { name: 'Yahoo Gold/USD', url: 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,DX-Y.NYB&region=US&lang=en-US' },
+    { name: 'Yahoo Finance', url: 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,DX-Y.NYB&region=US&lang=en-US' },
     { name: 'FXStreet', url: 'https://www.fxstreet.com/rss/news' }
   ];
 
@@ -196,9 +212,9 @@ async function getBreakingGoldMacroNews() {
   const filtered = collected
     .filter(item => keywords.test(item.title))
     .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 6);
+    .slice(0, 8);
 
-  const finalList = filtered.length > 0 ? filtered : collected.slice(0, 5);
+  const finalList = filtered.length > 0 ? filtered : collected.slice(0, 6);
   if (finalList.length > 0) {
     rssCache = { timestamp: now, headlines: finalList };
   }
@@ -213,7 +229,62 @@ app.get('/api/news', async (req, res) => {
 });
 
 // =========================================================================
-// ៣. MARKET DATA PROXY (4h, 2h, 15m)
+// ៣. GEMINI NEWS EXPLAINER (សរសេរអត្ថបទវិភាគខ្មែរវែងច្បាស់លាស់ពីព័ត៌មានពិត)
+// =========================================================================
+const newsExplainCache = new Map();
+
+app.post('/api/news-explain', async (req, res) => {
+  const { title, source, impact, timeStr, forecast, previous, actual, description, link, goldPrice } = req.body || {};
+  if (!title) return res.status(400).json({ success: false, error: 'Missing news title' });
+
+  const cacheKey = `${source}::${title}`;
+  const cached = newsExplainCache.get(cacheKey);
+  if (cached && (Date.now() - cached.ts < 6 * 3600 * 1000)) {
+    return res.json({ success: true, analysis_km: cached.text, fromCache: true });
+  }
+
+  try {
+    if (!GEMINI_KEY) throw new Error('Missing GEMINI_KEY');
+
+    const dxy = await getLiveDXY();
+    const prompt = `អ្នកគឺជាអ្នកវិភាគព័ត៌មានសេដ្ឋកិច្ច និងជំនាញជួញដូរមាស (XAUTUSDT) កម្រិតអន្តរជាតិ។
+សូមសរសេរអត្ថបទពន្យល់ និងវិភាគជាភាសាខ្មែរយ៉ាងច្បាស់លាស់ លម្អិត និងងាយស្រួលអាន ដោយ **ផ្អែកតាមទិន្នន័យពិតពីប្រភពខាងក្រោមនេះតែប៉ុណ្ណោះ (ហាមប្រឌិតតួលេខ ឬរឿងក្រៅពីប្រភពជាដាច់ខាត)**៖
+
+- ចំណងជើងព័ត៌មានពិត៖ ${title}
+- ប្រភពផ្លូវការ៖ ${source || 'Financial News'}
+- កម្រិតឥទ្ធិពល៖ ${impact || 'Market News'}
+- ម៉ោងប្រកាស (ម៉ោងនៅកម្ពុជា)៖ ${timeStr || 'N/A'}
+- ខ្លឹមសារសង្ខេបពីប្រភពដើម៖ ${description || title}
+- តួលេខសេដ្ឋកិច្ច (បើមាន)៖ Forecast: ${forecast || 'N/A'} | Previous: ${previous || 'N/A'} | Actual: ${actual || 'មិនទាន់ប្រកាស'}
+- តំណភ្ជាប់ប្រភពដើម (URL)៖ ${link || 'N/A'}
+- តម្លៃមាស XAUTUSDT បច្ចុប្បន្ន៖ $${goldPrice || 'N/A'} | សន្ទស្សន៍ប្រាក់ដុល្លារ DXY៖ ${dxy.price} (${dxy.changePct}%)
+
+សូមសរសេរជា ៤ កថាខណ្ឌខ្លីៗតែមានខ្លឹមសារស៊ីជម្រៅ ៖
+១. **ខ្លឹមសារពិតនៃព័ត៌មាន៖** បកប្រែ និងពន្យល់ឱ្យច្បាស់ថាតើព័ត៌មាននេះកំពុងនិយាយអំពីអ្វីពិតប្រាកដ?
+២. **ផលប៉ះពាល់លើប្រាក់ដុល្លារ (DXY) និងតម្លៃមាស (XAUTUSDT)៖** វិភាគថាតើទិន្នន័យ ឬព័ត៌មាននេះជួយជំរុញមាសឱ្យឡើង ឬដាក់សម្ពាធឱ្យមាសចុះ?
+៣. **ស្ថានភាពម៉ោង និងពេលវេលាគួរប្រុងប្រយ័ត្ន៖** បញ្ជាក់ម៉ោងប្រកាសពិតប្រាកដ និងណែនាំថាគួររង់ចាំមើលប្រតិកម្មទៀនប៉ុន្មាននាទីមុន/ក្រោយព័ត៌មានចេញ?
+៤. **សង្ខេបទិសដៅសម្រាប់ Trader៖** ផ្តល់គន្លឹះឆ្លាតវៃក្នុងការផ្ទៀងផ្ទាត់ជាមួយក្រាហ្វិក 2h មុនសម្រេចចូលផ្សារ។`;
+
+    const r = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    }, 15000);
+
+    const d = await r.json();
+    const reply = d.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (r.ok && reply) {
+      newsExplainCache.set(cacheKey, { ts: Date.now(), text: reply.trim() });
+      return res.json({ success: true, analysis_km: reply.trim(), fromCache: false });
+    }
+    throw new Error(d.error?.message || 'Gemini failed');
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// =========================================================================
+// ៤. MARKET DATA PROXY (4h, 2h, 15m)
 // =========================================================================
 async function fetchMultiExchangeCandles(bybitInterval, okxBar, gateInterval, limit = 100) {
   try {
@@ -307,7 +378,7 @@ app.get('/api/ticker', async (req, res) => {
 });
 
 // =========================================================================
-// ៤. ក្បួនគណនា MULTI-TIMEFRAME (4h + 2h + 15m) & AI COUNCIL
+// ៥. ក្បួនគណនា MULTI-TIMEFRAME (4h + 2h + 15m) & AI COUNCIL
 // =========================================================================
 function calcIndicators(candles) {
   if (!candles || candles.length < 5) return { ema7: '--', ema25: '--', rsi14: '--', recentHigh: '--', recentLow: '--', trend: 'NEUTRAL' };
@@ -414,7 +485,7 @@ async function executeCouncilScan(clientCandles2h) {
     : "No breaking headlines.";
 
   const dxySummary = dxyData.success
-    ? `DXY (US Dollar Index): ${dxyData.price} (${dxyData.changePct >= 0 ? '+' : ''}${dxyData.changePct}%, Trend: ${dxyData.trend} — Gold moves INVERSE to DXY)`
+    ? `DXY (US Dollar Index): ${dxyData.price} (${dxyData.changePct >= 0 ? '+' : ''}${dxyData.changePct}%, Trend: ${dxyData.trend})`
     : "DXY unavailable.";
 
   const verifyNote = previousVerdict
@@ -425,7 +496,7 @@ async function executeCouncilScan(clientCandles2h) {
 Current Gold Price: ${last.close}
 ${dxySummary}
 
-MULTI-TIMEFRAME CONTEXT (Hidden Engine):
+MULTI-TIMEFRAME CONTEXT:
 - 4H Macro Trend: ${ind4h.trend} | EMA7:${ind4h.ema7} EMA25:${ind4h.ema25} RSI:${ind4h.rsi14}
 - 2H Primary Chart: ${ind2h.trend} | EMA7:${ind2h.ema7} EMA25:${ind2h.ema25} RSI:${ind2h.rsi14} | 48h High:${ind2h.recentHigh} Low:${ind2h.recentLow}
 - 15m Entry Timing: ${ind15m.trend} | EMA7:${ind15m.ema7} EMA25:${ind15m.ema25} RSI:${ind15m.rsi14}
@@ -579,4 +650,4 @@ app.post('/api/ai-council', async (req, res) => {
 });
 
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
-app.listen(PORT, () => console.log(`Server running on port ${PORT} - DXY + MTF + Multi-News Ready`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} - News Gemini Explainer Ready`));
