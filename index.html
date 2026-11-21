@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BOBOTOU (Bybit) - XAUTUSDT 2h + News Detail</title>
+  <title>BOBOTOU (Bybit) - XAUTUSDT 2h Pro</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,7 +26,12 @@
     .ai-orbit-spinner { position: absolute; inset: -3px; border-radius: 50%; border: 1.2px solid transparent; border-top-color: #00f0ff; border-right-color: rgba(0, 240, 255, 0.4); animation: spinOrbit 2.4s linear infinite; }
     @keyframes spinOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     #candle-tooltip { position: absolute; top: 8px; left: 8px; z-index: 50; background: rgba(18, 20, 24, 0.88); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(6px); border-radius: 4px; padding: 4px 6px; font-size: 9px; line-height: 1.25; pointer-events: none; display: none; width: 130px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-    #ai-modal, #news-detail-modal { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    
+    /* ការផ្លាស់ប្តូរ Modal យ៉ាងរលូន */
+    #ai-modal, #ff-full-modal, #rss-full-modal, #news-detail-modal {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     .ai-node-selected { border-color: #00f0ff !important; background: rgba(0, 240, 255, 0.12) !important; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); }
     .neural-line-anim { stroke-dasharray: 4, 4; animation: dashFlow 1.4s linear infinite; }
     @keyframes dashFlow { from { stroke-dashoffset: 16; } to { stroke-dashoffset: 0; } }
@@ -34,7 +39,7 @@
     body.is-fullscreen { max-width: 100vw !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; padding: 0 !important; margin: 0 !important; }
     body.is-fullscreen #top-header, body.is-fullscreen #top-notification { display: none !important; }
     body.is-fullscreen #chart-wrapper { height: calc(100% - 64px) !important; }
-    .timeframe-bar-locked { width: 100%; overflow: visible !important; touch-action: none !important; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; }
+    .timeframe-bar-locked { width: 100%; overflow: visible !important; touch-action: none !important; display: flex; align-items: center; justify-content: space-between; padding-left: 10px; padding-right: 10px; }
 
     .pos-label-pill {
       position: absolute;
@@ -106,16 +111,17 @@
     <span class="text-neutral-500 text-[10px] pl-2 shrink-0"><i class="fa-solid fa-chevron-right"></i></span>
   </div>
 
-  <!-- 3. TIMEFRAME BAR -->
+  <!-- 3. TIMEFRAME BAR (បន្ថែមរូប Icon SVG ២ នៅខាងមុខ DXY $) -->
   <div class="timeframe-bar-locked py-2 text-[11px] border-b border-neutral-900 bg-black z-30 relative">
-    <div class="flex items-center space-x-3.5">
+    <!-- Left: 2h | Live + AI -->
+    <div class="flex items-center space-x-2.5">
       <span class="text-white font-bold cursor-pointer text-xs">2h</span>
       <span class="text-neutral-800 text-[10px]">|</span>
-      <div id="btn-trigger-live" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-80 active:scale-95 transition-transform">
+      <div id="btn-trigger-live" class="flex items-center space-x-1 cursor-pointer hover:opacity-80 active:scale-95 transition-transform">
         <span class="blinking-dot"></span>
         <span class="text-white font-semibold text-[11px]">Live</span>
       </div>
-      <div id="btn-trigger-ai" class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-1 hover:opacity-80 active:scale-95 transition-transform">
+      <div id="btn-trigger-ai" class="relative flex items-center justify-center w-4 h-4 cursor-pointer ml-0.5 hover:opacity-80 active:scale-95 transition-transform">
         <div class="ai-orbit-spinner"></div>
         <svg class="w-3 h-3 text-[#00f0ff] fill-current" viewBox="0 0 24 24">
           <path d="M11 2L12.8 7.2L18 9L12.8 10.8L11 16L9.2 10.8L4 9L9.2 7.2L11 2Z" />
@@ -125,8 +131,31 @@
       </div>
     </div>
 
-    <!-- Right Toolbar Icons -->
-    <div class="flex items-center space-x-2.5 text-neutral-400">
+    <!-- Right Toolbar Icons (FF Calendar SVG + Live News RSS SVG + DXY $ SVG + Pencil + Sliders + Fullscreen) -->
+    <div class="flex items-center space-x-1.5 text-neutral-400">
+      <!-- ១. SVG ប៊ូតុងទី១: ប្រតិទិន Forex Factory (ពេញអេក្រង់) -->
+      <button id="btn-open-ff-page" class="p-1 rounded text-rose-400 hover:text-rose-300 transition-colors flex items-center justify-center relative" title="ប្រតិទិនសេដ្ឋកិច្ច Forex Factory">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
+        </svg>
+        <span id="ff-alert-dot" class="hidden absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+      </button>
+
+      <!-- ២. SVG ប៊ូតុងទី២: ព័ត៌មានមាស & ដុល្លារ Live RSS (ពេញអេក្រង់) -->
+      <button id="btn-open-rss-page" class="p-1 rounded text-sky-400 hover:text-sky-300 transition-colors flex items-center justify-center relative" title="ព័ត៌មានមាស & ដុល្លារ Live">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+          <path d="M18 14h-8"/>
+          <path d="M15 18h-5"/>
+          <path d="M10 6h8v4h-8V6Z"/>
+        </svg>
+      </button>
+
+      <!-- ៣. SVG ប៊ូតុងទី៣: សន្ទស្សន៍ប្រាក់ដុល្លារ (DXY $) -->
       <button id="btn-dxy-panel" class="p-1 rounded text-amber-400 hover:text-amber-300 transition-colors flex items-center justify-center relative" title="សន្ទស្សន៍ប្រាក់ដុល្លារ (DXY)">
         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="9.5" stroke-opacity="0.8"/>
@@ -136,6 +165,7 @@
         <span id="dxy-dot-indicator" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
       </button>
 
+      <!-- ៤. SVG ខ្មៅដៃ (បើក/បិទ ប្រអប់ TP/SL) -->
       <button id="btn-toggle-ai-box" class="p-1 rounded text-cyan-400 hover:text-white transition-colors flex items-center justify-center" title="បើក/បិទ ប្រអប់ស្រមោល AI">
         <svg id="icon-pen-on" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -146,12 +176,14 @@
         </svg>
       </button>
 
+      <!-- ៥. ប៊ូតុងត្រេបី (Sliders) -->
       <button id="btn-pos-style-menu" class="relative p-1 rounded hover:text-white transition-colors flex items-center justify-center" title="ជ្រើសរើសទម្រង់ប្រអប់ TP/SL">
         <i class="fa-solid fa-sliders text-[11px]"></i>
         <span id="sliders-red-dot" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
       </button>
 
-      <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-0.5 focus:outline-none">
+      <!-- ៦. Fullscreen -->
+      <button id="btn-fullscreen" class="text-neutral-400 hover:text-white flex items-center justify-center p-1 focus:outline-none">
         <svg id="icon-maximize" class="w-3 h-3 fill-current" viewBox="0 0 16 16"><path d="M1.5 1.5H5V3H3V5H1.5V1.5Z" /><path d="M14.5 1.5H11V3H13V5H14.5V1.5Z" /><path d="M1.5 14.5H5V13H3V11H1.5V14.5Z" /><path d="M14.5 14.5H11V13H13V11H14.5V14.5Z" /></svg>
         <svg id="icon-minimize" class="w-3 h-3 fill-current hidden" viewBox="0 0 16 16"><path d="M5 5H1.5V3.5H3.5V1.5H5V5Z" /><path d="M11 5H14.5V3.5H12.5V1.5H11V5Z" /><path d="M5 11H1.5V12.5H3.5V14.5H5V11Z" /><path d="M11 11H14.5V12.5H12.5V14.5H11V11Z" /></svg>
       </button>
@@ -249,7 +281,7 @@
     <div class="text-neutral-500 hover:text-neutral-300 cursor-pointer"><i class="fa-solid fa-gear text-xs"></i></div>
   </div>
 
-  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» -->
+  <!-- 6. ផ្ទាំង «បណ្ដុំវិភាគដោយ AI» (ស្អាត ដកប្រអប់ព័ត៌មានចេញទៅទំព័រដាច់ដោយឡែក) -->
   <div id="ai-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
     <div class="bg-[#0b0e14] border-t border-cyan-500/40 rounded-t-3xl max-h-[94vh] h-[94vh] flex flex-col overflow-hidden shadow-2xl relative">
       
@@ -290,7 +322,7 @@
 
         <div class="glass-box rounded-2xl p-3 border border-cyan-500/25 relative shadow-xl space-y-2.5">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (Multi-TF + DXY)</span></span>
+            <span class="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-layer-group"></i><span>ប្រអប់ផ្ទៀងផ្ទាត់ AI ទាំង ៤ (Multi-TF + DXY + News)</span></span>
             <span id="ai-scan-status" class="text-[9px] text-amber-400 font-num">● កំពុងវិភាគ...</span>
           </div>
 
@@ -326,7 +358,7 @@
           </svg>
         </div>
 
-        <div class="glass-box rounded-2xl p-3.5 border border-cyan-500/40 space-y-3 shadow-2xl">
+        <div class="glass-box rounded-2xl p-3.5 border border-cyan-500/40 space-y-3 shadow-2xl mb-4">
           <div class="flex items-center justify-between text-[10px]">
             <span class="text-neutral-300 font-bold flex items-center gap-1.5"><i class="fa-solid fa-microchip text-cyan-400"></i><span>សេចក្ដីសម្រេចសរុបខួរក្បាល AI (Consensus)</span></span>
             <span id="verify-status-pill" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">ជុំទី 1: កំពុងវិភាគ</span>
@@ -350,49 +382,86 @@
           </div>
 
           <div id="round-comparison-box" class="text-[10.5px] text-neutral-300 bg-black/50 p-2.5 rounded-xl border border-neutral-800 leading-relaxed">
-            រាល់ 30 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ (4h/2h/15m) + DXY + ព័ត៌មានពហុប្រភពឡើងវិញ។
+            រាល់ 30 នាទីម្ដង AI ទាំង ៤ នឹងផ្ទៀងផ្ទាត់ទីផ្សារ (4h/2h/15m) + DXY + ព័ត៌មាន Forex Factory ឡើងវិញ។
           </div>
         </div>
-
-        <!-- ប្រតិទិនព័ត៌មាន FOREX FACTORY USD (ចុចមើលលម្អិតបាន) -->
-        <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mt-2">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-white font-bold flex items-center gap-1.5">
-              <i class="fa-solid fa-calendar-days text-rose-400"></i>
-              <span>ប្រតិទិន Forex Factory (ចុចអានលម្អិត)</span>
-            </span>
-            <span class="text-[9px] text-neutral-400 font-num">AM / PM (ខ្មែរ)</span>
-          </div>
-          <div id="ff-news-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-[10px]">
-            <div class="text-neutral-500 text-center py-2">កំពុងទាញយកប្រតិទិន Forex Factory...</div>
-          </div>
-        </div>
-
-        <!-- ព័ត៌មានទាន់ហេតុការណ៍ពហុប្រភព (ចុចមើលលម្អិតបាន) -->
-        <div class="glass-box rounded-2xl p-3.5 border border-neutral-800 space-y-2 shadow-xl mb-4 mt-2">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-white font-bold flex items-center gap-1.5">
-              <i class="fa-solid fa-rss text-amber-400"></i>
-              <span>ព័ត៌មានមាស & ដុល្លារ Live (ចុចអានលម្អិត)</span>
-            </span>
-            <span class="text-[9px] text-emerald-400">Multi-Source</span>
-          </div>
-          <div id="rss-news-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-[10px]">
-            <div class="text-neutral-500 text-center py-2">កំពុងទាញយកព័ត៌មានថ្មីៗ...</div>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       ៧. ផ្ទាំងព័ត៌មានលម្អិតពេលចុចប្រអប់ព័ត៌មាន (NEWS DETAIL MODAL - AM/PM ច្បាស់លាស់)
+       ៧. ទំព័រពេញអេក្រង់ទី ១៖ ប្រតិទិនសេដ្ឋកិច្ច FOREX FACTORY (FULL SCREEN PAGE)
+       ========================================================================= -->
+  <div id="ff-full-modal" class="fixed inset-0 z-[55] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
+    <!-- Header -->
+    <div class="px-4 py-3 border-b border-neutral-800/80 flex items-center justify-between bg-[#0d111a]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white">ប្រតិទិន Forex Factory (USD)</h2>
+          <p class="text-[10px] text-neutral-400">ម៉ោងនៅកម្ពុជា (AM / PM) • AI អានជាប់ជាប្រចាំ</p>
+        </div>
+      </div>
+      <button id="btn-close-ff-page" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Sub Info Bar -->
+    <div class="px-4 py-2 bg-black/50 border-b border-neutral-900 flex items-center justify-between text-[10px] text-neutral-400">
+      <div class="flex items-center gap-3">
+        <span>🔴 ឥទ្ធិពលខ្លាំង</span>
+        <span>🟠 ឥទ្ធិពលមធ្យម</span>
+      </div>
+      <span class="text-cyan-400">ចុចប្រអប់ដើម្បីអានលម្អិត</span>
+    </div>
+
+    <!-- List Body (Full Screen Scrollable) -->
+    <div id="ff-news-list" class="flex-1 overflow-y-auto p-3.5 space-y-2.5 text-xs">
+      <div class="text-neutral-500 text-center py-10">កំពុងទាញយកប្រតិទិន Forex Factory...</div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ៨. ទំព័រពេញអេក្រង់ទី ២៖ ព័ត៌មានមាស & ប្រាក់ដុល្លារ LIVE RSS (FULL SCREEN PAGE)
+       ========================================================================= -->
+  <div id="rss-full-modal" class="fixed inset-0 z-[55] bg-[#070a0f] flex flex-col translate-y-full opacity-0 pointer-events-none max-w-md mx-auto h-screen h-[100dvh]">
+    <!-- Header -->
+    <div class="px-4 py-3 border-b border-neutral-800/80 flex items-center justify-between bg-[#0d111a]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white">ព័ត៌មានមាស & ដុល្លារ Live</h2>
+          <p class="text-[10px] text-neutral-400">Yahoo Finance (Gold/DXY) + FXStreet Multi-Source</p>
+        </div>
+      </div>
+      <button id="btn-close-rss-page" class="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Sub Info Bar -->
+    <div class="px-4 py-2 bg-black/50 border-b border-neutral-900 flex items-center justify-between text-[10px] text-neutral-400">
+      <span class="text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Multi-Source Feed</span>
+      <span class="text-cyan-400">ចុចប្រអប់ដើម្បីបកស្រាយខ្មែរ</span>
+    </div>
+
+    <!-- List Body (Full Screen Scrollable) -->
+    <div id="rss-news-list" class="flex-1 overflow-y-auto p-3.5 space-y-2.5 text-xs">
+      <div class="text-neutral-500 text-center py-10">កំពុងទាញយកព័ត៌មានទាន់ហេតុការណ៍ថ្មីៗ...</div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ៩. ផ្ទាំងព័ត៌មានលម្អិត (NEWS DETAIL MODAL - AM/PM ច្បាស់លាស់)
        ========================================================================= -->
   <div id="news-detail-modal" class="fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex flex-col justify-end translate-y-full opacity-0 pointer-events-none max-w-md mx-auto">
-    <div class="bg-[#0f141e] border-t border-amber-400/40 rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+    <div class="bg-[#0f141e] border-t border-amber-400/40 rounded-t-3xl max-h-[88vh] flex flex-col overflow-hidden shadow-2xl">
       
-      <!-- Header -->
       <div class="px-4 pt-3.5 pb-2.5 border-b border-neutral-800 flex items-center justify-between bg-[#141a26]">
         <div class="flex items-center gap-2">
           <span id="nd-impact-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">🔴 High Impact</span>
@@ -403,12 +472,9 @@
         </button>
       </div>
 
-      <!-- Body -->
       <div class="flex-1 overflow-y-auto p-4 space-y-3.5">
-        <!-- ចំណងជើងព័ត៌មាន -->
         <h3 id="nd-title" class="text-base font-bold text-white leading-snug">--</h3>
 
-        <!-- ប្រអប់ម៉ោងពេលវេលាច្បាស់លាស់បំផុត (ថ្ងៃខែឆ្នាំ + AM/PM + រាប់ថយក្រោយ) -->
         <div class="p-3 rounded-2xl bg-black/60 border border-cyan-500/30 space-y-2">
           <div class="flex items-center justify-between text-[11px]">
             <span class="text-neutral-400 flex items-center gap-1.5"><i class="fa-regular fa-calendar text-cyan-400"></i> ថ្ងៃខែប្រកាស (ខ្មែរ)៖</span>
@@ -424,7 +490,6 @@
           </div>
         </div>
 
-        <!-- តួលេខ Forecast / Previous / Actual (បង្ហាញសម្រាប់ Forex Factory) -->
         <div id="nd-stats-grid" class="grid grid-cols-3 gap-2 text-center font-num">
           <div class="p-2.5 rounded-xl bg-neutral-900 border border-neutral-800">
             <span class="text-[9px] text-neutral-400 font-sans block mb-0.5">តួលេខមុន (Prev)</span>
@@ -440,7 +505,6 @@
           </div>
         </div>
 
-        <!-- ការបកស្រាយជាភាសាខ្មែរ & ពេលណាគួរចូលផ្សារ -->
         <div class="p-3.5 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-2.5">
           <div class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
             <i class="fa-solid fa-book-open"></i>
@@ -449,7 +513,6 @@
           <p id="nd-explain-km" class="text-[11.5px] text-neutral-200 leading-relaxed"></p>
         </div>
 
-        <!-- ប្រអប់ណែនាំម៉ោងគួរចូល (Entry Window Recommendation) -->
         <div class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 to-neutral-900 border border-emerald-500/30 space-y-1.5">
           <div class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
             <i class="fa-solid fa-bullseye"></i>
@@ -478,7 +541,6 @@
     let wsPingTimer = null;
     let candleVolumeMap = new Map();
 
-    // ផ្ទុកទិន្នន័យព័ត៌មានសម្រាប់ចុចអានលម្អិត
     let cachedFFEvents = [];
     let cachedRssEvents = [];
 
@@ -728,9 +790,6 @@
       } catch (e) {}
     }
 
-    // =========================================================================
-    // មុខងារបម្លែងម៉ោងខ្មែរ AM/PM + ថ្ងៃខ្មែរ ច្បាស់លាស់ ១០០%
-    // =========================================================================
     function formatCambodiaAMPM(tsMs) {
       const dt = new Date(tsMs);
       const parts = new Intl.DateTimeFormat('en-US', {
@@ -745,7 +804,6 @@
       const dateStr = `${getP('day')}/${getP('month')}/${getP('year')}`;
       const time12h = `${getP('hour')}:${getP('minute')} ${getP('dayPeriod')}`;
 
-      // កំណត់ពេលព្រឹក/រសៀល/ល្ងាច/យប់
       const hour24 = parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', hour12: false }).format(dt));
       let periodKm = 'ព្រឹក';
       if (hour24 >= 12 && hour24 < 17) periodKm = 'រសៀល';
@@ -755,7 +813,6 @@
       return { dayKm, dateStr, time12h, periodKm, fullStr: `${dayKm} ${dateStr}`, fullTimeStr: `${time12h} (ពេល${periodKm})` };
     }
 
-    // បកស្រាយអត្ថន័យព័ត៌មានជាភាសាខ្មែរច្បាស់លាស់ (មិនអស់ AI Limit)
     function getSmartKhmerNewsGuide(title, tsMs) {
       const t = title.toLowerCase();
       const entryStart = formatCambodiaAMPM(tsMs + 15 * 60000);
@@ -792,12 +849,24 @@
       };
     }
 
+    // =========================================================================
+    // ការគ្រប់គ្រងទំព័រពេញអេក្រង់ទាំង ២ (FOREX FACTORY PAGE & RSS NEWS PAGE)
+    // =========================================================================
+    const ffFullModal = document.getElementById('ff-full-modal');
+    const rssFullModal = document.getElementById('rss-full-modal');
     const newsDetailModal = document.getElementById('news-detail-modal');
-    document.getElementById('btn-close-news-detail').addEventListener('click', () => {
-      newsDetailModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-    });
 
-    // បើកផ្ទាំងព័ត៌មានលម្អិតពេលចុចប្រអប់ព័ត៌មានណាមួយ
+    function openModal(el) { el.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'); }
+    function closeModal(el) { el.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'); }
+
+    document.getElementById('btn-open-ff-page').addEventListener('click', () => openModal(ffFullModal));
+    document.getElementById('btn-close-ff-page').addEventListener('click', () => closeModal(ffFullModal));
+
+    document.getElementById('btn-open-rss-page').addEventListener('click', () => openModal(rssFullModal));
+    document.getElementById('btn-close-rss-page').addEventListener('click', () => closeModal(rssFullModal));
+
+    document.getElementById('btn-close-news-detail').addEventListener('click', () => closeModal(newsDetailModal));
+
     window.openNewsDetail = function(type, idx) {
       let item = type === 'ff' ? cachedFFEvents[idx] : cachedRssEvents[idx];
       if (!item) return;
@@ -808,7 +877,6 @@
       const now = Date.now();
       const diffMin = Math.round((ts - now) / 60000);
 
-      // 1. Impact & Source Badge
       const impBadge = document.getElementById('nd-impact-badge');
       if (isFF) {
         const isHigh = item.impact === 'High';
@@ -823,12 +891,10 @@
         document.getElementById('nd-source-tag').innerText = item.source;
       }
 
-      // 2. Title & Date/Time AM/PM
       document.getElementById('nd-title').innerText = item.title;
       document.getElementById('nd-date-km').innerText = tInfo.fullStr;
       document.getElementById('nd-time-ampm').innerText = tInfo.fullTimeStr;
 
-      // 3. Countdown Status
       const cdEl = document.getElementById('nd-countdown-txt');
       if (diffMin > 0) {
         const hrs = Math.floor(diffMin / 60);
@@ -846,7 +912,6 @@
         cdEl.className = 'font-bold text-emerald-400 font-num';
       }
 
-      // 4. Stats Grid
       const statsGrid = document.getElementById('nd-stats-grid');
       if (isFF) {
         statsGrid.style.display = 'grid';
@@ -857,21 +922,20 @@
         statsGrid.style.display = 'none';
       }
 
-      // 5. Smart Khmer Guide & Entry Window
       const guide = getSmartKhmerNewsGuide(item.title, ts);
       document.getElementById('nd-explain-km').innerHTML = guide.explain;
       document.getElementById('nd-entry-window').innerHTML = guide.entry;
 
-      newsDetailModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+      openModal(newsDetailModal);
     };
 
-    // ទាញយកប្រតិទិន Forex Factory + Breaking Gold/USD RSS
     async function loadMultiSourceNews() {
       try {
         const res = await fetch('/api/news');
         const json = await res.json();
         const ffEl = document.getElementById('ff-news-list');
         const rssEl = document.getElementById('rss-news-list');
+        const ffDot = document.getElementById('ff-alert-dot');
 
         if (json.success && json.events && json.events.length > 0) {
           cachedFFEvents = json.events;
@@ -883,10 +947,10 @@
             const diffMin = Math.round((ev.timestamp - now) / 60000);
             const isHigh = ev.impact === 'High';
             const dot = isHigh ? '🔴' : '🟠';
-            const borderCls = isHigh ? 'border-rose-500/30 bg-rose-950/20' : 'border-neutral-800 bg-neutral-900/70';
+            const borderCls = isHigh ? 'border-rose-500/35 bg-rose-950/20' : 'border-neutral-800 bg-neutral-900/80';
             const tInfo = formatCambodiaAMPM(ev.timestamp);
 
-            let timeLabel = `${tInfo.dayKm} ${tInfo.time12h}`;
+            let timeLabel = `${tInfo.fullStr} • ${tInfo.time12h}`;
             if (diffMin >= 0 && diffMin <= 60) {
               timeLabel = `<span class="text-rose-400 font-bold">សល់ ${diffMin} នាទី</span> (${tInfo.time12h})`;
               if (isHigh && !imminentHighNews) imminentHighNews = { ...ev, diffMin, time12h: tInfo.time12h };
@@ -895,17 +959,17 @@
             }
 
             html += `
-              <div onclick="openNewsDetail('ff', ${idx})" class="p-2 rounded-xl border ${borderCls} flex justify-between items-center cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
+              <div onclick="openNewsDetail('ff', ${idx})" class="p-3 rounded-2xl border ${borderCls} flex justify-between items-center cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
                 <div class="pr-2 truncate">
-                  <div class="font-bold text-neutral-200 truncate">${dot} ${ev.title}</div>
-                  <div class="text-[9px] text-neutral-400 font-num mt-0.5">${timeLabel}</div>
+                  <div class="font-bold text-neutral-100 text-xs truncate">${dot} ${ev.title}</div>
+                  <div class="text-[10px] text-neutral-400 font-num mt-1">${timeLabel}</div>
                 </div>
-                <div class="text-right text-[9px] font-num shrink-0 text-neutral-400 flex items-center gap-2">
+                <div class="text-right text-[10px] font-num shrink-0 text-neutral-400 flex items-center gap-2.5">
                   <div>
-                    <div>Fcst: <span class="text-white">${ev.forecast}</span></div>
+                    <div>Fcst: <span class="text-white font-bold">${ev.forecast}</span></div>
                     <div>Prev: <span class="text-neutral-300">${ev.previous}</span></div>
                   </div>
-                  <i class="fa-solid fa-chevron-right text-neutral-600 text-[9px]"></i>
+                  <i class="fa-solid fa-chevron-right text-neutral-600 text-[10px]"></i>
                 </div>
               </div>
             `;
@@ -913,12 +977,15 @@
           ffEl.innerHTML = html;
 
           if (imminentHighNews && imminentHighNews.diffMin <= 30) {
+            ffDot.classList.remove('hidden');
             document.getElementById('banner-icon').className = 'fa-solid fa-triangle-exclamation text-rose-500 text-[10px] animate-pulse';
             document.getElementById('mini-council-banner').innerHTML = `<span class="text-rose-400 font-bold">🔴 ${imminentHighNews.title} ចេញម៉ោង ${imminentHighNews.time12h} (សល់ ${imminentHighNews.diffMin} នាទី)!</span>`;
+          } else {
+            ffDot.classList.add('hidden');
           }
         } else {
           cachedFFEvents = [];
-          ffEl.innerHTML = `<div class="text-neutral-500 text-center py-2">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
+          ffEl.innerHTML = `<div class="text-neutral-500 text-center py-10">🟢 គ្មានព័ត៌មាន USD ធំៗនៅសល់ក្នុងសប្តាហ៍នេះទេ</div>`;
         }
 
         if (json.breaking && json.breaking.length > 0) {
@@ -926,26 +993,23 @@
           rssEl.innerHTML = json.breaking.map((b, idx) => {
             const tInfo = formatCambodiaAMPM(b.timestamp);
             return `
-              <div onclick="openNewsDetail('rss', ${idx})" class="p-2 rounded-xl border border-neutral-800/80 bg-neutral-900/60 cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
-                <div class="flex justify-between items-center text-[8.5px] text-amber-400 font-bold mb-0.5">
+              <div onclick="openNewsDetail('rss', ${idx})" class="p-3 rounded-2xl border border-neutral-800 bg-neutral-900/75 cursor-pointer hover:border-cyan-400/60 active:scale-[0.98] transition-all">
+                <div class="flex justify-between items-center text-[9.5px] text-amber-400 font-bold mb-1">
                   <span>${b.source}</span>
-                  <span class="font-num text-neutral-400">${tInfo.time12h} <i class="fa-solid fa-chevron-right ml-1 text-neutral-600"></i></span>
+                  <span class="font-num text-neutral-400">${tInfo.dayKm} ${tInfo.time12h} <i class="fa-solid fa-chevron-right ml-1 text-neutral-600"></i></span>
                 </div>
-                <div class="text-neutral-200 leading-snug">${b.title}</div>
+                <div class="text-neutral-100 text-xs leading-relaxed">${b.title}</div>
               </div>
             `;
           }).join('');
         } else {
           cachedRssEvents = [];
-          rssEl.innerHTML = `<div class="text-neutral-500 text-center py-2">កំពុងរង់ចាំព័ត៌មានទាន់ហេតុការណ៍ថ្មីៗ...</div>`;
+          rssEl.innerHTML = `<div class="text-neutral-500 text-center py-10">កំពុងរង់ចាំព័ត៌មានទាន់ហេតុការណ៍ថ្មីៗ...</div>`;
         }
       } catch (e) {}
     }
 
-    // ចុច Banner ខាងលើដើម្បីបើកផ្ទាំង AI & ប្រតិទិនព័ត៌មាន
-    document.getElementById('top-notification').addEventListener('click', () => {
-      aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-    });
+    document.getElementById('top-notification').addEventListener('click', () => openModal(aiModal));
 
     function updateHeaderPrices(price) {
       document.getElementById('header-price').innerText = price.toLocaleString('en-US', { minimumFractionDigits: 2 });
@@ -1249,9 +1313,9 @@
 
     // AI COUNCIL
     const aiModal = document.getElementById('ai-modal');
-    document.getElementById('btn-trigger-live').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
-    document.getElementById('btn-trigger-ai').addEventListener('click', () => aiModal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none'));
-    document.getElementById('btn-close-ai').addEventListener('click', () => aiModal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none'));
+    document.getElementById('btn-trigger-live').addEventListener('click', () => openModal(aiModal));
+    document.getElementById('btn-trigger-ai').addEventListener('click', () => openModal(aiModal));
+    document.getElementById('btn-close-ai').addEventListener('click', () => closeModal(aiModal));
 
     let cycleRemaining = 1800;
     let latestModelsMap = {};
